@@ -1,0 +1,233 @@
+{
+  "extDesc": {
+    "message": "Un koala apparaît toutes les 30 minutes pour t'inviter à bouger, puis te souffle une courte pensée avant de repartir."
+  },
+  "tagline": {
+    "message": "Une pause mouvement, puis une pensée."
+  },
+  "tabSettings": {
+    "message": "Réglages"
+  },
+  "tabStats": {
+    "message": "Stats"
+  },
+  "grpPause": {
+    "message": "Faire une pause"
+  },
+  "grpCatchup": {
+    "message": "Rattrapage"
+  },
+  "grpReminders": {
+    "message": "Rappels"
+  },
+  "grpDnd": {
+    "message": "Ne pas déranger"
+  },
+  "laterBtn": {
+    "message": "Plus tard"
+  },
+  "pause1h": {
+    "message": "Pause 1 h"
+  },
+  "stopToday": {
+    "message": "Stop aujourd'hui"
+  },
+  "resume": {
+    "message": "Reprendre"
+  },
+  "pausedUntilLabel": {
+    "message": "En pause jusqu'à"
+  },
+  "catchupBehindLabel": {
+    "message": "En retard"
+  },
+  "catchupBtn": {
+    "message": "Rattraper un exercice"
+  },
+  "enabledLabel": {
+    "message": "Rappels activés"
+  },
+  "enabledHint": {
+    "message": "Le koala vient de lui-même."
+  },
+  "rhythmLabel": {
+    "message": "Rythme"
+  },
+  "presetPomodoro": {
+    "message": "Pomodoro"
+  },
+  "presetDeep": {
+    "message": "Deep work"
+  },
+  "presetUltra": {
+    "message": "Ultradien"
+  },
+  "presetCustom": {
+    "message": "Perso"
+  },
+  "rationalePomodoro": {
+    "message": "Cycles courts et réguliers (25 min)."
+  },
+  "rationaleDeep": {
+    "message": "52 minutes de focus, façon 52/17."
+  },
+  "rationaleUltra": {
+    "message": "Suit le rythme ultradien du corps (90 min)."
+  },
+  "rationaleCustom": {
+    "message": "Choisis ton intervalle (1 à 240 min)."
+  },
+  "minutesUnit": {
+    "message": "min"
+  },
+  "muteLabel": {
+    "message": "Pause en visioconférence"
+  },
+  "muteHint": {
+    "message": "Ne pas apparaître sur ces sites."
+  },
+  "sitesLabel": {
+    "message": "Sites de visioconférence"
+  },
+  "sitesHint": {
+    "message": "Un domaine par ligne (les sous-domaines sont inclus)."
+  },
+  "idleLabel": {
+    "message": "Pause si inactif"
+  },
+  "idleHint": {
+    "message": "Pas de koala quand tu es absent du clavier."
+  },
+  "focusLabel": {
+    "message": "Mode focus"
+  },
+  "focusHint": {
+    "message": "Une pause plein écran qui bloque la page jusqu'à la fin du minuteur. Désactivé par défaut."
+  },
+  "focusSecondsLabel": {
+    "message": "Durée du blocage (secondes)"
+  },
+  "koalasLabel": {
+    "message": "Koalas affichés"
+  },
+  "koalasHint": {
+    "message": "Ajoute tes propres images PNG ou GIF animés (fond transparent conseillé). Sans ajout, les koalas fournis sont utilisés."
+  },
+  "addImages": {
+    "message": "Ajouter des images (PNG, GIF)…"
+  },
+  "keepDefaultKoalas": {
+    "message": "Garder aussi les koalas d'origine"
+  },
+  "removeImg": {
+    "message": "Retirer"
+  },
+  "quotesLabel": {
+    "message": "Citations"
+  },
+  "quotesHint": {
+    "message": "Une par ligne, au format « Texte | Auteur » (auteur facultatif). Vide = citations fournies."
+  },
+  "quotesPlaceholder": {
+    "message": "La paix vient de l'intérieur. | Bouddha"
+  },
+  "loadQuotes": {
+    "message": "Charger les citations fournies"
+  },
+  "addToQuotes": {
+    "message": "Ajouter aux citations fournies (au lieu de remplacer)"
+  },
+  "sportLabel": {
+    "message": "Objectifs de mouvement"
+  },
+  "sportHint": {
+    "message": "Un objectif par ligne, par exemple « Fais 3 pompes ». Ce que tu ajoutes remplace l'invitation par défaut."
+  },
+  "sportPlaceholder": {
+    "message": "Fais 3 pompes"
+  },
+  "loadSport": {
+    "message": "Charger les objectifs fournis"
+  },
+  "bringNow": {
+    "message": "Faire venir le koala maintenant"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "saved": {
+    "message": "Enregistré ✓"
+  },
+  "statsToday": {
+    "message": "Aujourd'hui"
+  },
+  "statsYesterday": {
+    "message": "Hier"
+  },
+  "statsThisWeek": {
+    "message": "Cette semaine"
+  },
+  "statsLastWeek": {
+    "message": "Semaine dernière"
+  },
+  "statsThisMonth": {
+    "message": "Ce mois-ci"
+  },
+  "statsLastMonth": {
+    "message": "Le mois dernier"
+  },
+  "statsAllTime": {
+    "message": "Depuis le début"
+  },
+  "statsDoneLabel": {
+    "message": "exercices faits"
+  },
+  "statsOfWord": {
+    "message": "sur"
+  },
+  "statsProposedWord": {
+    "message": "proposés"
+  },
+  "statsEnergyLabel": {
+    "message": "énergie moy. /10"
+  },
+  "statsMeasuresWord": {
+    "message": "mesures"
+  },
+  "statsStreakLabel": {
+    "message": "Série en cours"
+  },
+  "statsDaysWord": {
+    "message": "j"
+  },
+  "statsExercisesYear": {
+    "message": "Exercices — cette année"
+  },
+  "statsEnergyYear": {
+    "message": "Énergie — cette année (moy. /10)"
+  },
+  "bubbleSport": {
+    "message": "🐨 On bouge un peu !"
+  },
+  "bubbleWisdom": {
+    "message": "🐨 Un souffle de sagesse…"
+  },
+  "btnDone": {
+    "message": "Fait ✅"
+  },
+  "btnLater": {
+    "message": "Plus tard"
+  },
+  "btnBreakOver": {
+    "message": "Pause en cours…"
+  },
+  "energyQ": {
+    "message": "Ton énergie, de 1 à 10 ?"
+  },
+  "energyHead": {
+    "message": "🐨 Bien joué !"
+  },
+  "energySkip": {
+    "message": "Passer"
+  }
+}
