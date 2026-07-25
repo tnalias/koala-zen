@@ -17,7 +17,8 @@ const DEFAULTS = {
   includeDefaultQuotes: false,
   pausedUntil: 0,
   pending: 0,
-  statsDaily: {}
+  statsDaily: {},
+  screenTimezone: "Europe/Zurich"
 };
 
 const MAX_KOALAS = 12;
@@ -52,6 +53,7 @@ const $pauseIdle = $("pauseIdle");
 const $focusMode = $("focusMode");
 const $focusSecWrap = $("focusSecWrap");
 const $focusSeconds = $("focusSeconds");
+const $screenTz = $("screenTz");
 const $koalaFile = $("koalaFile");
 const $gallery = $("gallery");
 const $includeDefault = $("includeDefault");
@@ -391,6 +393,13 @@ async function load() {
   $focusMode.checked = !!cfg.focusMode;
   $focusSecWrap.hidden = !$focusMode.checked;
   $focusSeconds.value = String(clampFocus(cfg.focusSeconds));
+  const tz = cfg.screenTimezone || "Europe/Zurich";
+  if ($screenTz) {
+    if (!Array.from($screenTz.options).some((o) => o.value === tz)) {
+      const opt = document.createElement("option"); opt.value = tz; opt.textContent = tz; $screenTz.appendChild(opt);
+    }
+    $screenTz.value = tz;
+  }
 
   customKoalas = Array.isArray(cfg.customKoalas) ? cfg.customKoalas.slice() : [];
   renderGallery();
@@ -418,7 +427,8 @@ async function save() {
     includeDefaultKoalas: $includeDefault.checked,
     customQuotes: parseQuotes($quotesList.value),
     includeDefaultQuotes: $includeDefaultQuotes.checked,
-    customSport: linesOf($sportList.value)
+    customSport: linesOf($sportList.value),
+    screenTimezone: ($screenTz && $screenTz.value) ? $screenTz.value : "Europe/Zurich"
   };
   await send("kz-save", { payload: payload });
   $saved.classList.add("show");

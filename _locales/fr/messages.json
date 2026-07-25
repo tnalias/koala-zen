@@ -212,11 +212,14 @@
   "bubbleWisdom": {
     "message": "🐨 Un souffle de sagesse…"
   },
+  "bubbleSnark": {
+    "message": "😼 Tiens donc…"
+  },
   "btnDone": {
     "message": "Fait ✅"
   },
   "btnLater": {
-    "message": "Plus tard"
+    "message": "Plus tard (donc jamais)"
   },
   "btnBreakOver": {
     "message": "Pause en cours…"
@@ -229,5 +232,20 @@
   },
   "energySkip": {
     "message": "Passer"
+  },
+  "grpScreen": {
+    "message": "Temps d'écran"
+  },
+  "screenTzHint": {
+    "message": "Le koala affiche ton temps d'activité du jour. Il se remet à zéro à minuit dans ce fuseau horaire."
+  },
+  "screenTzLabel": {
+    "message": "Fuseau horaire"
+  },
+  "screenTzAuto": {
+    "message": "Automatique (navigateur)"
+  },
+  "screenTodayLabel": {
+    "message": "Temps d'écran aujourd'hui"
   }
 }

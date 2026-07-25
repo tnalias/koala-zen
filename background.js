@@ -3,6 +3,10 @@ const ALARM = "kz-move";
 const IDLE_SECONDS = 60;
 const PENDING_MAX = 6;
 const SNOOZE_MINUTES = 15;
+const TICK = "kz-tick";
+const TICK_MINUTES = 1;
+const TICK_MAX_GAP_MS = 130000;
+const DEFAULT_TZ = "Europe/Zurich";
 
 const DEFAULT_MUTED = [
   "kmeet.infomaniak.com",
@@ -28,7 +32,10 @@ const DEFAULTS = {
   includeDefaultQuotes: false,
   pausedUntil: 0,
   pending: 0,
-  statsDaily: {}
+  statsDaily: {},
+  screenTimezone: DEFAULT_TZ,
+  screenDaily: {},
+  screenLastTick: 0
 };
 
 function pad2(n) { return String(n).padStart(2, "0"); }
@@ -40,6 +47,70 @@ function pruneStats(stats) {
   const ck = dayKey(cutoff);
   for (const k of Object.keys(stats)) { if (k < ck) delete stats[k]; }
   return stats;
+}
+
+// Fuseau horaire pour le calcul du jour courant. La valeur "auto" reprend le
+// fuseau du navigateur. Toute valeur invalide retombe sur le fuseau par defaut.
+function resolveTz(tz) {
+  if (!tz || tz === "auto") {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULT_TZ; } catch (e) { return DEFAULT_TZ; }
+  }
+  return tz;
+}
+
+// Cle de jour AAAA-MM-JJ dans le fuseau choisi. en-CA rend directement ce format.
+function tzDayKey(tz, d) {
+  d = d || new Date();
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: resolveTz(tz), year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  } catch (e) {
+    return dayKey(d);
+  }
+}
+
+function pruneScreen(daily, tz) {
+  const cutoff = tzDayKey(tz, new Date(Date.now() - 2 * 365 * 24 * 3600 * 1000));
+  for (const k of Object.keys(daily)) { if (k < cutoff) delete daily[k]; }
+  return daily;
+}
+
+async function screenIsActive() {
+  try {
+    let st;
+    if (globalThis.browser && globalThis.browser.idle) { st = await globalThis.browser.idle.queryState(IDLE_SECONDS); }
+    else { st = await new Promise((r) => chrome.idle.queryState(IDLE_SECONDS, r)); }
+    return st === "active";
+  } catch (e) { return false; }
+}
+
+// Accumule le temps d'activite du jour. Appele a chaque tick d'une minute et
+// juste avant d'afficher le koala, pour que la valeur soit a jour.
+async function accrueScreen() {
+  const now = Date.now();
+  const r = await api.storage.local.get(["screenDaily", "screenLastTick", "screenTimezone"]);
+  const daily = (r.screenDaily && typeof r.screenDaily === "object") ? r.screenDaily : {};
+  const tz = r.screenTimezone || DEFAULT_TZ;
+  const last = Number(r.screenLastTick) || 0;
+  if (await screenIsActive() && last > 0) {
+    const delta = now - last;
+    if (delta > 0 && delta <= TICK_MAX_GAP_MS) {
+      const k = tzDayKey(tz, new Date(now));
+      daily[k] = (Number(daily[k]) || 0) + Math.round(delta / 1000);
+    }
+  }
+  pruneScreen(daily, tz);
+  await api.storage.local.set({ screenDaily: daily, screenLastTick: now });
+}
+
+async function screenTodaySeconds() {
+  const r = await api.storage.local.get(["screenDaily", "screenTimezone"]);
+  const daily = (r.screenDaily && typeof r.screenDaily === "object") ? r.screenDaily : {};
+  const tz = r.screenTimezone || DEFAULT_TZ;
+  return Math.max(0, Math.round(Number(daily[tzDayKey(tz)]) || 0));
+}
+
+function ensureTick() {
+  try { api.alarms.create(TICK, { periodInMinutes: TICK_MINUTES }); } catch (e) { /* noop */ }
 }
 
 async function recordOutcome(result, energy) {
@@ -75,14 +146,22 @@ async function schedule(delayMin) {
 
 api.runtime.onInstalled.addListener(async () => {
   const stored = await api.storage.local.get(Object.keys(DEFAULTS));
-  await api.storage.local.set({ ...DEFAULTS, ...stored });
+  await api.storage.local.set({ ...DEFAULTS, ...stored, screenLastTick: Date.now() });
   schedule();
+  ensureTick();
 });
 
-if (api.runtime.onStartup) { api.runtime.onStartup.addListener(() => schedule()); }
+if (api.runtime.onStartup) {
+  api.runtime.onStartup.addListener(async () => {
+    await api.storage.local.set({ screenLastTick: Date.now() });
+    schedule();
+    ensureTick();
+  });
+}
 
 api.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === ALARM) trigger({ respectMute: true });
+  else if (alarm.name === TICK) accrueScreen();
 });
 
 api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -151,7 +230,9 @@ async function trigger(opts) {
   const tab = await targetTab();
   if (!tab) return;
   if (!force && respectMute && cfg.muteInCalls && matchesMuted(tab.url, cfg.mutedPatterns)) return;
-  const payload = { type: "kz-show", focus: !!cfg.focusMode, focusSeconds: clampFocus(cfg.focusSeconds) };
+  await accrueScreen();
+  const screenToday = await screenTodaySeconds();
+  const payload = { type: "kz-show", focus: !!cfg.focusMode, focusSeconds: clampFocus(cfg.focusSeconds), screenToday: screenToday };
   try {
     await api.tabs.sendMessage(tab.id, payload);
   } catch (e) {

@@ -116,6 +116,7 @@ if (!globalThis.__kzLoaded) {
 .kz-bubble--quote .kz-bubble-head { color: #256b4a; }
 .kz-quote-text { font-style: italic; }
 .kz-quote-author { margin-top: 6px; font-size: 13px; opacity: .68; text-align: right; }
+.kz-screen-time { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(0,0,0,.08); font-size: 12px; opacity: .72; font-style: normal; }
 
 .kz-cry {
   position: absolute; right: 18px; top: -12px; background: #23252b; color: #fff; font-size: 13px; font-weight: 700;
@@ -216,6 +217,11 @@ if (!globalThis.__kzLoaded) {
 
     const DEFAULT_KOALAS = ["images/koala-1.png", "images/koala-2.png", "images/koala-3.png", "images/koala-paddle.png"];
 
+    const SNARK_KOALAS = ["images/cat-coach.png", "images/cat-contract.png"];
+    function snarkUrls() {
+      return SNARK_KOALAS.map((p) => { try { return api.runtime.getURL(p); } catch (e) { return ""; } }).filter(Boolean);
+    }
+
     function defaultUrls() {
       return DEFAULT_KOALAS
         .map((p) => { try { return api.runtime.getURL(p); } catch (e) { return ""; } })
@@ -226,12 +232,29 @@ if (!globalThis.__kzLoaded) {
     let lastKoala = -1;
     let QUOTES = (typeof KZ_QUOTES !== "undefined") ? KZ_QUOTES : [];
     let SPORT = (typeof KZ_SPORT !== "undefined") ? KZ_SPORT : [];
+    let SNARK = (typeof KZ_SNARK !== "undefined") ? KZ_SNARK : [];
 
     function kzMsg(key, fallback) {
       try { const m = (api.i18n && api.i18n.getMessage) ? api.i18n.getMessage(key) : ""; return m || fallback; } catch (e) { return fallback; }
     }
 
     function sendOutcome(result, energy) { try { api.runtime.sendMessage({ type: "kz-outcome", result: result, energy: (typeof energy === "number" ? energy : null) }); } catch (e) { /* noop */ } }
+
+    function fmtDuration(totalSec) {
+      const s = Math.max(0, Math.round(Number(totalSec) || 0));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h > 0) return h + " h " + String(m).padStart(2, "0");
+      return m + " min";
+    }
+
+    function appendScreenTime(bubble, seconds) {
+      if (seconds == null) return;
+      const el = document.createElement("div");
+      el.className = "kz-screen-time";
+      el.textContent = "\u23F1 " + kzMsg("screenTodayLabel", "Temps d'écran aujourd'hui") + " : " + fmtDuration(seconds);
+      bubble.appendChild(el);
+    }
 
     function showEnergyPicker(container, onPick) {
       const box = document.createElement("div");
@@ -308,12 +331,12 @@ if (!globalThis.__kzLoaded) {
       if (n) container.appendChild(n);
     }
 
-    function buildKoala(shadow, idx) {
+    function buildKoala(shadow, idx, srcOverride) {
       const wrap = document.createElement("div");
       wrap.className = "kz-koala";
       const inner = document.createElement("div");
       inner.className = "kz-inner";
-      const src = KOALAS[idx];
+      const src = (typeof srcOverride === "string" && srcOverride) ? srcOverride : KOALAS[idx];
       if (src) {
         const img = document.createElement("img");
         img.className = "kz-photo";
@@ -330,13 +353,26 @@ if (!globalThis.__kzLoaded) {
       return wrap;
     }
 
-    function showQuoteBubble(wrap, quoteText, author) {
+    function showQuoteBubble(wrap, quoteText, author, screenToday) {
       const b = document.createElement("div");
       b.className = "kz-bubble kz-bubble--quote";
       const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleWisdom", "🐨 Un souffle de sagesse…");
       const qt = document.createElement("div"); qt.className = "kz-quote-text"; qt.textContent = "« " + quoteText + " »";
       b.appendChild(head); b.appendChild(qt);
       if (author) { const qa = document.createElement("div"); qa.className = "kz-quote-author"; qa.textContent = "— " + author; b.appendChild(qa); }
+      appendScreenTime(b, screenToday);
+      wrap.appendChild(b);
+      requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("kz-show")));
+      return b;
+    }
+
+    function showSnarkBubble(wrap, text, screenToday) {
+      const b = document.createElement("div");
+      b.className = "kz-bubble kz-bubble--quote";
+      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleSnark", "😼 Tiens donc…");
+      const qt = document.createElement("div"); qt.className = "kz-quote-text"; qt.textContent = text;
+      b.appendChild(head); b.appendChild(qt);
+      appendScreenTime(b, screenToday);
       wrap.appendChild(b);
       requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("kz-show")));
       return b;
@@ -355,7 +391,7 @@ if (!globalThis.__kzLoaded) {
       const done = document.createElement("button");
       done.type = "button"; done.className = "kz-btn kz-btn--done"; done.textContent = kzMsg("btnDone", "Fait ✅");
       const later = document.createElement("button");
-      later.type = "button"; later.className = "kz-btn kz-btn--later"; later.textContent = kzMsg("btnLater", "Plus tard");
+      later.type = "button"; later.className = "kz-btn kz-btn--later"; later.textContent = kzMsg("btnLater", "Plus tard (donc jamais)");
       done.addEventListener("click", (e) => { e.stopPropagation(); handlers.onDone(); });
       later.addEventListener("click", (e) => { e.stopPropagation(); handlers.onLater(); });
       actions.appendChild(done); actions.appendChild(later);
@@ -365,7 +401,7 @@ if (!globalThis.__kzLoaded) {
       return b;
     }
 
-    async function runFocus(shadow, seconds) {
+    async function runFocus(shadow, seconds, screenToday) {
       // Fond assombri qui bloque la page: c'est la seule chose propre au mode focus.
       const back = document.createElement("div");
       back.className = "kz-focus-back";
@@ -373,6 +409,7 @@ if (!globalThis.__kzLoaded) {
       requestAnimationFrame(() => back.classList.add("kz-show"));
 
       const fmt = (s) => (s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + "s");
+      const removeBack = async () => { back.classList.remove("kz-show"); await sleep(320); back.remove(); };
 
       // ---- Le koala arrive dans son coin, animé, exactement comme en mode normal ----
       const k1 = buildKoala(shadow, pickKoala(lastKoala));
@@ -380,31 +417,52 @@ if (!globalThis.__kzLoaded) {
       playEnter(k1);
       await sleep(950);
 
-      // Bulle sport habituelle, avec un compte à rebours qui déverrouille "Fait"
+      // Bulle sport habituelle. Le compte a rebours deverrouille "Fait", et "Plus tard" permet de passer a tout moment.
       const b = document.createElement("div");
       b.className = "kz-bubble kz-bubble--sport";
-      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleSport", "🐨 On bouge un peu !");
+      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleSport", "\uD83D\uDC28 On bouge un peu !");
       const body = document.createElement("div"); body.textContent = rand(SPORT);
       const timer = document.createElement("div"); timer.className = "kz-focus-timer";
       const actions = document.createElement("div"); actions.className = "kz-actions";
-      const done = document.createElement("button"); done.type = "button"; done.className = "kz-btn kz-btn--done"; done.disabled = true; done.textContent = kzMsg("btnBreakOver", "Pause en cours…");
-      actions.appendChild(done);
+      const done = document.createElement("button"); done.type = "button"; done.className = "kz-btn kz-btn--done"; done.disabled = true; done.textContent = kzMsg("btnBreakOver", "Pause en cours\u2026");
+      const later = document.createElement("button"); later.type = "button"; later.className = "kz-btn kz-btn--later"; later.textContent = kzMsg("btnLater", "Plus tard (donc jamais)");
+      actions.appendChild(done); actions.appendChild(later);
       b.appendChild(head); b.appendChild(body); b.appendChild(timer); b.appendChild(actions);
       k1.appendChild(b);
       requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("kz-show")));
 
-      let left = seconds;
-      timer.textContent = fmt(left);
-      await new Promise((resolve) => {
+      // On peut passer le rappel a tout moment. Le bouton Fait ne se deverrouille qu'a la fin du minuteur.
+      let settled = false;
+      const outcome = await new Promise((resolve) => {
+        const finish = (r) => { if (!settled) { settled = true; resolve(r); } };
+        later.addEventListener("click", (e) => { e.stopPropagation(); finish("later"); });
+        let left = seconds;
+        timer.textContent = fmt(left);
         const t = setInterval(() => {
+          if (settled) { clearInterval(t); return; }
           left -= 1;
           timer.textContent = fmt(Math.max(0, left));
-          if (left <= 0) { clearInterval(t); resolve(); }
+          if (left <= 0) {
+            clearInterval(t);
+            timer.remove();
+            done.disabled = false; done.classList.add("kz-btn--ready"); done.textContent = kzMsg("btnDone", "Fait \u2705");
+            done.addEventListener("click", (e) => { e.stopPropagation(); finish("done"); }, { once: true });
+          }
         }, 1000);
       });
-      timer.remove();
-      done.disabled = false; done.classList.add("kz-btn--ready"); done.textContent = kzMsg("btnDone", "Fait ✅");
-      await new Promise((resolve) => { done.addEventListener("click", (e) => { e.stopPropagation(); resolve(); }, { once: true }); });
+
+      // ---- L'utilisateur passe le rappel: on nettoie et on enregistre comme un "plus tard" normal ----
+      if (outcome === "later") {
+        b.remove();
+        k1.classList.remove("kz-koala--sport");
+        await playExit(k1, { cls: "kz-exit-waddle", dur: 1000 });
+        k1.remove();
+        sendOutcome("later");
+        await sleep(700);
+        await runSnark(shadow, screenToday);
+        await removeBack();
+        return;
+      }
 
       // ---- Énergie (grille 2x5, comme en mode normal) ----
       b.remove();
@@ -422,15 +480,29 @@ if (!globalThis.__kzLoaded) {
       playEnter(k2);
       await sleep(950);
       const q = rand(QUOTES);
-      showQuoteBubble(k2, q.t, q.a);
+      showQuoteBubble(k2, q.t, q.a, screenToday);
       await waitOrDismiss(9500, () => d2);
       const exit = d2 ? EXITS[Math.floor(Math.random() * EXITS.length)] : await pickExit();
       await playExit(k2, exit);
       k2.remove();
 
-      back.classList.remove("kz-show");
-      await sleep(320);
-      back.remove();
+      await removeBack();
+    }
+
+    async function runSnark(shadow, screenToday) {
+      const urls = snarkUrls();
+      const src = urls.length ? urls[Math.floor(Math.random() * urls.length)] : "";
+      const kc = buildKoala(shadow, -1, src);
+      let dc = false;
+      kc.addEventListener("click", () => { dc = true; });
+      playEnter(kc);
+      await sleep(950);
+      const line = SNARK.length ? SNARK[Math.floor(Math.random() * SNARK.length)] : "";
+      if (line) showSnarkBubble(kc, line, screenToday);
+      await waitOrDismiss(9500, () => dc);
+      const exit = dc ? EXITS[Math.floor(Math.random() * EXITS.length)] : await pickExit();
+      await playExit(kc, exit);
+      kc.remove();
     }
 
     function playEnter(wrap) { wrap.classList.add(rand(ENTRANCES)); }
@@ -484,11 +556,12 @@ if (!globalThis.__kzLoaded) {
       running = true;
       const focus = !!(opts && opts.focus);
       const focusSeconds = Math.max(5, Math.min(120, Math.round((opts && opts.focusSeconds) || 30)));
+      const screenToday = (opts && opts.screenToday != null) ? opts.screenToday : null;
       const shadow = ensureShadow();
       await loadSettings();
 
       try {
-        if (focus) { await runFocus(shadow, focusSeconds); return; }
+        if (focus) { await runFocus(shadow, focusSeconds, screenToday); return; }
 
         // ---- Passage 1 : bouger, avec validation ----
         const k1 = buildKoala(shadow, pickKoala(lastKoala));
@@ -509,6 +582,8 @@ if (!globalThis.__kzLoaded) {
           await playExit(k1, { cls: "kz-exit-waddle", dur: 1000 });
           k1.remove();
           sendOutcome(outcome);
+          await sleep(900);
+          await runSnark(shadow, screenToday);
           return;
         }
 
@@ -528,7 +603,7 @@ if (!globalThis.__kzLoaded) {
         playEnter(k2);
         await sleep(950);
         const q = rand(QUOTES);
-        showQuoteBubble(k2, q.t, q.a);
+        showQuoteBubble(k2, q.t, q.a, screenToday);
         await waitOrDismiss(9500, () => d2);
         const exit = d2 ? EXITS[Math.floor(Math.random() * EXITS.length)] : await pickExit();
         await playExit(k2, exit);
@@ -540,7 +615,7 @@ if (!globalThis.__kzLoaded) {
     }
 
     api.runtime.onMessage.addListener((msg) => {
-      if (msg && msg.type === "kz-show") runSequence({ focus: msg.focus, focusSeconds: msg.focusSeconds });
+      if (msg && msg.type === "kz-show") runSequence({ focus: msg.focus, focusSeconds: msg.focusSeconds, screenToday: msg.screenToday });
     });
   })();
 }

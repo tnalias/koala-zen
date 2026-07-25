@@ -256,5 +256,39 @@ const KZ_SPORT_DE = [
   "Dreh 3 stolze Runden durch den Raum. Kopf hoch! 🚶"
 ];
 
+const KZ_SNARK_FR = [
+  "Plus tard, évidemment. Comme hier, et avant-hier. Ton canapé, lui, reste fidèle.",
+  "Bravo, tu as trouvé le seul bouton qui ne brûle aucune calorie. Un vrai talent.",
+  "La motivation reviendra. Un jour. Peut-être. Donne-lui un coup de main la prochaine fois.",
+  "Tu procrastines avec un talent fou. Imagine le résultat si tu t'entraînais autant.",
+  "C'est écrit dans tes statistiques, et elles ne mentent pas. Au prochain rappel, fais-leur mentir.",
+  "Même le chat te trouve gonflé. Et lui ne fait rien de ses journées, c'est dire.",
+  "Un jour, tu diras oui. Visiblement, pas cette fois. La prochaine fois, on parie ?",
+  "Range l'excuse, sors les jambes. Au prochain passage, tu te bouges, promis ?"
+];
+
+const KZ_SNARK_EN = [
+  "Later, of course. Like yesterday, and the day before. Your couch, though, stays loyal.",
+  "Nice, you found the one button that burns zero calories. A real talent.",
+  "Motivation will come back. Someday. Maybe. Give it a hand next time.",
+  "You procrastinate with wild talent. Imagine the results if you trained that hard.",
+  "It's written in your stats, and they don't lie. Next reminder, make them lie.",
+  "Even the cat thinks you've got nerve. And he does nothing all day, so that's saying something.",
+  "One day you'll say yes. Clearly not this time. Next time, want to bet?",
+  "Put the excuse away, get the legs out. Next time round, you move, promise?"
+];
+
+const KZ_SNARK_DE = [
+  "Später, na klar. Wie gestern, und vorgestern. Dein Sofa dagegen bleibt treu.",
+  "Bravo, du hast den einzigen Knopf gefunden, der null Kalorien verbrennt. Echtes Talent.",
+  "Die Motivation kommt wieder. Irgendwann. Vielleicht. Hilf ihr das nächste Mal ein bisschen nach.",
+  "Du prokrastinierst mit Wahnsinnstalent. Stell dir das Ergebnis vor, würdest du so viel trainieren.",
+  "Es steht in deiner Statistik, und die lügt nicht. Beim nächsten Mal straf sie Lügen.",
+  "Sogar die Katze findet dich dreist. Und die tut den ganzen Tag nichts, das will was heissen.",
+  "Eines Tages sagst du Ja. Diesmal offensichtlich nicht. Nächstes Mal, wetten wir?",
+  "Pack die Ausrede weg, raus mit den Beinen. Beim nächsten Mal bewegst du dich, versprochen?"
+];
+
 const KZ_QUOTES = KZ_IS_FR ? KZ_QUOTES_FR : (KZ_IS_DE ? KZ_QUOTES_DE : KZ_QUOTES_EN);
 const KZ_SPORT = KZ_IS_FR ? KZ_SPORT_FR : (KZ_IS_DE ? KZ_SPORT_DE : KZ_SPORT_EN);
+const KZ_SNARK = KZ_IS_FR ? KZ_SNARK_FR : (KZ_IS_DE ? KZ_SNARK_DE : KZ_SNARK_EN);

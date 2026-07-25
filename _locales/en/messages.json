@@ -212,11 +212,14 @@
   "bubbleWisdom": {
     "message": "🐨 A breath of wisdom…"
   },
+  "bubbleSnark": {
+    "message": "😼 Well, well…"
+  },
   "btnDone": {
     "message": "Done ✅"
   },
   "btnLater": {
-    "message": "Later"
+    "message": "Later (so, never)"
   },
   "btnBreakOver": {
     "message": "Break in progress…"
@@ -229,5 +232,20 @@
   },
   "energySkip": {
     "message": "Skip"
+  },
+  "grpScreen": {
+    "message": "Screen time"
+  },
+  "screenTzHint": {
+    "message": "The koala shows your activity time for the day. It resets at midnight in this time zone."
+  },
+  "screenTzLabel": {
+    "message": "Time zone"
+  },
+  "screenTzAuto": {
+    "message": "Automatic (browser)"
+  },
+  "screenTodayLabel": {
+    "message": "Screen time today"
   }
 }
