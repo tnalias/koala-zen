@@ -32,6 +32,7 @@ Make it yours:
 - Snooze or pause when needed: later, one hour, or the rest of the day. Fell behind? Catch up your missed breaks.
 - Pause automatically during video calls (Infomaniak kMeet, Microsoft Teams, Zoom, Google Meet) and when you step away from the keyboard.
 - Turn on an optional focus mode: a full-screen break that blocks the page until the timer ends. Off by default.
+- See your screen time for the day, shown in the wisdom bubble and in the gentle nudge if you skip a break. It resets at midnight in the time zone you choose (Europe/Zurich by default, or your browser's).
 - Add your own koala images (PNG or animated GIF) and write your own quotes.
 
 Privacy first: Koala Zen runs entirely on your computer. No account, no server, no analytics, no tracking. Your settings and anything you add stay in your browser.
@@ -53,6 +54,7 @@ Personnalise-le :
 - Reporte ou mets en pause selon le besoin : plus tard, une heure, ou le reste de la journée. Du retard ? Rattrape tes pauses manquées.
 - Pause automatique en visioconférence (Infomaniak kMeet, Microsoft Teams, Zoom, Google Meet) et quand tu quittes le clavier.
 - Active si tu veux un mode focus : une pause plein écran qui bloque la page jusqu'à la fin du minuteur. Désactivé par défaut.
+- Vois ton temps d'écran du jour, affiché dans la bulle de sagesse et dans le petit rappel si tu sautes une pause. Il se remet à zéro à minuit dans le fuseau que tu choisis (Europe/Zurich par défaut, ou celui de ton navigateur).
 - Ajoute tes propres images de koala (PNG ou GIF animés) et écris tes propres citations.
 
 La vie privée d'abord : Koala Zen fonctionne entièrement sur ton ordinateur. Aucun compte, aucun serveur, aucune analyse, aucun suivi. Tes réglages et tout ce que tu ajoutes restent dans ton navigateur.
@@ -80,8 +82,8 @@ Pick ONE primary category from the AMO dropdown.
 Four screenshots are provided in this folder (1280 × 800 PNG). Suggested captions:
 
 1. `screenshot-1-move.png`: "A gentle nudge to move, right on the page" / « Un rappel doux pour bouger, directement sur la page »
-2. `screenshot-2-wisdom.png`: "A little wisdom as a reward, every time" / « Une pensée de sagesse en récompense, à chaque fois »
-3. `screenshot-3-settings.png`: "Tune it to your rhythm: presets, do-not-disturb, focus mode" / « À chacun son rythme : préréglages, ne pas déranger, mode focus »
+2. `screenshot-2-wisdom.png`: "A little wisdom as a reward, every time" / « Une pensée de sagesse en récompense, à chaque fois » (the bubble now also shows today's screen time, refresh the shot)
+3. `screenshot-3-settings.png`: "Tune it to your rhythm: presets, do-not-disturb, focus mode, screen time" / « À chacun son rythme : préréglages, ne pas déranger, mode focus, temps d'écran » (settings now include the time-zone card, refresh the shot)
 4. `screenshot-4-stats.png`: "Track your exercises and energy over time" / « Suivi des exercices et de l'énergie dans le temps »
 
 ---
@@ -93,9 +95,9 @@ Answer: **This add-on does NOT collect or transmit any user data.**
 It makes no network requests and has no analytics.
 
 ### Privacy policy (ready to paste)
-**English:** Koala Zen does not collect, store, or transmit any personal data. It makes no network requests to any server. All settings and any content you add (custom images, quotes, reminder messages) are stored locally in your browser using the standard extension storage, and never leave your device. There is no analytics and no tracking.
+**English:** Koala Zen does not collect, store, or transmit any personal data. It makes no network requests to any server. All settings and any content you add (custom images, quotes, reminder messages, chosen time zone, daily screen-time counter) are stored locally in your browser using the standard extension storage, and never leave your device. There is no analytics and no tracking.
 
-**Français :** Koala Zen ne collecte, ne stocke ni ne transmet aucune donnée personnelle. L'extension ne fait aucune requête réseau vers un serveur. Tous les réglages et tout contenu ajouté (images, citations, messages personnalisés) sont stockés localement dans le navigateur via le stockage standard des extensions, et ne quittent jamais l'appareil. Aucune analyse, aucun suivi.
+**Français :** Koala Zen ne collecte, ne stocke ni ne transmet aucune donnée personnelle. L'extension ne fait aucune requête réseau vers un serveur. Tous les réglages et tout contenu ajouté (images, citations, messages personnalisés, fuseau horaire choisi, compteur de temps d'écran du jour) sont stockés localement dans le navigateur via le stockage standard des extensions, et ne quittent jamais l'appareil. Aucune analyse, aucun suivi.
 
 ### Permissions justification (for the AMO reviewer notes)
 - **alarms**: schedule the periodic reminder at the interval you choose.

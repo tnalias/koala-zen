@@ -14,6 +14,7 @@ Une petite extension de navigateur pour **Chrome et Firefox**. Toutes les 30 min
 - **Reporte ou mets en pause** (plus tard, 1 h, la journée) et rattrape les pauses manquées.
 - **Pause automatique** en visioconférence (kMeet, Teams, Zoom, Meet) et quand tu quittes le clavier.
 - **Mode focus** en option : une pause plein écran qui bloque jusqu'à la fin du minuteur. Désactivé par défaut.
+- **Vois ton temps d'écran** : la bulle de sagesse, et le petit rappel affiché si tu sautes une pause, t'indiquent depuis combien de temps tu es actif sur l'ordinateur aujourd'hui. Remise à zéro à minuit dans le fuseau que tu choisis (Europe/Zurich par défaut, ou celui de ton navigateur).
 - Une soixantaine de citations modifiables, de Bouddha et Rûmî à Marc Aurèle et Steve Jobs. Ajoute aussi tes propres images de koala.
 - **Interface en français, allemand et anglais**, selon la langue de ton navigateur.
 - Il saute, roule ou s'envole. Une sortie différente à chaque fois. Tout reste sur ton ordinateur, aucun compte, aucun suivi.
@@ -33,7 +34,7 @@ Le koala t'invite à bouger, puis te souffle une pensée. Ensuite, tout se règl
 
 ## Installation
 
-Koala Zen fonctionne sur **Chrome et Firefox**. Choisis ton navigateur ci-dessous. Les paquets prêts à l'emploi se trouvent dans le dossier [`download/`](download).
+Koala Zen fonctionne sur **Chrome et Firefox**. Choisis ton navigateur ci-dessous. Les paquets prêts à l'emploi se trouvent dans le dossier [`download/`](download), et celui pour Firefox est **signé par Mozilla**, il s'installe donc directement.
 
 ### Chrome, Edge, Brave (le plus simple, environ une minute)
 L'extension n'est pas encore sur le Chrome Web Store, tu l'ajoutes donc à la main. Elle reste installée après les redémarrages, il suffit de laisser le mode développeur activé.
@@ -45,22 +46,24 @@ L'extension n'est pas encore sur le Chrome Web Store, tu l'ajoutes donc à la ma
 L'icône du koala apparaît dans la barre d'outils. Clique dessus pour ouvrir les réglages.
 
 ### Firefox
-Firefox n'installe durablement que des extensions **signées par Mozilla**, et c'est gratuit. Le dépôt officiel de Firefox est **Firefox Add-ons** (addons.mozilla.org, souvent appelé AMO).
+Le paquet Firefox du dossier [`download/`](download) est **signé par Mozilla**, il s'installe donc durablement dans un Firefox normal, sans compte et sans ligne de commande.
 
-**Essayer tout de suite (temporaire)**
-Pour un test rapide, sans rien signer. L'extension disparaît à la fermeture de Firefox.
+**L'installer (recommandé)**
+1. Télécharge [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
+2. Ouvre `about:addons`, clique sur la roue crantée puis sur **Installer un module depuis un fichier**, et choisis le `.xpi` (tu peux aussi glisser le fichier sur la fenêtre de Firefox).
+3. Confirme. Comme le fichier est signé, il reste installé après les redémarrages.
+
+**Essayer sans installer (temporaire)**
+L'extension disparaît à la fermeture de Firefox.
 1. Tape `about:debugging#/runtime/this-firefox` dans la barre d'adresse.
-2. Clique sur **Charger un module temporaire**.
-3. Choisis le fichier [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
+2. Clique sur **Charger un module temporaire** et choisis le `.xpi`.
 
-**Installer pour de bon, en le signant pour toi via Mozilla (recommandé, gratuit)**
-C'est la façon la plus simple d'obtenir une installation permanente. Tout se passe dans le navigateur, sans ligne de commande. Tu déposes l'extension sur AMO en **distribution privée** : Mozilla la signe pour ton usage, sans page publique, et la validation prend en général quelques minutes.
+**Si tu modifies le code, signe ta propre version (gratuit)**
+Une version que tu as modifiée n'est plus couverte par la signature fournie, tu la signes donc pour toi. Tout se passe dans le navigateur, sans ligne de commande. Tu déposes l'extension sur AMO en **distribution privée** : Mozilla la signe pour ton usage, sans page publique.
 1. Crée un compte Firefox gratuit sur https://accounts.firefox.com, puis ouvre le tableau de bord développeur : https://addons.mozilla.org/fr/developers/
-2. **Personnalise l'identifiant.** Ouvre `manifest.json`, trouve la ligne `"id": "koala-zen@public.extension"` et remplace-la par un identifiant à toi, par exemple `"id": "koala-zen@ton-prenom"`. L'identifiant d'origine est réservé à la future page publique. Sélectionne ensuite **tous les fichiers du dossier** (pas le dossier lui-même) et compresse-les en un fichier `.zip`.
-3. Clique sur **Soumettre un nouveau module**.
-4. À la question sur la distribution, choisis **Sur votre propre serveur** (distribution privée, non listée).
-5. Envoie ton fichier `.zip`. Mozilla le vérifie et te propose un `.xpi` **signé** à télécharger.
-6. Installe ce `.xpi` signé : ouvre `about:addons`, clique sur la roue crantée puis sur **Installer un module depuis un fichier**, et choisis-le. Il reste installé après les redémarrages.
+2. **Personnalise l'identifiant.** Ouvre `manifest.json`, trouve `"id": "koala-zen@public.extension"` et remplace-la par un identifiant à toi, par exemple `"id": "koala-zen@ton-prenom"`. L'identifiant d'origine est réservé à la page publique. Sélectionne ensuite **tous les fichiers du dossier** (pas le dossier lui-même) et compresse-les en un fichier `.zip`.
+3. Clique sur **Soumettre un nouveau module**, choisis **Sur votre propre serveur** (distribution privée, non listée), envoie ton `.zip`, et Mozilla te propose un `.xpi` **signé** à télécharger.
+4. Installe ce `.xpi` signé de la même façon que ci-dessus.
 
 Pas à l'aise avec ces étapes ? Une IA comme **Euria d'Infomaniak** peut te guider pas à pas. Colle-lui les instructions ci-dessus et décris-lui où tu bloques.
 
@@ -110,6 +113,7 @@ Onglet **Réglages** :
 - **Rappels** : active ou coupe les passages automatiques du koala. Choisis ton **rythme** parmi **Pomodoro**, **Deep work**, **Ultradien**, ou **Personnalisé** pour fixer toi-même l'intervalle (1 à 240 minutes).
 - **Ne pas déranger** : **pause en visioconférence** (le koala n'apparaît pas sur les sites listés, par défaut `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, un domaine par ligne, sous-domaines compris, donc `zoom.us` couvre aussi `us02web.zoom.us`) et **pause quand tu t'absentes** du clavier.
 - **Mode focus** (désactivé par défaut) : une pause plein écran qui bloque la page jusqu'à la fin du minuteur, dont tu choisis la durée.
+- **Temps d'écran** : choisis le fuseau horaire qui définit ta journée pour le compteur affiché dans les bulles. **Automatique (navigateur)** suit ton navigateur, ou sélectionne un fuseau dans la liste. Europe/Zurich par défaut. Le compteur se remet à zéro à minuit dans ce fuseau. Il ne compte que pendant que le navigateur tourne et que tu es actif sur l'ordinateur, et tout reste sur ton appareil.
 - **Images de koala** : ajoute tes propres PNG ou GIF animés (fond transparent conseillé). Elles remplacent les trois koalas fournis, sauf si tu coches **Garder aussi les 3 koalas d'origine**. Un clic sur × retire une image. Les GIF gardent leur animation, les images fixes sont redimensionnées pour économiser de l'espace.
 - **Citations** : une par ligne, au format « Texte | Auteur » (auteur facultatif). Laisse vide pour garder celles fournies. **Charger les citations fournies** les recopie pour que tu puisses les modifier.
 - **Objectifs de mouvement** : les phrases courtes qui invitent à bouger, une par ligne. Laisse vide pour garder celles fournies.
@@ -144,7 +148,7 @@ Recharge l'extension après une modification des fichiers.
 ## Structure du projet
 ```
 manifest.json     manifeste de l'extension (Manifest V3, Chrome + Firefox)
-background.js     service worker : planifie les rappels, applique la pause visio
+background.js     service worker : planifie les rappels, applique la pause visio, suit le temps d'écran actif du jour
 content.js        dessine le koala, la bulle et les animations
 quotes.js         les citations et messages sport par défaut
 popup.html/js     le panneau de réglages
@@ -156,7 +160,7 @@ store-assets/     textes et captures d'écran pour les boutiques
 ```
 
 ## Confidentialité
-Rien ne quitte le navigateur. Tes réglages (fréquence, activation, liste visio, et les images, citations ou messages que tu ajoutes) sont stockés localement via l'API de stockage du navigateur. Aucun serveur, aucune analyse, aucun suivi.
+Rien ne quitte le navigateur. Tes réglages (fréquence, activation, liste visio, fuseau horaire choisi, ton compteur de temps d'écran du jour, et les images, citations ou messages que tu ajoutes) sont stockés localement via l'API de stockage du navigateur. Aucun serveur, aucune analyse, aucun suivi.
 
 ## Licence
 MIT. Voir [LICENSE](LICENSE).

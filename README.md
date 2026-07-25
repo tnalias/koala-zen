@@ -14,6 +14,7 @@ A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adora
 - **Snooze or pause** (later, 1 hour, the whole day) and catch up the breaks you missed.
 - **Automatic pause** during video calls (kMeet, Teams, Zoom, Meet) and when you step away from the keyboard.
 - **Optional focus mode**: a full-screen break that blocks the page until the timer ends. Off by default.
+- **See your screen time**: the wisdom bubble, and the gentle nudge shown if you skip a break, tell you how long you have been active on the computer today. It resets at midnight in the time zone you choose (Europe/Zurich by default, or your browser's).
 - Around 60 editable quotes, from Buddha and Rumi to Marcus Aurelius and Steve Jobs. Bring your own koala images too.
 - **Interface in French, German, and English**, following your browser's language.
 - It hops, rolls, or floats off. A new exit every time. Everything stays on your computer, no account, no tracking.
@@ -33,7 +34,7 @@ The koala nudges you to move, then whispers a thought. Everything is tuned from 
 
 ## Installation
 
-Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder.
+Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder, and the Firefox one is **signed by Mozilla**, so it installs directly.
 
 ### Chrome, Edge, Brave (the simplest, about a minute)
 The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays installed across restarts, just leave developer mode on.
@@ -45,22 +46,24 @@ The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays
 The koala icon appears in your toolbar. Click it to open the settings.
 
 ### Firefox
-Regular Firefox only keeps extensions **signed by Mozilla**, and that is free. Firefox's official repository is **Firefox Add-ons** (addons.mozilla.org, often called AMO).
+The Firefox package in [`download/`](download) is **signed by Mozilla**, so it installs permanently in regular Firefox with no account and no command line.
 
-**Try it right now (temporary)**
-For a quick test, with nothing to sign. The extension disappears when you close Firefox.
+**Install it (recommended)**
+1. Download [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
+2. Open `about:addons`, click the gear icon, then **Install Add-on From File**, and pick the `.xpi` (you can also drag the file onto the Firefox window).
+3. Confirm. Because the file is signed, it stays installed across restarts.
+
+**Try it without installing (temporary)**
+The extension disappears when you close Firefox.
 1. Type `about:debugging#/runtime/this-firefox` in the address bar.
-2. Click **Load Temporary Add-on**.
-3. Pick the file [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
+2. Click **Load Temporary Add-on** and pick the `.xpi`.
 
-**Install it for good, by signing it for yourself via Mozilla (recommended, free)**
-This is the simplest way to get a permanent install. It all happens in the browser, no command line. You submit the extension to AMO as a **private distribution**: Mozilla signs it for your own use, with no public page, and validation usually takes a few minutes.
+**If you modified the code, sign your own build (free)**
+A build you changed is no longer covered by the provided signature, so you sign it for yourself. It all happens in the browser, no command line. You submit it to AMO as a **private distribution**: Mozilla signs it for your own use, with no public page.
 1. Create a free Firefox account at https://accounts.firefox.com, then open the developer dashboard: https://addons.mozilla.org/en-US/developers/
-2. **Set your own add-on ID.** Open `manifest.json`, find the line `"id": "koala-zen@public.extension"` and replace it with an ID of your own, for example `"id": "koala-zen@your-name"`. The original ID is reserved for the future public page. Then select **all the files inside the folder** (not the folder itself) and compress them into a `.zip` file.
-3. Click **Submit a New Add-on**.
-4. When asked about distribution, choose **On your own** (private, unlisted distribution).
-5. Upload your `.zip` file. Mozilla checks it and offers a **signed** `.xpi` to download.
-6. Install that signed `.xpi`: open `about:addons`, click the gear icon, then **Install Add-on From File**, and pick it. It stays installed across restarts.
+2. **Set your own add-on ID.** Open `manifest.json`, find `"id": "koala-zen@public.extension"` and replace it with an ID of your own, for example `"id": "koala-zen@your-name"`. The original ID is reserved for the public page. Then select **all the files inside the folder** (not the folder itself) and compress them into a `.zip`.
+3. Click **Submit a New Add-on**, choose **On your own** (private, unlisted), upload your `.zip`, and Mozilla offers a **signed** `.xpi` to download.
+4. Install that signed `.xpi` the same way as above.
 
 Not comfortable with these steps? An AI like **Euria by Infomaniak** can walk you through them. Paste it the instructions above and describe where you're stuck.
 
@@ -110,6 +113,7 @@ Need help with a step? Here too, an AI like **Euria by Infomaniak** can get you 
 - **Reminders**: turn the koala's automatic appearances on or off. Choose your **rhythm** among **Pomodoro**, **Deep work**, **Ultradian**, or **Custom** to set the interval yourself (1 to 240 minutes).
 - **Do not disturb**: **pause during video calls** (the koala never appears on the listed sites, by default `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, one domain per line, subdomains covered, so `zoom.us` also covers `us02web.zoom.us`) and **pause when you step away** from the keyboard.
 - **Focus mode** (off by default): a full-screen break that blocks the page until the timer ends, and you choose the duration.
+- **Screen time**: choose the time zone that defines your day for the screen-time counter shown in the bubbles. Pick **Automatic (browser)** to follow your browser, or select a zone from the list. Europe/Zurich by default. The counter resets at midnight in that zone. It only counts while the browser is running and you are active on the computer, and everything stays on your device.
 - **Koala images**: add your own PNG or animated GIF files (a transparent background works best). They replace the three bundled koalas, unless you tick **Keep the 3 original koalas too**. Click × to remove one. Animated GIFs keep their animation, static images are resized to save space.
 - **Quotes**: one per line, in the form "Text | Author" (the author is optional). Leave empty to keep the built-in ones. **Load the built-in quotes** copies them in so you can edit them.
 - **Movement goals**: the short "get moving" lines, one per line. Leave empty to keep the built-in ones.
@@ -144,7 +148,7 @@ Reload the extension after editing any file.
 ## Project structure
 ```
 manifest.json     extension manifest (Manifest V3, Chrome + Firefox)
-background.js     service worker: schedules reminders, applies the video-call pause
+background.js     service worker: schedules reminders, applies the video-call pause, tracks daily active screen time
 content.js        draws the koala, the bubble and the animations
 quotes.js         the default quotes and movement prompts
 popup.html/js     the settings panel
@@ -156,7 +160,7 @@ store-assets/     listing text and screenshots for the add-on stores
 ```
 
 ## Privacy
-Nothing leaves your browser. Your settings (frequency, on/off state, video-call list, and any images, quotes or prompts you add) are stored locally with the browser's storage API. No servers, no analytics, no tracking.
+Nothing leaves your browser. Your settings (frequency, on/off state, video-call list, chosen time zone, your daily screen-time counter, and any images, quotes or prompts you add) are stored locally with the browser's storage API. No servers, no analytics, no tracking.
 
 ## License
 MIT. See [LICENSE](LICENSE).
