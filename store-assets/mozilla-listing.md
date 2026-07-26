@@ -10,10 +10,10 @@ Bilingual: AMO lets you add localized listings (English + Français).
 **Name:** Koala Zen
 
 **Summary, English** (max 250 characters):
-> Every 30 minutes an adorable koala pops up to nudge you to move, then shares a short piece of wisdom before leaving in a playful way. Fully customizable, pauses during video calls, and keeps everything on your device.
+> Every 30 minutes an adorable koala pops up to nudge you to do the habit you want to build, then shares a short piece of wisdom before leaving in a playful way. Fully customizable, pauses during video calls, and keeps everything on your device.
 
 **Résumé, Français** (max 250 caractères) :
-> Toutes les 30 minutes, un koala adorable apparaît pour t'inviter à bouger, puis te souffle une courte pensée avant de repartir avec fantaisie. Entièrement personnalisable, se met en pause en visioconférence, et tout reste sur ton appareil.
+> Toutes les 30 minutes, un koala adorable apparaît pour t'aider à instaurer l'habitude de ton choix, puis te souffle une courte pensée avant de repartir avec fantaisie. Entièrement personnalisable, se met en pause en visioconférence, et tout reste sur ton appareil.
 
 ---
 
@@ -22,12 +22,12 @@ Bilingual: AMO lets you add localized listings (English + Français).
 ### English
 Koala Zen is a gentle, playful break reminder for your browser.
 
-Every 30 minutes, at an interval you choose, an adorable koala appears at the edge of the page. First it invites you to move a little. Then it comes back to whisper a short piece of wisdom, and leaves in a different, playful way each time: hopping off, rolling away, or floating up on a balloon.
+Every 30 minutes, at an interval you choose, an adorable koala appears at the edge of the page. First it invites you to do the habit you want to build, moving by default. Then it comes back to whisper a short piece of wisdom, and leaves in a different, playful way each time: hopping off, rolling away, or floating up on a balloon.
 
 Make it yours:
-- Set your own movement goals, like "Do 3 push-ups". The koala shows one at a time.
-- Confirm each break as done or not, and follow your progress in a stats view: today, yesterday, this week, this month, or since you started.
-- Note how you feel on a simple 1 to 10 energy scale, shown right next to your exercises.
+- Set your own habit goals, like "Do 3 push-ups" or "Drink a glass of water". The koala shows one at a time.
+- Confirm each break as done or not, and follow your progress in a two-zone stats view. Over the period you pick, your habits done, habits postponed, energy and screen time with per-day charts. An all-time overview shows your streak as a progress bar toward your record and whether keeping up your habit goes with more energy. Stats are kept for life on your device, with a button to erase everything.
+- Note how you feel on a simple 1 to 10 energy scale, on both done and postponed breaks, so every day counts.
 - Pick a rhythm that fits: Pomodoro, Deep work, Ultradian, or your own interval (1 to 240 minutes).
 - Snooze or pause when needed: later, one hour, or the rest of the day. Fell behind? Catch up your missed breaks.
 - Pause automatically during video calls (Infomaniak kMeet, Microsoft Teams, Zoom, Google Meet) and when you step away from the keyboard.
@@ -44,12 +44,12 @@ Open source (MIT license): https://github.com/tnalias/koala-zen
 ### Français
 Koala Zen est un rappel de pause, doux et espiègle, pour ton navigateur.
 
-Toutes les 30 minutes, à l'intervalle de ton choix, un koala adorable apparaît sur le bord de la page. Il t'invite d'abord à bouger un peu. Puis il repasse te souffler une courte pensée, avant de repartir d'une façon différente à chaque fois : en sautant, en roulant, ou en s'envolant avec un ballon.
+Toutes les 30 minutes, à l'intervalle de ton choix, un koala adorable apparaît sur le bord de la page. Il t'invite d'abord à faire l'habitude que tu veux instaurer, bouger par défaut. Puis il repasse te souffler une courte pensée, avant de repartir d'une façon différente à chaque fois : en sautant, en roulant, ou en s'envolant avec un ballon.
 
 Personnalise-le :
-- Définis tes propres objectifs de mouvement, comme « Fais 3 pompes ». Le koala en propose un à la fois.
-- Indique si chaque pause est faite ou non, et suis ta progression : aujourd'hui, hier, cette semaine, ce mois, ou depuis le début.
-- Note ton ressenti sur une échelle d'énergie de 1 à 10, affichée juste à côté de tes exercices.
+- Définis tes propres objectifs d'habitude, comme « Fais 3 pompes » ou « Bois un verre d'eau ». Le koala en propose un à la fois.
+- Indique si chaque pause est faite ou non, et suis ta progression dans une vue en deux zones. Sur la période choisie, tes habitudes faites, habitudes reportées, énergie et temps d'écran avec des graphes par jour. Une vue d'ensemble sur tout l'historique montre ta série en barre de progression vers ton record et si tenir ton habitude va de pair avec plus d'énergie. Les statistiques sont gardées à vie sur ton appareil, avec un bouton pour tout effacer.
+- Note ton ressenti sur une échelle d'énergie de 1 à 10, sur les pauses faites comme reportées, pour que chaque jour compte.
 - Choisis un rythme adapté : Pomodoro, Deep work, Ultradien, ou ton propre intervalle (1 à 240 minutes).
 - Reporte ou mets en pause selon le besoin : plus tard, une heure, ou le reste de la journée. Du retard ? Rattrape tes pauses manquées.
 - Pause automatique en visioconférence (Infomaniak kMeet, Microsoft Teams, Zoom, Google Meet) et quand tu quittes le clavier.
@@ -79,12 +79,13 @@ Pick ONE primary category from the AMO dropdown.
 
 ## 4. Screenshots
 
-Four screenshots are provided in this folder (1280 × 800 PNG). Suggested captions:
+Five screenshots are provided in this folder (1280 × 800 PNG), each with a benefit headline and feature highlights:
 
-1. `screenshot-1-move.png`: "A gentle nudge to move, right on the page" / « Un rappel doux pour bouger, directement sur la page »
-2. `screenshot-2-wisdom.png`: "A little wisdom as a reward, every time" / « Une pensée de sagesse en récompense, à chaque fois » (the bubble now also shows today's screen time, refresh the shot)
-3. `screenshot-3-settings.png`: "Tune it to your rhythm: presets, do-not-disturb, focus mode, screen time" / « À chacun son rythme : préréglages, ne pas déranger, mode focus, temps d'écran » (settings now include the time-zone card, refresh the shot)
-4. `screenshot-4-stats.png`: "Track your exercises and energy over time" / « Suivi des exercices et de l'énergie dans le temps »
+1. `screenshot-1-move.png`: "Gently nudged to move" / « Un rappel doux pour ton habitude »
+2. `screenshot-2-settings.png`: "Set your own rhythm" / « Choisis ton rythme »
+3. `screenshot-3-customize.png`: "Make it truly yours" / « Personnalise tout à ta main »
+4. `screenshot-4-stats.png`: "Watch your progress grow" / « Suis ta progression »
+5. `screenshot-5-wisdom.png`: "A little wisdom, every time" / « Une pensée de sagesse à chaque fois »
 
 ---
 

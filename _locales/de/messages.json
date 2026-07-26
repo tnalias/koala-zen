@@ -1,9 +1,9 @@
 {
   "extDesc": {
-    "message": "Alle 30 Minuten taucht ein Koala auf, der dich zu etwas Bewegung anregt und dir dann einen kurzen weisen Gedanken mitgibt, bevor er verschwindet."
+    "message": "Ein Koala erscheint regelmässig, um dich an die Gewohnheit zu erinnern, die du aufbauen willst, und gibt dir dann einen kurzen weisen Gedanken mit, bevor er verschwindet."
   },
   "tagline": {
-    "message": "Eine Pause mit Bewegung, dann ein Gedanke."
+    "message": "Deine kleine Gewohnheit, dann ein Gedanke."
   },
   "tabSettings": {
     "message": "Einstellungen"
@@ -12,7 +12,7 @@
     "message": "Statistik"
   },
   "grpPause": {
-    "message": "Eine Pause machen"
+    "message": "Pausieren"
   },
   "grpCatchup": {
     "message": "Nachholen"
@@ -42,13 +42,7 @@
     "message": "Rückstand"
   },
   "catchupBtn": {
-    "message": "Eine Übung nachholen"
-  },
-  "enabledLabel": {
-    "message": "Erinnerungen ein"
-  },
-  "enabledHint": {
-    "message": "Der Koala erscheint von selbst."
+    "message": "Eine Gewohnheit nachholen"
   },
   "rhythmLabel": {
     "message": "Rhythmus"
@@ -108,10 +102,10 @@
     "message": "Sperrdauer (Sekunden)"
   },
   "koalasLabel": {
-    "message": "Koala-Bilder"
+    "message": "Figuren"
   },
   "koalasHint": {
-    "message": "Füge eigene PNG- oder animierte GIF-Bilder hinzu (ein transparenter Hintergrund wirkt am besten). Ohne Ergänzungen werden die mitgelieferten Koalas verwendet."
+    "message": "Die Figuren, die dir deine Gewohnheit ankündigen. Füge eigene PNG- oder GIF-Bilder hinzu (transparenter Hintergrund empfohlen), oder behalte die mitgelieferten Koalas."
   },
   "addImages": {
     "message": "Bilder hinzufügen (PNG, GIF)…"
@@ -138,10 +132,10 @@
     "message": "Zu den mitgelieferten Zitaten hinzufügen (statt ersetzen)"
   },
   "sportLabel": {
-    "message": "Bewegungsziele"
+    "message": "Gewohnheitsziele"
   },
   "sportHint": {
-    "message": "Ein Ziel pro Zeile, zum Beispiel \"Mach 3 Liegestütze\". Was du hinzufügst, ersetzt die Standardanregung."
+    "message": "Ein Ziel pro Zeile, zum Beispiel \"Mach 3 Liegestütze\" oder \"Trink ein Glas Wasser\". Was du hinzufügst, ersetzt die Standardziele."
   },
   "sportPlaceholder": {
     "message": "Mach 3 Liegestütze"
@@ -180,34 +174,22 @@
     "message": "Gesamt"
   },
   "statsDoneLabel": {
-    "message": "Übungen erledigt"
+    "message": "Gewohnheiten erledigt"
   },
   "statsOfWord": {
     "message": "von"
   },
-  "statsProposedWord": {
-    "message": "vorgeschlagen"
-  },
   "statsEnergyLabel": {
-    "message": "Ø Energie /10"
+    "message": "Energie /10"
   },
   "statsMeasuresWord": {
     "message": "Einträge"
   },
-  "statsStreakLabel": {
-    "message": "Aktuelle Serie"
-  },
   "statsDaysWord": {
     "message": "T"
   },
-  "statsExercisesYear": {
-    "message": "Übungen dieses Jahr"
-  },
-  "statsEnergyYear": {
-    "message": "Energie dieses Jahr (Ø /10)"
-  },
   "bubbleSport": {
-    "message": "🐨 Bewegen wir uns ein wenig!"
+    "message": "🐨 Es ist Zeit!"
   },
   "bubbleWisdom": {
     "message": "🐨 Ein Hauch von Weisheit…"
@@ -247,5 +229,131 @@
   },
   "screenTodayLabel": {
     "message": "Bildschirmzeit heute"
+  },
+  "statsZonePeriod": {
+    "message": "📅 Im Zeitraum"
+  },
+  "statsReportsLabel": {
+    "message": "Gewohnheiten verschoben"
+  },
+  "statsDoneWord": {
+    "message": "erledigt"
+  },
+  "statsReportsWord": {
+    "message": "verschoben"
+  },
+  "statsSingleDayNote": {
+    "message": "Wähle eine Woche oder einen Monat, um den Verlauf zu sehen."
+  },
+  "statsZoneOverview": {
+    "message": "🌱 Gesamtüberblick"
+  },
+  "statsZoneOverviewSub": {
+    "message": "dein ganzer Verlauf, seit Beginn"
+  },
+  "statsCorrNote": {
+    "message": "Bewerte deine Energie ein paar Tage, damit der Zusammenhang sichtbar wird."
+  },
+  "energyHeadLater": {
+    "message": "🐨 Und deine Energie gerade?"
+  },
+  "statsScreenLabel": {
+    "message": "Bildschirmzeit"
+  },
+  "statsHabitsPerDay": {
+    "message": "Gewohnheiten pro Tag"
+  },
+  "statsScreenPerDay": {
+    "message": "Bildschirmzeit pro Tag"
+  },
+  "statsStreakDays": {
+    "message": "Tage in Folge"
+  },
+  "statsRecordWord": {
+    "message": "Rekord"
+  },
+  "statsBenefitUp": {
+    "message": "Deine Gewohnheit gibt dir Energie"
+  },
+  "statsBenefitHint": {
+    "message": "deine durchschnittliche Energie nach Tagen"
+  },
+  "grpAnimations": {
+    "message": "Animationen"
+  },
+  "animationsHint": {
+    "message": "Die kleinen Animationen im Statistik-Tab."
+  },
+  "animAuto": {
+    "message": "Automatisch (folgt deinem System)"
+  },
+  "animAlways": {
+    "message": "Immer"
+  },
+  "animNever": {
+    "message": "Nie"
+  },
+  "grpData": {
+    "message": "Daten"
+  },
+  "dataHint": {
+    "message": "Deine Statistiken bleiben lebenslang auf deinem Gerät."
+  },
+  "resetData": {
+    "message": "Alle Daten löschen"
+  },
+  "resetDataConfirm": {
+    "message": "Bestätigen, das ist endgültig"
+  },
+  "dataCleared": {
+    "message": "Daten gelöscht ✓"
+  },
+  "statsCadence": {
+    "message": "1 Gewohnheit alle {d} Bildschirmzeit"
+  },
+  "statsStreakFirst": {
+    "message": "Mach eine Gewohnheit, um deine Serie zu starten."
+  },
+  "statsStreakResume": {
+    "message": "Nimm deine Serie heute wieder auf."
+  },
+  "statsStreakAtRecord": {
+    "message": "Du bist auf deinem Rekord, weiter so!"
+  },
+  "statsStreakGoal": {
+    "message": "Noch {n} Tage, um deinen Rekord zu schlagen 🎉"
+  },
+  "statsBenefitNeutral": {
+    "message": "Auswirkung auf deine Energie"
+  },
+  "statsBenefitFlat": {
+    "message": "Bewerte weiter, damit der Zusammenhang sichtbar wird."
+  },
+  "statsBenefitUpText": {
+    "message": "An Tagen, an denen du am meisten dranbleibst: +{n} Energie"
+  },
+  "statsBenefitDownText": {
+    "message": "An Tagen, an denen du am meisten dranbleibst, ist deine Energie tiefer ({n})."
+  },
+  "statsBenefitNone": {
+    "message": "Kein klarer Zusammenhang zwischen deiner Gewohnheit und deiner Energie."
+  },
+  "statsBenefitB1": {
+    "message": "selten"
+  },
+  "statsBenefitB2": {
+    "message": "manchmal"
+  },
+  "statsBenefitB3": {
+    "message": "oft"
+  },
+  "unitHour": {
+    "message": "h"
+  },
+  "unitMin": {
+    "message": "Min"
+  },
+  "tabPerso": {
+    "message": "Anpassen"
   }
 }

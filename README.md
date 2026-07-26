@@ -6,10 +6,10 @@
 
 > **English** · [Français](README.fr.md)
 
-A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adorable koala pops up on the page. First it nudges you to move a little. Then it comes back to whisper a short piece of wisdom, and leaves in a different, playful way each time. The koala changes on every visit: three photos, or your own.
+A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adorable koala pops up on the page. First it nudges you to do the habit you want to build, moving by default, but you choose. Then it comes back to whisper a short piece of wisdom, and leaves in a different, playful way each time. The koala changes on every visit: three photos, or your own.
 
-- **Set your movement goals** ("Do 3 push-ups"), confirm each as done, and rate your energy from 1 to 10.
-- **Follow your progress**: today, yesterday, the week, the month, or since you started, with a chart across the year.
+- **Set your habit goals** ("Do 3 push-ups", "Drink a glass of water"), confirm each as done, and rate your energy from 1 to 10.
+- **Follow your progress**: over the period you pick, your habits done, habits postponed, average energy and screen time, with a per-day chart for habits and one for screen time. A separate overview shows your streak as a progress bar toward your record, and whether keeping up your habit goes with more energy. Stats are kept for life on your device, with a button to erase everything.
 - **Choose your rhythm**: Pomodoro, Deep work, Ultradian, or your own interval (1 to 240 minutes).
 - **Snooze or pause** (later, 1 hour, the whole day) and catch up the breaks you missed.
 - **Automatic pause** during video calls (kMeet, Teams, Zoom, Meet) and when you step away from the keyboard.
@@ -23,18 +23,29 @@ A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adora
 
 ## Overview
 
-The koala nudges you to move, then whispers a thought. Everything is tuned from one panel, and you follow your progress.
+The koala nudges you to do your habit, then whispers a thought. Everything is tuned from one panel, and you follow your progress.
 
-![The koala nudges you to move](store-assets/screenshot-1-move.png)
-![A thought to sit with](store-assets/screenshot-2-wisdom.png)
-![The plugin settings](store-assets/screenshot-3-settings.png)
-![Your stats](store-assets/screenshot-4-stats.png)
+<p align="center">
+  <img src="store-assets/screenshot-1-move.png" alt="Gently nudged to do your habit" width="720"><br>
+  <sub><b>Gently nudged to do your habit</b></sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="store-assets/screenshot-2-settings.png" alt="Set your own rhythm" width="390"><br><sub><b>Set your own rhythm</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-3-customize.png" alt="Make it truly yours" width="390"><br><sub><b>Make it truly yours</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="store-assets/screenshot-4-stats.png" alt="Watch your progress grow" width="390"><br><sub><b>Watch your progress grow</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-5-wisdom.png" alt="A little wisdom, every time" width="390"><br><sub><b>A little wisdom, every time</b></sub></td>
+  </tr>
+</table>
 
 ---
 
 ## Installation
 
-Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder, and the Firefox one is **signed by Mozilla**, so it installs directly.
+Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder. A Mozilla-signed Firefox build installs directly in regular Firefox (see the Firefox section for how to get one signed).
 
 ### Chrome, Edge, Brave (the simplest, about a minute)
 The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays installed across restarts, just leave developer mode on.
@@ -46,7 +57,7 @@ The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays
 The koala icon appears in your toolbar. Click it to open the settings.
 
 ### Firefox
-The Firefox package in [`download/`](download) is **signed by Mozilla**, so it installs permanently in regular Firefox with no account and no command line.
+Regular Firefox only installs extensions **signed by Mozilla**, which is free. Once a build is signed it installs permanently with no account and no command line. The [`download/`](download) folder holds the current build to sign or install.
 
 **Install it (recommended)**
 1. Download [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
@@ -106,21 +117,27 @@ Need help with a step? Here too, an AI like **Euria by Infomaniak** can get you 
 ---
 
 ## Plugin settings
-**Everything in Koala Zen is customizable, from one place.** Click the koala icon in the toolbar to open the plugin panel. It has two tabs, **Settings** and **Stats**. Nothing is fixed: you tune the rhythm, the images, the text and the pauses however you like.
+**Everything in Koala Zen is customizable.** Click the koala icon in the toolbar to open the plugin panel. It has three tabs: **Settings** (how and when the koala shows up), **Customize** (what it shows) and **Stats** (your progress).
 
-**Settings** tab:
-- **Take a break**: postpone the next appearance (**Later**), pause for **1 h**, or stop for **the day**. A **Resume** button cancels the pause at any time.
-- **Reminders**: turn the koala's automatic appearances on or off. Choose your **rhythm** among **Pomodoro**, **Deep work**, **Ultradian**, or **Custom** to set the interval yourself (1 to 240 minutes).
+**Settings** tab, in order:
+- **Pause**: postpone the next appearance (**Later**), pause for **1 h**, or stop for **the day**. A **Resume** button cancels the pause at any time.
+- **Catch up**: if you postpone or miss breaks, this shows how far behind you are and lets you make one up to bring the count down. It only appears when you are behind.
+- **Reminders**: choose your **rhythm** among **Pomodoro**, **Deep work**, **Ultradian**, or **Custom** to set the interval yourself (1 to 240 minutes). To stop the koala for a while, use **Pause**.
 - **Do not disturb**: **pause during video calls** (the koala never appears on the listed sites, by default `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, one domain per line, subdomains covered, so `zoom.us` also covers `us02web.zoom.us`) and **pause when you step away** from the keyboard.
 - **Focus mode** (off by default): a full-screen break that blocks the page until the timer ends, and you choose the duration.
 - **Screen time**: choose the time zone that defines your day for the screen-time counter shown in the bubbles. Pick **Automatic (browser)** to follow your browser, or select a zone from the list. Europe/Zurich by default. The counter resets at midnight in that zone. It only counts while the browser is running and you are active on the computer, and everything stays on your device.
-- **Koala images**: add your own PNG or animated GIF files (a transparent background works best). They replace the three bundled koalas, unless you tick **Keep the 3 original koalas too**. Click × to remove one. Animated GIFs keep their animation, static images are resized to save space.
+
+At the bottom of the Settings tab, under **Save**, the current version and last-update date are shown discreetly. The **Bring the koala now** button triggers an immediate appearance, handy for testing, and it ignores the video-call pause.
+
+**Customize** tab, in order:
+- **Habit goals**: the short prompt lines, one per line, for example "Do 3 push-ups". Leave empty to keep the built-in ones.
 - **Quotes**: one per line, in the form "Text | Author" (the author is optional). Leave empty to keep the built-in ones. **Load the built-in quotes** copies them in so you can edit them.
-- **Movement goals**: the short "get moving" lines, one per line. Leave empty to keep the built-in ones.
+- **Characters**: the characters that come to announce your habit. Add your own PNG or animated GIF files (a transparent background works best), or keep the koalas provided. They replace the bundled koalas unless you tick **Keep the 3 original koalas too**. Click × to remove one, and static images are resized to save space.
+- **Animations**: choose whether the little Stats animations play. **Automatic** follows your system's reduced-motion setting, or force them **Always** or **Never**.
 
-The **Bring the koala now** button triggers an immediate appearance, handy for testing your settings, and it ignores the video-call pause. Click **Save** after any change, except for images, whose add or remove applies immediately.
+Click **Save** on either the Settings or Customize tab after a change (images apply immediately on add or remove).
 
-**Stats** tab: follow your exercises done and your average energy over the period you pick (today, yesterday, the week, the month, or since you started), with your run of consecutive days and two charts across the year.
+**Stats** tab, split in two zones. **Over the period** you pick (today, yesterday, the week, the month, or since you started): habits done, habits postponed, average energy and total screen time, a cadence line tying your breaks to your screen time, plus a per-day chart for habits (done and postponed stacked) and a per-day chart for screen time. **Overview**, always over your whole history: your current streak shown as a progress bar toward your record with a motivating countdown, and how your average energy compares on days you do it a little versus a lot. The benefit title adapts to your own data, so it never claims a link that is not there. Energy is asked on **Fait** and on **Plus tard**. Data is kept for life and can be erased from the Data section at the bottom of the Stats tab. Animations follow your system by default and can be forced on or off.
 
 The koala appears on the active web page, not on the browser's internal pages (`chrome://`, `about:`…), which don't allow extensions.
 
@@ -139,7 +156,7 @@ The committed `manifest.json` targets both engines. For Firefox the script drops
 ---
 
 ## Customisation in the code
-- **Default quotes and prompts** live in `quotes.js` (`KZ_QUOTES` = `{ t, a }`, `KZ_SPORT` = the movement messages). Most people can just use the settings above.
+- **Default quotes and prompts** live in `quotes.js` (`KZ_QUOTES` = `{ t, a }`, `KZ_SPORT` = the default habit prompts). Most people can just use the settings above.
 - **Default images**: replace the files in `images/` (`koala-1.png` … `koala-3.png`) and update `DEFAULT_KOALAS` at the top of `content.js`.
 - **Default video-call sites**: `DEFAULTS.mutedPatterns` in `background.js` and `popup.js`.
 
@@ -150,7 +167,7 @@ Reload the extension after editing any file.
 manifest.json     extension manifest (Manifest V3, Chrome + Firefox)
 background.js     service worker: schedules reminders, applies the video-call pause, tracks daily active screen time
 content.js        draws the koala, the bubble and the animations
-quotes.js         the default quotes and movement prompts
+quotes.js         the default quotes and habit prompts
 popup.html/js     the settings panel
 build.sh          builds the Chrome (.zip) and Firefox (.xpi) packages
 download/         ready-to-install packages (Chrome .zip, Firefox .xpi)

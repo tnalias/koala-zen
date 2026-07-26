@@ -4,7 +4,6 @@ const DEFAULT_MUTED = ["kmeet.infomaniak.com", "teams.microsoft.com", "teams.liv
 const DEFAULTS = {
   intervalMinutes: 30,
   preset: "custom",
-  enabled: true,
   muteInCalls: true,
   mutedPatterns: DEFAULT_MUTED,
   pauseWhenIdle: true,
@@ -18,17 +17,30 @@ const DEFAULTS = {
   pausedUntil: 0,
   pending: 0,
   statsDaily: {},
-  screenTimezone: "Europe/Zurich"
+  screenDaily: {},
+  screenTimezone: "Europe/Zurich",
+  animMode: "auto"
 };
 
 const MAX_KOALAS = 12;
 const MAX_DIM = 300;
-const REDUCE_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+// Date de la derniere mise a jour, a actualiser a chaque release en meme temps que la version.
+const KZ_BUILD_DATE = "2026-07-26";
+let REDUCE_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+function systemReducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+function applyAnimMode(mode) {
+  const animate = (mode === "always") ? true : (mode === "never") ? false : !systemReducedMotion();
+  REDUCE_MOTION = !animate;
+  document.documentElement.classList.toggle("anim-on", animate);
+  document.documentElement.classList.toggle("anim-off", !animate);
+}
 
 const $ = (id) => document.getElementById(id);
 const $tabSettingsBtn = $("tabSettingsBtn");
+const $tabPersoBtn = $("tabPersoBtn");
 const $tabStatsBtn = $("tabStatsBtn");
 const $panelSettings = $("panelSettings");
+const $panelPerso = $("panelPerso");
 const $panelStats = $("panelStats");
 const $quickActions = $("quickActions");
 const $snoozeLater = $("snoozeLater");
@@ -43,7 +55,6 @@ const $catchupBtn = $("catchupBtn");
 const $catchupBox = $("catchupBox");
 const $catchupPrompt = $("catchupPrompt");
 const $catchupDone = $("catchupDone");
-const $enabled = $("enabled");
 const $rhythmHint = $("rhythmHint");
 const $customWrap = $("customWrap");
 const $interval = $("interval");
@@ -65,17 +76,40 @@ const $resetSport = $("resetSport");
 const $now = $("now");
 const $save = $("save");
 const $saved = $("saved");
+const $savePerso = $("savePerso");
+const $savedPerso = $("savedPerso");
 const $statPeriod = $("statPeriod");
 const $statDone = $("statDone");
 const $statOf = $("statOf");
+const $statRep = $("statRep");
+const $statRepOf = $("statRepOf");
 const $statEnergy = $("statEnergy");
 const $statEnergyN = $("statEnergyN");
 const $statStreak = $("statStreak");
-const $yearChart = $("yearChart");
-const $energyChart = $("energyChart");
+const $statRecord = $("statRecord");
+const $statScreen = $("statScreen");
+const $statScreenSub = $("statScreenSub");
+const $cadenceLine = $("cadenceLine");
+const $cadenceText = $("cadenceText");
+const $trendWrap = $("trendWrap");
+const $trendChart = $("trendChart");
+const $screenChart = $("screenChart");
+const $trendNote = $("trendNote");
+const $streakFill = $("streakFill");
+const $streakGoal = $("streakGoal");
+const $benefitTitle = $("benefitTitle");
+const $corrWrap = $("corrWrap");
+const $corrChart = $("corrChart");
+const $corrVerdict = $("corrVerdict");
+const $corrNote = $("corrNote");
+const $animMode = $("animMode");
+const $resetData = $("resetData");
+const $dataCleared = $("dataCleared");
+const $versionLine = $("versionLine");
 
 let customKoalas = [];
 let STATS = {};
+let SCREEN = {};
 let PENDING = 0;
 
 /* ---------- i18n ---------- */
@@ -92,6 +126,22 @@ function applyI18n() {
   document.querySelectorAll("[data-i18n-ph]").forEach((el) => { const t = msg(el.getAttribute("data-i18n-ph"), ""); if (t) el.setAttribute("placeholder", t); });
   document.querySelectorAll("[data-i18n-aria]").forEach((el) => { const t = msg(el.getAttribute("data-i18n-aria"), ""); if (t) el.setAttribute("aria-label", t); });
   try { const l = uiLang(); if (l) document.documentElement.lang = l; } catch (e) { /* noop */ }
+}
+
+function manifestVersion() {
+  try { return (api.runtime && api.runtime.getManifest && api.runtime.getManifest().version) || ""; }
+  catch (e) { return ""; }
+}
+function fmtBuildDate(iso) {
+  try {
+    const p = String(iso).split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(uiLang(), { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch (e) { return String(iso); }
+}
+function setVersionLine() {
+  if (!$versionLine) return;
+  const v = manifestVersion();
+  $versionLine.textContent = (v ? "v" + v : "") + (v && KZ_BUILD_DATE ? " · " : "") + (KZ_BUILD_DATE ? fmtBuildDate(KZ_BUILD_DATE) : "");
 }
 
 /* ---------- storage / messaging ---------- */
@@ -133,17 +183,22 @@ function builtinSport() { return (typeof KZ_SPORT !== "undefined" && Array.isArr
 
 /* ---------- tabs ---------- */
 function showTab(which) {
-  const settings = which === "settings";
-  $tabSettingsBtn.classList.toggle("tab--on", settings);
-  $tabStatsBtn.classList.toggle("tab--on", !settings);
-  $panelSettings.hidden = !settings;
-  $panelStats.hidden = settings;
-  if (!settings) {
+  const isSettings = which === "settings";
+  const isPerso = which === "perso";
+  const isStats = which === "stats";
+  $tabSettingsBtn.classList.toggle("tab--on", isSettings);
+  $tabPersoBtn.classList.toggle("tab--on", isPerso);
+  $tabStatsBtn.classList.toggle("tab--on", isStats);
+  $panelSettings.hidden = !isSettings;
+  $panelPerso.hidden = !isPerso;
+  $panelStats.hidden = !isStats;
+  if (isStats) {
     if (!REDUCE_MOTION) { $panelStats.classList.remove("stats-anim"); void $panelStats.offsetWidth; $panelStats.classList.add("stats-anim"); }
     renderStats();
   }
 }
 $tabSettingsBtn.addEventListener("click", () => showTab("settings"));
+$tabPersoBtn.addEventListener("click", () => showTab("perso"));
 $tabStatsBtn.addEventListener("click", () => showTab("stats"));
 
 /* ---------- presets ---------- */
@@ -269,20 +324,16 @@ function keyOf(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" 
 function atMidnight(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 function monday(d) { const x = atMidnight(d); const wd = (x.getDay() + 6) % 7; return addDays(x, -wd); }
-function dayStat(k) { const v = STATS[k] || {}; return { due: v.due || 0, done: v.done || 0, eSum: v.eSum || 0, eCount: v.eCount || 0 }; }
-function emptyAgg() { return { due: 0, done: 0, eSum: 0, eCount: 0 }; }
-function addAgg(a, s) { a.due += s.due; a.done += s.done; a.eSum += s.eSum; a.eCount += s.eCount; return a; }
+function dayStat(k) { const v = STATS[k] || {}; return { due: v.due || 0, done: v.done || 0, rep: v.rep || 0, eSum: v.eSum || 0, eCount: v.eCount || 0 }; }
+function emptyAgg() { return { due: 0, done: 0, rep: 0, eSum: 0, eCount: 0 }; }
+function addAgg(a, s) { a.due += s.due; a.done += s.done; a.rep += s.rep; a.eSum += s.eSum; a.eCount += s.eCount; return a; }
 function sumRange(start, end) {
   const agg = emptyAgg();
   let d = atMidnight(start); const last = atMidnight(end); let guard = 0;
-  while (d.getTime() <= last.getTime() && guard < 800) { addAgg(agg, dayStat(keyOf(d))); d = addDays(d, 1); guard++; }
+  while (d.getTime() <= last.getTime() && guard < 4000) { addAgg(agg, dayStat(keyOf(d))); d = addDays(d, 1); guard++; }
   return agg;
 }
-function aggregateAll() {
-  const agg = emptyAgg();
-  Object.keys(STATS).forEach((k) => addAgg(agg, dayStat(k)));
-  return agg;
-}
+function parseKey(k) { const p = k.split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
 function periodRange(period) {
   const now = new Date();
   if (period === "yesterday") { const y = addDays(now, -1); return [y, y]; }
@@ -290,16 +341,60 @@ function periodRange(period) {
   if (period === "lastweek") { const m = addDays(monday(now), -7); return [m, addDays(m, 6)]; }
   if (period === "thismonth") { return [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 0)]; }
   if (period === "lastmonth") { return [new Date(now.getFullYear(), now.getMonth() - 1, 1), new Date(now.getFullYear(), now.getMonth(), 0)]; }
+  if (period === "all") { const keys = Object.keys(STATS).sort(); const start = keys.length ? parseKey(keys[0]) : now; return [start, now]; }
   return [now, now];
 }
 function currentStreak() {
   let d = atMidnight(new Date());
   if (dayStat(keyOf(d)).done === 0) d = addDays(d, -1);
   let n = 0, guard = 0;
-  while (dayStat(keyOf(d)).done > 0 && guard < 800) { n++; d = addDays(d, -1); guard++; }
+  while (dayStat(keyOf(d)).done > 0 && guard < 4000) { n++; d = addDays(d, -1); guard++; }
   return n;
 }
+function longestStreak() {
+  const keys = Object.keys(STATS).filter((k) => dayStat(k).done > 0).sort();
+  if (!keys.length) return 0;
+  let best = 1, cur = 1;
+  for (let i = 1; i < keys.length; i++) {
+    const diff = Math.round((atMidnight(parseKey(keys[i])).getTime() - atMidnight(parseKey(keys[i - 1])).getTime()) / 86400000);
+    cur = (diff === 1) ? cur + 1 : 1;
+    if (cur > best) best = cur;
+  }
+  return best;
+}
 function fmtEnergy(sum, count) { return count > 0 ? (Math.round((sum / count) * 10) / 10) : null; }
+function screenSecRange(start, end) {
+  let sec = 0, d = atMidnight(start); const last = atMidnight(end); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 4000) { sec += Math.max(0, Number(SCREEN[keyOf(d)]) || 0); d = addDays(d, 1); g++; }
+  return sec;
+}
+function fmtDurShort(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  if (h > 0) return h + msg("unitHour", "h") + pad2(m);
+  return m + " " + msg("unitMin", "min");
+}
+function fmtDurLong(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  if (h > 0 && m > 0) return h + " " + msg("unitHour", "h") + " " + pad2(m);
+  if (h > 0) return h + " " + msg("unitHour", "h");
+  return m + " " + msg("unitMin", "min");
+}
+function setScreenTile(el, sec) {
+  sec = Math.max(0, Math.round(sec));
+  el.textContent = "";
+  if (sec <= 0) { el.textContent = "—"; return; }
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  if (h > 0) {
+    el.appendChild(document.createTextNode(String(h)));
+    const u = document.createElement("span"); u.className = "u"; u.textContent = msg("unitHour", "h"); el.appendChild(u);
+    el.appendChild(document.createTextNode(pad2(m)));
+  } else {
+    el.appendChild(document.createTextNode(String(m)));
+    const u = document.createElement("span"); u.className = "u"; u.textContent = msg("unitMin", "min"); el.appendChild(u);
+  }
+}
 function countUp(el, to, decimals) {
   if (REDUCE_MOTION) { el.textContent = decimals ? to.toFixed(decimals) : String(to); return; }
   const dur = 460, start = performance.now();
@@ -313,50 +408,194 @@ function countUp(el, to, decimals) {
   }
   requestAnimationFrame(tick);
 }
-function renderStats() {
-  const period = $statPeriod.value || "today";
-  const agg = (period === "all") ? aggregateAll() : (function () { const r = periodRange(period); return sumRange(r[0], r[1]); })();
-  countUp($statDone, agg.done, 0);
-  $statOf.textContent = agg.due > 0 ? (msg("statsOfWord", "sur") + " " + agg.due + " " + msg("statsProposedWord", "proposés")) : "";
-  const e = fmtEnergy(agg.eSum, agg.eCount);
-  if (e == null) { $statEnergy.textContent = "—"; } else { countUp($statEnergy, e, 1); }
-  $statEnergyN.textContent = agg.eCount > 0 ? (agg.eCount + " " + msg("statsMeasuresWord", "mesures")) : "";
-  $statStreak.textContent = String(currentStreak());
-  renderYearCharts();
-}
 function monthLabel(year, m) {
   let ml; try { ml = new Date(year, m, 1).toLocaleDateString(uiLang(), { month: "short" }); } catch (e) { ml = String(m + 1); }
   return (ml || "").replace(".", "").slice(0, 3);
 }
-function renderBars(host, values, max, empties) {
-  host.innerHTML = "";
-  const year = new Date().getFullYear();
-  const targets = [];
-  for (let m = 0; m < 12; m++) {
-    const val = values[m], isEmpty = empties[m];
-    const wrap = document.createElement("div"); wrap.className = "bar-wrap";
-    const bar = document.createElement("div"); bar.className = "bar" + (isEmpty ? " bar--empty" : "");
-    const h = isEmpty ? 2 : Math.max(4, Math.round((val / max) * 84));
-    bar.title = isEmpty ? "" : String(val);
-    if (REDUCE_MOTION) { bar.style.height = h + "px"; }
-    else { bar.style.height = "0px"; bar.style.transitionDelay = (m * 22) + "ms"; targets.push([bar, h]); }
-    const lab = document.createElement("div"); lab.className = "bar-label"; lab.textContent = monthLabel(year, m);
-    wrap.appendChild(bar); wrap.appendChild(lab); host.appendChild(wrap);
+function weekdayLetter(d) { try { return d.toLocaleDateString(uiLang(), { weekday: "short" }).charAt(0).toUpperCase(); } catch (e) { return ""; } }
+
+function renderStats() {
+  const period = $statPeriod.value || "today";
+  const range = periodRange(period);
+  const agg = sumRange(range[0], range[1]);
+  countUp($statDone, agg.done, 0);
+  countUp($statRep, agg.rep, 0);
+  const ofTxt = agg.due > 0 ? (msg("statsOfWord", "sur") + " " + agg.due) : "";
+  $statOf.textContent = ofTxt;
+  $statRepOf.textContent = ofTxt;
+  const e = fmtEnergy(agg.eSum, agg.eCount);
+  if (e == null) { $statEnergy.textContent = "—"; } else { countUp($statEnergy, e, 1); }
+  $statEnergyN.textContent = agg.eCount > 0 ? (agg.eCount + " " + msg("statsMeasuresWord", "mesures")) : "";
+  const scr = screenSecRange(range[0], range[1]);
+  setScreenTile($statScreen, scr);
+  $statScreenSub.textContent = "";
+  // Cadence: une habitude faite pour tant de temps d'ecran
+  if (agg.done > 0 && scr >= 600) {
+    $cadenceText.textContent = msg("statsCadence", "1 habitude toutes les {d} d'écran").replace("{d}", fmtDurLong(scr / agg.done));
+    $cadenceLine.hidden = false;
+  } else {
+    $cadenceLine.hidden = true;
   }
-  if (!REDUCE_MOTION && targets.length) {
-    requestAnimationFrame(() => requestAnimationFrame(() => { targets.forEach((t) => { t[0].style.height = t[1] + "px"; }); }));
+  renderTrend(period, range);
+  renderOverview();
+}
+
+function rangeDays(range) { return Math.round((atMidnight(range[1]).getTime() - atMidnight(range[0]).getTime()) / 86400000) + 1; }
+function dayBuckets(range) {
+  const out = []; const days = rangeDays(range);
+  let d = atMidnight(range[0]); const last = atMidnight(range[1]); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 400) {
+    const s = dayStat(keyOf(d));
+    const dom = d.getDate();
+    const label = (days <= 7) ? weekdayLetter(d) : ((dom === 1 || dom % 5 === 1) ? String(dom) : "");
+    out.push({ done: s.done, rep: s.rep, scr: (Number(SCREEN[keyOf(d)]) || 0), label: label });
+    d = addDays(d, 1); g++;
+  }
+  return out;
+}
+function monthBuckets(range) {
+  const end = atMidnight(range[1]);
+  const total = (end.getFullYear() - range[0].getFullYear()) * 12 + (end.getMonth() - range[0].getMonth()) + 1;
+  const n = Math.min(12, Math.max(1, total));
+  let y = end.getFullYear(), m = end.getMonth() - (n - 1);
+  while (m < 0) { m += 12; y -= 1; }
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const agg = sumRange(new Date(y, m, 1), new Date(y, m + 1, 0));
+    const scr = screenSecRange(new Date(y, m, 1), new Date(y, m + 1, 0));
+    out.push({ done: agg.done, rep: agg.rep, scr: scr, label: monthLabel(y, m) });
+    m += 1; if (m > 11) { m = 0; y += 1; }
+  }
+  return out;
+}
+function renderTrend(period, range) {
+  const single = (period === "today" || period === "yesterday");
+  if (single) { $trendWrap.hidden = true; $trendNote.hidden = false; return; }
+  $trendWrap.hidden = false; $trendNote.hidden = true;
+  const days = rangeDays(range);
+  const buckets = (period === "all" || days > 45) ? monthBuckets(range) : dayBuckets(range);
+  const maxTotal = Math.max(1, Math.max.apply(null, buckets.map((b) => b.done + b.rep)));
+  renderStackBars($trendChart, buckets, maxTotal);
+  const maxScr = Math.max(1, Math.max.apply(null, buckets.map((b) => b.scr)));
+  renderScreenBars($screenChart, buckets, maxScr);
+}
+function animateIn(nodes) {
+  if (REDUCE_MOTION || !nodes.length) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => { nodes.forEach((n) => { n.style.transform = "scaleY(1)"; }); }));
+}
+function renderStackBars(host, buckets, maxTotal) {
+  host.innerHTML = "";
+  const targets = [];
+  buckets.forEach((b, i) => {
+    const wrap = document.createElement("div"); wrap.className = "bar-wrap";
+    const total = b.done + b.rep;
+    const col = document.createElement("div"); col.className = "stackcol" + (total === 0 ? " stackcol--empty" : "");
+    col.style.height = (total === 0 ? 3 : Math.max(4, Math.round((total / maxTotal) * 58))) + "px";
+    col.title = total === 0 ? "" : (b.done + " / " + b.rep);
+    if (total > 0) {
+      const rep = document.createElement("div"); rep.className = "seg seg--rep"; rep.style.height = Math.round((b.rep / total) * 100) + "%";
+      const done = document.createElement("div"); done.className = "seg seg--done"; done.style.height = Math.round((b.done / total) * 100) + "%";
+      col.appendChild(rep); col.appendChild(done);
+    }
+    if (!REDUCE_MOTION) { col.style.transform = "scaleY(0)"; col.style.transitionDelay = (i * 20) + "ms"; targets.push(col); }
+    const lab = document.createElement("div"); lab.className = "bar-label"; lab.textContent = b.label || "";
+    wrap.appendChild(col); wrap.appendChild(lab); host.appendChild(wrap);
+  });
+  animateIn(targets);
+}
+function renderScreenBars(host, buckets, maxScr) {
+  host.innerHTML = "";
+  const targets = [];
+  buckets.forEach((b, i) => {
+    const empty = b.scr <= 0;
+    const wrap = document.createElement("div"); wrap.className = "bar-wrap";
+    const bar = document.createElement("div"); bar.className = "bar" + (empty ? " bar--empty" : "");
+    bar.style.height = (empty ? 3 : Math.max(4, Math.round((b.scr / maxScr) * 44))) + "px";
+    bar.title = empty ? "" : fmtDurShort(b.scr);
+    if (!REDUCE_MOTION) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 18) + "ms"; targets.push(bar); }
+    const lab = document.createElement("div"); lab.className = "bar-label"; lab.textContent = b.label || "";
+    wrap.appendChild(bar); wrap.appendChild(lab); host.appendChild(wrap);
+  });
+  animateIn(targets);
+}
+
+var CORR_MIN = 7;
+function renderOverview() {
+  renderStreak();
+  renderBenefit();
+}
+function renderStreak() {
+  const cur = currentStreak();
+  const rec = longestStreak();
+  $statStreak.textContent = String(cur);
+  $statRecord.textContent = String(rec);
+  const pct = rec > 0 ? Math.min(1, cur / rec) : 0;
+  if (REDUCE_MOTION) { $streakFill.style.transform = "scaleX(" + pct + ")"; }
+  else { $streakFill.style.transform = "scaleX(0)"; requestAnimationFrame(() => requestAnimationFrame(() => { $streakFill.style.transform = "scaleX(" + pct + ")"; })); }
+  let goal;
+  if (rec === 0) goal = msg("statsStreakFirst", "Fais une habitude pour lancer ta série.");
+  else if (cur === 0) goal = msg("statsStreakResume", "Reprends ta série aujourd'hui.");
+  else if (cur >= rec) goal = msg("statsStreakAtRecord", "Tu es à ton record, continue !");
+  else { const left = rec - cur + 1; goal = msg("statsStreakGoal", "Encore {n} jours pour battre ton record 🎉").replace("{n}", left); }
+  $streakGoal.textContent = goal;
+}
+function renderBenefit() {
+  // Correlation energie selon le nombre d'habitudes faites dans la journee
+  const buckets = [{ s: 0, n: 0 }, { s: 0, n: 0 }, { s: 0, n: 0 }];
+  let qualifying = 0;
+  Object.keys(STATS).forEach((k) => {
+    const s = dayStat(k);
+    if (s.eCount > 0) {
+      qualifying++;
+      const avg = s.eSum / s.eCount;
+      const bi = s.done <= 1 ? 0 : (s.done <= 3 ? 1 : 2);
+      buckets[bi].s += avg; buckets[bi].n++;
+    }
+  });
+  if (qualifying < CORR_MIN) {
+    $corrWrap.hidden = true; $corrNote.hidden = false;
+    $benefitTitle.textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
+    return;
+  }
+  $corrWrap.hidden = false; $corrNote.hidden = true;
+  const vals = buckets.map((b) => (b.n > 0 ? (b.s / b.n) : null));
+  renderCorrBars($corrChart, vals);
+  applyBenefitText(vals);
+}
+function applyBenefitText(vals) {
+  let lo = null, hi = null;
+  for (let i = 0; i < vals.length; i++) { if (vals[i] != null) { if (lo == null) lo = { i: i, v: vals[i] }; hi = { i: i, v: vals[i] }; } }
+  if (lo == null || hi == null || lo.i === hi.i) {
+    $benefitTitle.textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
+    $corrVerdict.textContent = msg("statsBenefitFlat", "Continue à noter pour voir le lien se dessiner.");
+    return;
+  }
+  const diff = Math.round((hi.v - lo.v) * 10) / 10;
+  if (diff >= 0.5) {
+    $benefitTitle.textContent = msg("statsBenefitUp", "Ton habitude te donne de l'énergie");
+    $corrVerdict.textContent = msg("statsBenefitUpText", "Les jours où tu t'y tiens le plus : +{n} d'énergie").replace("{n}", diff.toFixed(1));
+  } else if (diff <= -0.5) {
+    $benefitTitle.textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
+    $corrVerdict.textContent = msg("statsBenefitDownText", "Les jours où tu t'y tiens le plus, ton énergie est plus basse ({n}).").replace("{n}", diff.toFixed(1));
+  } else {
+    $benefitTitle.textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
+    $corrVerdict.textContent = msg("statsBenefitNone", "Pas de lien net entre ton habitude et ton énergie.");
   }
 }
-function renderYearCharts() {
-  const year = new Date().getFullYear();
-  const done = [], doneEmpty = [], energy = [], energyEmpty = [];
-  for (let m = 0; m < 12; m++) {
-    const agg = sumRange(new Date(year, m, 1), new Date(year, m + 1, 0));
-    done.push(agg.done); doneEmpty.push(agg.done === 0);
-    energy.push(agg.eCount > 0 ? (agg.eSum / agg.eCount) : 0); energyEmpty.push(agg.eCount === 0);
-  }
-  renderBars($yearChart, done, Math.max(1, Math.max.apply(null, done)), doneEmpty);
-  renderBars($energyChart, energy, 10, energyEmpty);
+function renderCorrBars(host, vals) {
+  host.innerHTML = "";
+  const labels = [msg("statsBenefitB1", "rarement"), msg("statsBenefitB2", "parfois"), msg("statsBenefitB3", "souvent")];
+  const targets = [];
+  vals.forEach((v, i) => {
+    const wrap = document.createElement("div"); wrap.className = "corr-wrap";
+    const valEl = document.createElement("div"); valEl.className = "corr-val"; valEl.textContent = (v == null) ? "—" : (Math.round(v * 10) / 10).toFixed(1);
+    const bar = document.createElement("div"); bar.className = "corr-bar" + (v == null ? " corr-bar--empty" : "");
+    bar.style.height = (v == null ? 4 : Math.max(6, Math.round((v / 10) * 68))) + "px";
+    if (!REDUCE_MOTION) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 90) + "ms"; targets.push(bar); }
+    const lab = document.createElement("div"); lab.className = "corr-lab"; lab.textContent = labels[i];
+    wrap.appendChild(valEl); wrap.appendChild(bar); wrap.appendChild(lab); host.appendChild(wrap);
+  });
+  animateIn(targets);
 }
 
 /* ---------- status ---------- */
@@ -381,7 +620,6 @@ async function load() {
   const r = await getLocal(Object.keys(DEFAULTS));
   const cfg = Object.assign({}, DEFAULTS, r);
 
-  $enabled.checked = cfg.enabled !== false;
   $interval.value = String(clampInterval(cfg.intervalMinutes));
   let preset = cfg.preset || "custom";
   if (preset !== "custom" && CANON[preset] && Number(cfg.intervalMinutes) !== CANON[preset]) preset = "custom";
@@ -409,13 +647,16 @@ async function load() {
   $sportList.value = (Array.isArray(cfg.customSport) ? cfg.customSport : []).join("\n");
 
   STATS = (cfg.statsDaily && typeof cfg.statsDaily === "object") ? cfg.statsDaily : {};
+  SCREEN = (cfg.screenDaily && typeof cfg.screenDaily === "object") ? cfg.screenDaily : {};
+  const am = (cfg.animMode === "always" || cfg.animMode === "never") ? cfg.animMode : "auto";
+  if ($animMode) $animMode.value = am;
+  applyAnimMode(am);
   await refreshStatus();
 }
 async function save() {
   const preset = currentPreset();
   const interval = preset === "custom" ? clampInterval($interval.value) : (CANON[preset] || clampInterval($interval.value));
   const payload = {
-    enabled: $enabled.checked,
     intervalMinutes: interval,
     preset: preset,
     muteInCalls: $muteCalls.checked,
@@ -428,17 +669,49 @@ async function save() {
     customQuotes: parseQuotes($quotesList.value),
     includeDefaultQuotes: $includeDefaultQuotes.checked,
     customSport: linesOf($sportList.value),
-    screenTimezone: ($screenTz && $screenTz.value) ? $screenTz.value : "Europe/Zurich"
+    screenTimezone: ($screenTz && $screenTz.value) ? $screenTz.value : "Europe/Zurich",
+    animMode: ($animMode && $animMode.value) ? $animMode.value : "auto"
   };
+  applyAnimMode(payload.animMode);
   await send("kz-save", { payload: payload });
-  $saved.classList.add("show");
-  setTimeout(() => $saved.classList.remove("show"), 1600);
+  const savedEl = (!$panelPerso.hidden && $savedPerso) ? $savedPerso : $saved;
+  savedEl.classList.add("show");
+  setTimeout(() => savedEl.classList.remove("show"), 1600);
 }
 $save.addEventListener("click", save);
+if ($savePerso) $savePerso.addEventListener("click", save);
 $now.addEventListener("click", () => { send("kz-trigger-now"); });
 $statPeriod.addEventListener("change", renderStats);
+if ($animMode) $animMode.addEventListener("change", () => applyAnimMode($animMode.value));
+
+let resetArmed = false, resetTimer = 0;
+function disarmReset() {
+  resetArmed = false;
+  clearTimeout(resetTimer);
+  $resetData.classList.remove("btn-danger--confirm");
+  $resetData.textContent = msg("resetData", "Effacer toutes les données");
+}
+if ($resetData) {
+  $resetData.addEventListener("click", async () => {
+    if (!resetArmed) {
+      resetArmed = true;
+      $resetData.classList.add("btn-danger--confirm");
+      $resetData.textContent = msg("resetDataConfirm", "Confirmer, c'est définitif");
+      resetTimer = setTimeout(disarmReset, 4000);
+      return;
+    }
+    disarmReset();
+    await send("kz-reset");
+    STATS = {}; SCREEN = {}; PENDING = 0;
+    $dataCleared.classList.add("show");
+    setTimeout(() => $dataCleared.classList.remove("show"), 1800);
+    await refreshStatus();
+    if (!$panelStats.hidden) renderStats();
+  });
+}
 
 /* ---------- init ---------- */
 applyI18n();
+setVersionLine();
 showTab("settings");
 load();

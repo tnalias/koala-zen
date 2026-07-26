@@ -276,10 +276,10 @@ if (!globalThis.__kzLoaded) {
       return box;
     }
 
-    function showEnergyBubble(wrap, onPick) {
+    function showEnergyBubble(wrap, onPick, headText) {
       const b = document.createElement("div");
       b.className = "kz-bubble kz-bubble--energy";
-      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("energyHead", "🐨 Bien joué !");
+      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = headText || kzMsg("energyHead", "🐨 Bien joué !");
       b.appendChild(head);
       showEnergyPicker(b, onPick);
       wrap.appendChild(b);
@@ -383,7 +383,7 @@ if (!globalThis.__kzLoaded) {
       b.className = "kz-bubble kz-bubble--sport";
       const head = document.createElement("div");
       head.className = "kz-bubble-head";
-      head.textContent = kzMsg("bubbleSport", "🐨 On bouge un peu !");
+      head.textContent = kzMsg("bubbleSport", "🐨 C'est le moment !");
       const body = document.createElement("div");
       body.textContent = promptText;
       const actions = document.createElement("div");
@@ -420,7 +420,7 @@ if (!globalThis.__kzLoaded) {
       // Bulle sport habituelle. Le compte a rebours deverrouille "Fait", et "Plus tard" permet de passer a tout moment.
       const b = document.createElement("div");
       b.className = "kz-bubble kz-bubble--sport";
-      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleSport", "\uD83D\uDC28 On bouge un peu !");
+      const head = document.createElement("div"); head.className = "kz-bubble-head"; head.textContent = kzMsg("bubbleSport", "\uD83D\uDC28 C'est le moment !");
       const body = document.createElement("div"); body.textContent = rand(SPORT);
       const timer = document.createElement("div"); timer.className = "kz-focus-timer";
       const actions = document.createElement("div"); actions.className = "kz-actions";
@@ -451,13 +451,14 @@ if (!globalThis.__kzLoaded) {
         }, 1000);
       });
 
-      // ---- L'utilisateur passe le rappel: on nettoie et on enregistre comme un "plus tard" normal ----
+      // ---- L'utilisateur passe le rappel: on note l'energie puis on enregistre comme un "plus tard" ----
       if (outcome === "later") {
         b.remove();
+        const laterEnergy = await new Promise((resolve) => { showEnergyBubble(k1, (v) => resolve(v), kzMsg("energyHeadLater", "🐨 Et ton énergie, là ?")); });
         k1.classList.remove("kz-koala--sport");
         await playExit(k1, { cls: "kz-exit-waddle", dur: 1000 });
         k1.remove();
-        sendOutcome("later");
+        sendOutcome("later", laterEnergy);
         await sleep(700);
         await runSnark(shadow, screenToday);
         await removeBack();
@@ -578,10 +579,15 @@ if (!globalThis.__kzLoaded) {
         });
 
         if (outcome !== "done") {
+          let laterEnergy = null;
+          if (outcome === "later") {
+            if (sportBubble) sportBubble.remove();
+            laterEnergy = await new Promise((resolve) => { showEnergyBubble(k1, (v) => resolve(v), kzMsg("energyHeadLater", "🐨 Et ton énergie, là ?")); });
+          }
           k1.classList.remove("kz-koala--sport");
           await playExit(k1, { cls: "kz-exit-waddle", dur: 1000 });
           k1.remove();
-          sendOutcome(outcome);
+          sendOutcome(outcome, laterEnergy);
           await sleep(900);
           await runSnark(shadow, screenToday);
           return;

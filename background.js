@@ -19,7 +19,6 @@ const DEFAULT_MUTED = [
 const DEFAULTS = {
   intervalMinutes: 30,
   preset: "custom",
-  enabled: true,
   muteInCalls: true,
   mutedPatterns: DEFAULT_MUTED,
   pauseWhenIdle: true,
@@ -41,13 +40,7 @@ const DEFAULTS = {
 function pad2(n) { return String(n).padStart(2, "0"); }
 function dayKey(d) { d = d || new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
-function pruneStats(stats) {
-  const cutoff = new Date();
-  cutoff.setFullYear(cutoff.getFullYear() - 2);
-  const ck = dayKey(cutoff);
-  for (const k of Object.keys(stats)) { if (k < ck) delete stats[k]; }
-  return stats;
-}
+// Les statistiques sont conservees a vie. Aucune purge automatique.
 
 // Fuseau horaire pour le calcul du jour courant. La valeur "auto" reprend le
 // fuseau du navigateur. Toute valeur invalide retombe sur le fuseau par defaut.
@@ -66,12 +59,6 @@ function tzDayKey(tz, d) {
   } catch (e) {
     return dayKey(d);
   }
-}
-
-function pruneScreen(daily, tz) {
-  const cutoff = tzDayKey(tz, new Date(Date.now() - 2 * 365 * 24 * 3600 * 1000));
-  for (const k of Object.keys(daily)) { if (k < cutoff) delete daily[k]; }
-  return daily;
 }
 
 async function screenIsActive() {
@@ -98,7 +85,6 @@ async function accrueScreen() {
       daily[k] = (Number(daily[k]) || 0) + Math.round(delta / 1000);
     }
   }
-  pruneScreen(daily, tz);
   await api.storage.local.set({ screenDaily: daily, screenLastTick: now });
 }
 
@@ -118,30 +104,28 @@ async function recordOutcome(result, energy) {
   const stats = (r.statsDaily && typeof r.statsDaily === "object") ? r.statsDaily : {};
   let pending = Number(r.pending) || 0;
   const k = dayKey();
-  const day = stats[k] || { due: 0, done: 0, eSum: 0, eCount: 0 };
+  const day = stats[k] || { due: 0, done: 0, rep: 0, eSum: 0, eCount: 0 };
   if (day.eSum == null) day.eSum = 0;
   if (day.eCount == null) day.eCount = 0;
+  if (day.rep == null) day.rep = 0;
   if (result === "done") { day.due += 1; day.done += 1; }
-  else if (result === "later" || result === "missed") { day.due += 1; pending = Math.min(PENDING_MAX, pending + 1); }
+  else if (result === "later" || result === "missed") { day.due += 1; day.rep += 1; pending = Math.min(PENDING_MAX, pending + 1); }
   else if (result === "catchup") { day.done += 1; pending = Math.max(0, pending - 1); }
   const e = Math.round(Number(energy));
-  if ((result === "done" || result === "catchup") && !isNaN(e) && e >= 1 && e <= 10) { day.eSum += e; day.eCount += 1; }
+  if ((result === "done" || result === "catchup" || result === "later") && !isNaN(e) && e >= 1 && e <= 10) { day.eSum += e; day.eCount += 1; }
   stats[k] = day;
-  pruneStats(stats);
   await api.storage.local.set({ statsDaily: stats, pending: pending });
 }
 
 function clampInterval(v) { const n = parseInt(v, 10); return isNaN(n) ? 30 : Math.min(240, Math.max(1, n)); }
 
 async function schedule(delayMin) {
-  const stored = await api.storage.local.get(["intervalMinutes", "enabled"]);
+  const stored = await api.storage.local.get(["intervalMinutes"]);
   const cfg = { ...DEFAULTS, ...stored };
   await api.alarms.clear(ALARM);
-  if (cfg.enabled) {
-    const interval = clampInterval(cfg.intervalMinutes);
-    const delay = (delayMin != null && delayMin > 0) ? delayMin : interval;
-    api.alarms.create(ALARM, { delayInMinutes: delay, periodInMinutes: interval });
-  }
+  const interval = clampInterval(cfg.intervalMinutes);
+  const delay = (delayMin != null && delayMin > 0) ? delayMin : interval;
+  api.alarms.create(ALARM, { delayInMinutes: delay, periodInMinutes: interval });
 }
 
 api.runtime.onInstalled.addListener(async () => {
@@ -194,6 +178,12 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === "kz-resume") {
     api.storage.local.set({ pausedUntil: 0 }).then(() => schedule()).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+  if (msg.type === "kz-reset") {
+    // Efface l'historique (statistiques et temps d'ecran) et remet le rattrapage a zero.
+    // Les reglages, koalas et pensees sont conserves.
+    api.storage.local.set({ statsDaily: {}, screenDaily: {}, pending: 0, screenLastTick: 0 }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
     return true;
   }
 });

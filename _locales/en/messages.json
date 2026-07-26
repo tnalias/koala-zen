@@ -1,9 +1,9 @@
 {
   "extDesc": {
-    "message": "A koala pops up every 30 minutes to nudge you to move, then shares a short piece of wisdom before leaving."
+    "message": "A koala pops up regularly to nudge you to do the habit you want to build, then shares a short piece of wisdom before leaving."
   },
   "tagline": {
-    "message": "A moving break, then a thought."
+    "message": "Your little habit, then a thought."
   },
   "tabSettings": {
     "message": "Settings"
@@ -12,10 +12,10 @@
     "message": "Stats"
   },
   "grpPause": {
-    "message": "Take a break"
+    "message": "Pause"
   },
   "grpCatchup": {
-    "message": "Catch-up"
+    "message": "Catch up"
   },
   "grpReminders": {
     "message": "Reminders"
@@ -42,13 +42,7 @@
     "message": "Behind"
   },
   "catchupBtn": {
-    "message": "Catch up one exercise"
-  },
-  "enabledLabel": {
-    "message": "Reminders on"
-  },
-  "enabledHint": {
-    "message": "The koala shows up on its own."
+    "message": "Catch up one habit"
   },
   "rhythmLabel": {
     "message": "Rhythm"
@@ -108,10 +102,10 @@
     "message": "Block duration (seconds)"
   },
   "koalasLabel": {
-    "message": "Koala images"
+    "message": "Characters"
   },
   "koalasHint": {
-    "message": "Add your own PNG or animated GIF images (a transparent background works best). With no additions, the bundled koalas are used."
+    "message": "The characters that come to announce your habit. Add your own PNG or GIF images (a transparent background works best), or keep the koalas provided."
   },
   "addImages": {
     "message": "Add images (PNG, GIF)…"
@@ -138,10 +132,10 @@
     "message": "Add to the built-in quotes (instead of replacing)"
   },
   "sportLabel": {
-    "message": "Movement goals"
+    "message": "Habit goals"
   },
   "sportHint": {
-    "message": "One goal per line, for example \"Do 3 push-ups\". Anything you add replaces the default nudge."
+    "message": "One goal per line, for example \"Do 3 push-ups\" or \"Drink a glass of water\". Anything you add replaces the default goals."
   },
   "sportPlaceholder": {
     "message": "Do 3 push-ups"
@@ -180,34 +174,22 @@
     "message": "All time"
   },
   "statsDoneLabel": {
-    "message": "exercises done"
+    "message": "habits done"
   },
   "statsOfWord": {
     "message": "of"
   },
-  "statsProposedWord": {
-    "message": "proposed"
-  },
   "statsEnergyLabel": {
-    "message": "avg. energy /10"
+    "message": "energy /10"
   },
   "statsMeasuresWord": {
     "message": "entries"
   },
-  "statsStreakLabel": {
-    "message": "Current streak"
-  },
   "statsDaysWord": {
     "message": "d"
   },
-  "statsExercisesYear": {
-    "message": "Exercises this year"
-  },
-  "statsEnergyYear": {
-    "message": "Energy this year (avg /10)"
-  },
   "bubbleSport": {
-    "message": "🐨 Let's move a little!"
+    "message": "🐨 It's time!"
   },
   "bubbleWisdom": {
     "message": "🐨 A breath of wisdom…"
@@ -247,5 +229,131 @@
   },
   "screenTodayLabel": {
     "message": "Screen time today"
+  },
+  "statsZonePeriod": {
+    "message": "📅 Over the period"
+  },
+  "statsReportsLabel": {
+    "message": "habits postponed"
+  },
+  "statsDoneWord": {
+    "message": "done"
+  },
+  "statsReportsWord": {
+    "message": "postponed"
+  },
+  "statsSingleDayNote": {
+    "message": "Pick a week or a month to see the trend."
+  },
+  "statsZoneOverview": {
+    "message": "🌱 Overview"
+  },
+  "statsZoneOverviewSub": {
+    "message": "your whole history, since the start"
+  },
+  "statsCorrNote": {
+    "message": "Rate your energy for a few days to see the link appear."
+  },
+  "energyHeadLater": {
+    "message": "🐨 And your energy, right now?"
+  },
+  "statsScreenLabel": {
+    "message": "screen time"
+  },
+  "statsHabitsPerDay": {
+    "message": "Habits per day"
+  },
+  "statsScreenPerDay": {
+    "message": "Screen time per day"
+  },
+  "statsStreakDays": {
+    "message": "days in a row"
+  },
+  "statsRecordWord": {
+    "message": "record"
+  },
+  "statsBenefitUp": {
+    "message": "Your habit gives you energy"
+  },
+  "statsBenefitHint": {
+    "message": "your average energy by day"
+  },
+  "grpAnimations": {
+    "message": "Animations"
+  },
+  "animationsHint": {
+    "message": "The little animations in the Stats tab."
+  },
+  "animAuto": {
+    "message": "Automatic (follows your system)"
+  },
+  "animAlways": {
+    "message": "Always"
+  },
+  "animNever": {
+    "message": "Never"
+  },
+  "grpData": {
+    "message": "Data"
+  },
+  "dataHint": {
+    "message": "Your stats are kept for life on your device."
+  },
+  "resetData": {
+    "message": "Erase all data"
+  },
+  "resetDataConfirm": {
+    "message": "Confirm, this is permanent"
+  },
+  "dataCleared": {
+    "message": "Data erased ✓"
+  },
+  "statsCadence": {
+    "message": "1 habit every {d} of screen time"
+  },
+  "statsStreakFirst": {
+    "message": "Do a habit to start your streak."
+  },
+  "statsStreakResume": {
+    "message": "Pick your streak back up today."
+  },
+  "statsStreakAtRecord": {
+    "message": "You're at your record, keep going!"
+  },
+  "statsStreakGoal": {
+    "message": "{n} more days to beat your record 🎉"
+  },
+  "statsBenefitNeutral": {
+    "message": "Impact on your energy"
+  },
+  "statsBenefitFlat": {
+    "message": "Keep rating to let the link appear."
+  },
+  "statsBenefitUpText": {
+    "message": "On days you stick to it most: +{n} energy"
+  },
+  "statsBenefitDownText": {
+    "message": "On days you stick to it most, your energy is lower ({n})."
+  },
+  "statsBenefitNone": {
+    "message": "No clear link between your habit and your energy."
+  },
+  "statsBenefitB1": {
+    "message": "rarely"
+  },
+  "statsBenefitB2": {
+    "message": "sometimes"
+  },
+  "statsBenefitB3": {
+    "message": "often"
+  },
+  "unitHour": {
+    "message": "h"
+  },
+  "unitMin": {
+    "message": "min"
+  },
+  "tabPerso": {
+    "message": "Customize"
   }
 }

@@ -7,7 +7,11 @@
   <style>
     :root {
       --bg: #ffffff; --ink: #23252b; --muted: #6b7280; --line: #e7e9ee;
-      --green: #256b4a; --green-soft: #eef5f0; --orange: #c2410c;
+      --green: #1c6b45; --green-soft: #e8f3ec; --green-bar: #3f9d5f;
+      --red: #a3271c; --red-soft: #fbeae8; --red-bar: #d9534f;
+      --gold: #7a5c00; --gold-soft: #fdf6d8; --gold-bar: #edb200;
+      --violet: #45329b; --violet-soft: #efeafb; --violet-bar: #8266d6;
+      --slate: #3f4859;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; }
@@ -24,8 +28,8 @@
     .head h1 { font-size: 15px; margin: 0; line-height: 1.1; }
     .head p { font-size: 11.5px; color: var(--muted); margin: 2px 0 0; }
 
-    .tabs { display: flex; gap: 6px; background: #f2f4f7; padding: 3px; border-radius: 11px; margin-bottom: 12px; }
-    .tab { flex: 1; font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: transparent; color: var(--muted); padding: 7px 0; border-radius: 8px; cursor: pointer; }
+    .tabs { display: flex; gap: 4px; background: #f2f4f7; padding: 3px; border-radius: 11px; margin-bottom: 12px; }
+    .tab { flex: 1; font: inherit; font-size: 11.5px; font-weight: 600; white-space: nowrap; border: none; background: transparent; color: var(--muted); padding: 7px 2px; border-radius: 8px; cursor: pointer; }
     .tab--on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 
     /* section cards */
@@ -78,6 +82,8 @@
     .kzp-btn { font: inherit; font-size: 12.5px; font-weight: 700; border-radius: 9px; padding: 7px 13px; cursor: pointer; border: 1px solid transparent; background: var(--green); color: #fff; }
 
     .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+    #rhythmHint { margin-top: 12px; }
+    #customWrap { margin-top: 8px; }
     .chip { font: inherit; font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
     .chip--on { background: var(--green); color: #fff; border-color: var(--green); }
 
@@ -92,24 +98,72 @@
 
     /* stats */
     .block { padding: 2px 0 6px; }
-    .block > label { font-size: 12.5px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 2px; }
+    .block > label, .sublabel { font-size: 12.5px; font-weight: 700; color: var(--ink); display: block; margin: 2px 0; }
+    .block--overview { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
     .period { width: 100%; font: inherit; font-size: 13px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); margin-bottom: 14px; }
-    .statgrid { display: flex; gap: 12px; }
-    .statcell { flex: 1; }
-    .statbig { font-size: 40px; font-weight: 800; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
-    .statbig--e { color: var(--orange); }
-    .statlabel { font-size: 12.5px; color: var(--ink); margin-top: 4px; }
-    .statsub { font-size: 11px; color: var(--muted); margin-top: 2px; min-height: 13px; }
-    .statstreak { font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
-    .chart { display: flex; align-items: flex-end; gap: 3px; height: 92px; margin-top: 6px; }
+    .period--inline { width: auto; margin: 0; padding: 5px 8px; font-size: 11.5px; color: var(--ink); font-weight: 600; }
+    .zonerow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+    .zonetitle { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+    .zonesub { font-size: 11.5px; color: var(--muted); margin: -2px 0 14px; }
+    .statgrid { display: flex; gap: 10px; }
+    .statgrid--4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .statcell { background: var(--green-soft); border-radius: 10px; padding: 10px 6px; text-align: center; }
+    .statgrid:not(.statgrid--4) .statcell { flex: 1; }
+    .statcell--r { background: var(--red-soft); }
+    .statcell--e { background: var(--gold-soft); }
+    .statcell--s { background: var(--violet-soft); }
+    .statbig { font-size: 24px; font-weight: 800; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
+    .statbig--r { color: var(--red); }
+    .statbig--e { color: var(--gold); }
+    .statbig--s { color: var(--violet); }
+    .statbig .u { font-size: 14px; }
+    .statlabel { font-size: 11px; font-weight: 600; color: var(--slate); margin-top: 5px; }
+    .statsub { font-size: 10px; color: var(--muted); margin-top: 1px; min-height: 12px; }
+    .cadence { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding: 10px; background: var(--violet-soft); border-radius: 9px; font-size: 12px; font-weight: 600; color: var(--violet); }
+    .clabel { font-size: 11.5px; font-weight: 700; color: var(--ink); margin: 16px 0 6px; }
+    .legendrow { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--slate); margin: 0 0 6px; }
+    .lg { display: flex; align-items: center; gap: 4px; }
+    .dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+    .dot--done { background: var(--green-bar); } .dot--rep { background: var(--red-bar); } .dot--screen { background: var(--violet-bar); }
+    .chart { display: flex; align-items: flex-end; gap: 4px; height: 62px; margin-top: 4px; }
+    .chart--s { height: 48px; }
+    .chart--corr { height: 84px; gap: 16px; padding: 0 8px; margin-top: 4px; }
     .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
-    .bar { width: 100%; max-width: 15px; background: var(--green); border-radius: 3px 3px 0 0; min-height: 2px; transition: height .55s cubic-bezier(.22,1,.36,1); }
-    .bar--empty { background: #e7e9ee; }
-    .chart--e .bar { background: #e08a3c; }
-    .chart--e .bar--empty { background: #e7e9ee; }
-    .bar-label { font-size: 8.5px; color: var(--muted); }
+    .bar { width: 100%; max-width: 15px; background: var(--violet-bar); border-radius: 3px 3px 0 0; min-height: 2px; transform-origin: bottom; transition: transform .55s cubic-bezier(.34,1.4,.5,1); }
+    .bar--empty { background: var(--line); }
+    .stackcol { width: 100%; max-width: 15px; display: flex; flex-direction: column; border-radius: 3px 3px 0 0; overflow: hidden; transform-origin: bottom; transition: transform .55s cubic-bezier(.34,1.4,.5,1); }
+    .stackcol--empty { background: var(--line); }
+    .seg--rep { background: var(--red-bar); } .seg--done { background: var(--green-bar); }
+    .bar-label { font-size: 8.5px; color: var(--muted); min-height: 10px; }
+    .corr-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .corr-val { font-size: 13px; font-weight: 800; color: var(--gold); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+    .corr-bar { width: 100%; background: var(--gold-bar); border-radius: 4px 4px 0 0; transform-origin: bottom; transition: transform .5s cubic-bezier(.34,1.4,.5,1); }
+    .corr-bar--empty { background: var(--line); }
+    .corr-lab { font-size: 10px; font-weight: 600; color: var(--slate); margin-top: 6px; text-align: center; }
+    .corrhint { font-size: 10.5px; color: var(--muted); margin: -1px 0 10px; }
+    .corrverdict { display: flex; align-items: center; gap: 7px; margin-top: 14px; padding: 9px 11px; background: var(--green-soft); border-radius: 9px; font-size: 12px; font-weight: 600; color: var(--green); }
+    .streakrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
+    .streaknow { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--slate); }
+    .streaknow strong { font-size: 16px; color: var(--ink); }
+    .streakrec { font-size: 11.5px; color: var(--slate); white-space: nowrap; }
+    .streakrec strong { color: var(--ink); }
+    .progress { height: 9px; background: #eef0f2; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green-bar); border-radius: 5px; transform-origin: left; transition: transform .7s cubic-bezier(.4,1.1,.5,1); }
+    .streakgoal { font-size: 11px; font-weight: 600; color: var(--green); margin-top: 7px; }
+    .ovsep { height: 16px; }
+    .ovicon { font-size: 18px; line-height: 1; display: inline-block; }
+    .notecard { font-size: 11.5px; color: var(--muted); background: #f6f7f9; border-radius: 9px; padding: 10px 11px; margin-top: 8px; line-height: 1.5; }
     @keyframes kzFadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    @keyframes kzPop { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: none; } }
+    @keyframes kzFlame { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18) rotate(-4deg); } }
+    @keyframes kzWiggle { 0%,88%,100% { transform: rotate(0); } 92% { transform: rotate(-10deg); } 96% { transform: rotate(10deg); } }
     .stats-anim { animation: kzFadeUp .34s ease both; }
+    .stats-anim .statcell { animation: kzPop .42s cubic-bezier(.34,1.4,.5,1) both; }
+    .stats-anim .statcell:nth-child(2) { animation-delay: .05s; }
+    .stats-anim .statcell:nth-child(3) { animation-delay: .1s; }
+    .stats-anim .statcell:nth-child(4) { animation-delay: .15s; }
+    .anim-on .cadence .ovicon, .anim-on .streaknow .ovicon { animation: kzFlame 1.5s ease-in-out infinite; }
+    .anim-on .cadence-koala { display: inline-block; animation: kzWiggle 3.4s ease-in-out infinite; }
 
     /* popup energy picker */
     .kzp-energy { margin-top: 8px; }
@@ -118,8 +172,13 @@
     .kzp-energy-btn { font: inherit; font-size: 12px; font-weight: 700; height: 27px; border-radius: 7px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
     .kzp-energy-btn:hover { background: var(--green-soft); border-color: var(--green); }
     .kzp-energy-skip { margin-top: 6px; padding: 0; border: none; background: none; color: var(--muted); font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
-
-    @media (prefers-reduced-motion: reduce) { .bar { transition: none; } .stats-anim { animation: none; } }
+    .block--data { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
+    .block--data .zonesub { margin-bottom: 12px; }
+    .versionline { margin-top: 16px; text-align: center; font-size: 10.5px; color: var(--muted); letter-spacing: .02em; }
+    .btn-danger { width: 100%; font: inherit; font-size: 12.5px; font-weight: 700; padding: 10px; border-radius: 9px; border: 1px solid #d9534f; background: #fff; color: #b23b30; cursor: pointer; }
+    .btn-danger:hover { background: #fbeae8; }
+    .btn-danger--confirm { background: #b23b30; color: #fff; border-color: #b23b30; }
+    .btn-danger--confirm:hover { background: #9c322a; }
   </style>
 </head>
 <body>
@@ -130,13 +189,14 @@
 
   <div class="tabs">
     <button type="button" class="tab tab--on" id="tabSettingsBtn" data-i18n="tabSettings">Réglages</button>
+    <button type="button" class="tab" id="tabPersoBtn" data-i18n="tabPerso">Personnaliser</button>
     <button type="button" class="tab" id="tabStatsBtn" data-i18n="tabStats">Stats</button>
   </div>
 
   <div id="panelSettings">
 
     <div class="group">
-      <div class="group-title" data-i18n="grpPause">Faire une pause</div>
+      <div class="group-title" data-i18n="grpPause">Mettre en pause</div>
       <div class="quick" id="quickActions">
         <button type="button" class="chip-btn" id="snoozeLater" data-i18n="laterBtn">Plus tard</button>
         <button type="button" class="chip-btn" id="snooze1h" data-i18n="pause1h">Pause 1 h</button>
@@ -149,9 +209,9 @@
     </div>
 
     <div class="group" id="catchupRow" hidden>
-      <div class="group-title" data-i18n="grpCatchup">Rattrapage</div>
+      <div class="group-title" data-i18n="grpCatchup">À rattraper</div>
       <div class="catchup-line"><span data-i18n="catchupBehindLabel">En retard</span> : <strong id="pendingCount">0</strong></div>
-      <button type="button" class="linkbtn" id="catchupBtn" data-i18n="catchupBtn">Rattraper un exercice</button>
+      <button type="button" class="linkbtn" id="catchupBtn" data-i18n="catchupBtn">Rattraper une habitude</button>
       <div class="catchup-box" id="catchupBox" hidden>
         <div id="catchupPrompt"></div>
         <button type="button" class="kzp-btn" id="catchupDone" data-i18n="btnDone">Fait ✅</button>
@@ -160,10 +220,6 @@
 
     <div class="group">
       <div class="group-title" data-i18n="grpReminders">Rappels</div>
-      <div class="row">
-        <div><label for="enabled" data-i18n="enabledLabel">Rappels activés</label><div class="hint" data-i18n="enabledHint">Le koala vient de lui-même.</div></div>
-        <span class="switch"><input type="checkbox" id="enabled" checked><span class="track"></span></span>
-      </div>
       <div class="subhead" data-i18n="rhythmLabel">Rythme</div>
       <div class="chips" id="presetChips">
         <button type="button" class="chip" data-preset="pomodoro" data-min="25" data-i18n="presetPomodoro">Pomodoro</button>
@@ -249,12 +305,21 @@
       </select>
     </div>
 
+    <div class="actions">
+      <button type="button" id="now" class="btn-ghost" data-i18n="bringNow">Faire venir le koala maintenant</button>
+      <button type="button" id="save" class="btn-primary" data-i18n="save">Enregistrer</button>
+    </div>
+    <div class="saved" id="saved" data-i18n="saved">Enregistré ✓</div>
+
+    <div class="versionline" id="versionLine"></div>
+  </div>
+
+  <div id="panelPerso" hidden>
     <div class="group">
-      <div class="group-title" data-i18n="koalasLabel">Koalas affichés</div>
-      <div class="hint" data-i18n="koalasHint">Ajoute tes propres images PNG ou GIF animés (fond transparent conseillé). Sans ajout, les koalas fournis sont utilisés.</div>
-      <label class="file-btn"><span data-i18n="addImages">Ajouter des images (PNG, GIF)…</span><input type="file" id="koalaFile" accept="image/png,image/gif,image/*" multiple></label>
-      <div class="gallery" id="gallery"></div>
-      <label class="checkbox"><input type="checkbox" id="includeDefault"> <span data-i18n="keepDefaultKoalas">Garder aussi les koalas d'origine</span></label>
+      <div class="group-title" data-i18n="sportLabel">Objectifs de l'habitude</div>
+      <div class="hint" data-i18n="sportHint">Un objectif par ligne, par exemple « Fais 3 pompes ». Ce que tu ajoutes remplace l'invitation par défaut.</div>
+      <textarea id="sportList" spellcheck="false" data-i18n-ph="sportPlaceholder" placeholder="Fais 3 pompes"></textarea>
+      <button type="button" class="linkbtn" id="resetSport" data-i18n="loadSport">Charger les objectifs fournis</button>
     </div>
 
     <div class="group">
@@ -266,51 +331,108 @@
     </div>
 
     <div class="group">
-      <div class="group-title" data-i18n="sportLabel">Objectifs de mouvement</div>
-      <div class="hint" data-i18n="sportHint">Un objectif par ligne, par exemple « Fais 3 pompes ». Ce que tu ajoutes remplace l'invitation par défaut.</div>
-      <textarea id="sportList" spellcheck="false" data-i18n-ph="sportPlaceholder" placeholder="Fais 3 pompes"></textarea>
-      <button type="button" class="linkbtn" id="resetSport" data-i18n="loadSport">Charger les objectifs fournis</button>
+      <div class="group-title" data-i18n="koalasLabel">Personnages</div>
+      <div class="hint" data-i18n="koalasHint">Les personnages qui viennent t'annoncer ton habitude. Ajoute tes propres images, PNG ou GIF (fond transparent conseillé), ou garde les koalas fournis.</div>
+      <label class="file-btn"><span data-i18n="addImages">Ajouter des images (PNG, GIF)…</span><input type="file" id="koalaFile" accept="image/png,image/gif,image/*" multiple></label>
+      <div class="gallery" id="gallery"></div>
+      <label class="checkbox"><input type="checkbox" id="includeDefault"> <span data-i18n="keepDefaultKoalas">Garder aussi les koalas d'origine</span></label>
+    </div>
+
+    <div class="group">
+      <div class="group-title" data-i18n="grpAnimations">Animations</div>
+      <div class="hint" data-i18n="animationsHint" style="margin-bottom:8px;">Les petites animations de l'onglet Stats.</div>
+      <select id="animMode" class="period" data-i18n-aria="grpAnimations">
+        <option value="auto" data-i18n="animAuto">Automatique (suit ton système)</option>
+        <option value="always" data-i18n="animAlways">Toujours</option>
+        <option value="never" data-i18n="animNever">Jamais</option>
+      </select>
     </div>
 
     <div class="actions">
-      <button type="button" id="now" class="btn-ghost" data-i18n="bringNow">Faire venir le koala maintenant</button>
-      <button type="button" id="save" class="btn-primary" data-i18n="save">Enregistrer</button>
+      <button type="button" id="savePerso" class="btn-primary" data-i18n="save">Enregistrer</button>
     </div>
-    <div class="saved" id="saved" data-i18n="saved">Enregistré ✓</div>
+    <div class="saved" id="savedPerso" data-i18n="saved">Enregistré ✓</div>
   </div>
 
   <div id="panelStats" hidden>
     <div class="block">
-      <select id="statPeriod" class="period">
-        <option value="today" data-i18n="statsToday">Aujourd'hui</option>
-        <option value="yesterday" data-i18n="statsYesterday">Hier</option>
-        <option value="thisweek" data-i18n="statsThisWeek">Cette semaine</option>
-        <option value="lastweek" data-i18n="statsLastWeek">Semaine dernière</option>
-        <option value="thismonth" data-i18n="statsThisMonth">Ce mois-ci</option>
-        <option value="lastmonth" data-i18n="statsLastMonth">Le mois dernier</option>
-        <option value="all" data-i18n="statsAllTime">Depuis le début</option>
-      </select>
-      <div class="statgrid">
+      <div class="zonerow">
+        <span class="zonetitle" data-i18n="statsZonePeriod">📅 Sur la période</span>
+        <select id="statPeriod" class="period period--inline">
+          <option value="today" data-i18n="statsToday">Aujourd'hui</option>
+          <option value="yesterday" data-i18n="statsYesterday">Hier</option>
+          <option value="thisweek" data-i18n="statsThisWeek">Cette semaine</option>
+          <option value="lastweek" data-i18n="statsLastWeek">Semaine dernière</option>
+          <option value="thismonth" data-i18n="statsThisMonth">Ce mois-ci</option>
+          <option value="lastmonth" data-i18n="statsLastMonth">Le mois dernier</option>
+          <option value="all" data-i18n="statsAllTime">Depuis le début</option>
+        </select>
+      </div>
+      <div class="statgrid statgrid--4">
         <div class="statcell">
           <div class="statbig" id="statDone">0</div>
-          <div class="statlabel" data-i18n="statsDoneLabel">exercices faits</div>
+          <div class="statlabel" data-i18n="statsDoneLabel">habitudes faites</div>
           <div class="statsub" id="statOf"></div>
         </div>
-        <div class="statcell">
+        <div class="statcell statcell--r">
+          <div class="statbig statbig--r" id="statRep">0</div>
+          <div class="statlabel" data-i18n="statsReportsLabel">habitudes reportées</div>
+          <div class="statsub" id="statRepOf"></div>
+        </div>
+        <div class="statcell statcell--e">
           <div class="statbig statbig--e" id="statEnergy">—</div>
-          <div class="statlabel" data-i18n="statsEnergyLabel">énergie moy. /10</div>
+          <div class="statlabel" data-i18n="statsEnergyLabel">énergie /10</div>
           <div class="statsub" id="statEnergyN"></div>
         </div>
+        <div class="statcell statcell--s">
+          <div class="statbig statbig--s" id="statScreen">—</div>
+          <div class="statlabel" data-i18n="statsScreenLabel">temps d'écran</div>
+          <div class="statsub" id="statScreenSub"></div>
+        </div>
       </div>
-      <div class="statstreak"><span data-i18n="statsStreakLabel">Série en cours</span> : <strong id="statStreak">0</strong> <span data-i18n="statsDaysWord">j</span></div>
+      <div class="cadence" id="cadenceLine" hidden>
+        <span class="cadence-koala">🐨</span><span id="cadenceText"></span>
+      </div>
+      <div id="trendWrap">
+        <div class="clabel" data-i18n="statsHabitsPerDay">Habitudes par jour</div>
+        <div class="legendrow">
+          <span class="lg"><span class="dot dot--done"></span><span data-i18n="statsDoneWord">faites</span></span>
+          <span class="lg"><span class="dot dot--rep"></span><span data-i18n="statsReportsWord">reportées</span></span>
+        </div>
+        <div class="chart" id="trendChart"></div>
+        <div class="clabel" id="screenTrendLabel" data-i18n="statsScreenPerDay">Temps d'écran par jour</div>
+        <div class="chart chart--s" id="screenChart"></div>
+      </div>
+      <div class="notecard" id="trendNote" hidden data-i18n="statsSingleDayNote">Choisis une semaine ou un mois pour voir l'évolution.</div>
     </div>
-    <div class="block">
-      <label data-i18n="statsExercisesYear">Exercices — cette année</label>
-      <div class="chart" id="yearChart"></div>
+
+    <div class="block block--overview">
+      <div class="zonetitle" data-i18n="statsZoneOverview">🌱 Vue d'ensemble</div>
+      <div class="zonesub" data-i18n="statsZoneOverviewSub">tout ton historique, depuis le début</div>
+
+      <div class="streakrow">
+        <span class="streaknow"><span class="ovicon" id="streakFlame">🔥</span> <strong id="statStreak">0</strong> <span data-i18n="statsStreakDays">jours de suite</span></span>
+        <span class="streakrec">🏆 <span data-i18n="statsRecordWord">record</span> <strong id="statRecord">0</strong> <span data-i18n="statsDaysWord">j</span></span>
+      </div>
+      <div class="progress"><div class="progress-fill" id="streakFill" style="transform:scaleX(0)"></div></div>
+      <div class="streakgoal" id="streakGoal"></div>
+
+      <div class="ovsep"></div>
+
+      <label class="sublabel" id="benefitTitle" data-i18n="statsBenefitUp">Ton habitude te donne de l'énergie</label>
+      <div class="corrhint" data-i18n="statsBenefitHint">ton énergie moyenne selon les jours</div>
+      <div id="corrWrap">
+        <div class="chart chart--corr" id="corrChart"></div>
+        <div class="corrverdict" id="corrVerdict"></div>
+      </div>
+      <div class="notecard" id="corrNote" hidden data-i18n="statsCorrNote">Note ton énergie sur quelques jours pour voir le lien apparaître.</div>
     </div>
-    <div class="block">
-      <label data-i18n="statsEnergyYear">Énergie — cette année (moy. /10)</label>
-      <div class="chart chart--e" id="energyChart"></div>
+
+    <div class="block block--data">
+      <div class="zonetitle" data-i18n="grpData">Données</div>
+      <div class="zonesub" data-i18n="dataHint">Tes statistiques sont gardées à vie sur ton appareil.</div>
+      <button type="button" class="btn-danger" id="resetData" data-i18n="resetData">Effacer toutes les données</button>
+      <div class="saved" id="dataCleared" data-i18n="dataCleared">Données effacées ✓</div>
     </div>
   </div>
 
