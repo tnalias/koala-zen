@@ -2,50 +2,62 @@
   "extDesc": {
     "message": "Ein Koala erscheint regelmässig, um dich an die Gewohnheit zu erinnern, die du aufbauen willst, und gibt dir dann einen kurzen weisen Gedanken mit, bevor er verschwindet."
   },
-  "tagline": {
-    "message": "Deine kleine Gewohnheit, dann ein Gedanke."
-  },
   "tabSettings": {
     "message": "Einstellungen"
+  },
+  "tabPersoShort": {
+    "message": "Eigenes"
   },
   "tabStats": {
     "message": "Statistik"
   },
+  "tabData": {
+    "message": "Daten"
+  },
+  "nextVisitIn": {
+    "message": "Nächster Besuch in {n} Min"
+  },
+  "nextVisitNow": {
+    "message": "Nächster Besuch jeden Moment"
+  },
+  "nextVisitSoon": {
+    "message": "Nächster Besuch bald"
+  },
   "grpPause": {
     "message": "Pausieren"
   },
-  "grpCatchup": {
-    "message": "Nachholen"
-  },
-  "grpReminders": {
-    "message": "Erinnerungen"
-  },
-  "grpDnd": {
-    "message": "Nicht stören"
-  },
-  "laterBtn": {
+  "pauseLater": {
     "message": "Später"
   },
   "pause1h": {
-    "message": "Pause 1 Std."
+    "message": "1 Stunde"
   },
-  "stopToday": {
-    "message": "Heute stoppen"
+  "pauseToday": {
+    "message": "Heute"
   },
-  "resume": {
-    "message": "Fortsetzen"
+  "pauseHint": {
+    "message": "Deine Serie bleibt während der Pause erhalten."
   },
   "pausedUntilLabel": {
     "message": "Pausiert bis"
   },
-  "catchupBehindLabel": {
-    "message": "Rückstand"
+  "resume": {
+    "message": "Fortsetzen"
   },
-  "catchupBtn": {
-    "message": "Eine Gewohnheit nachholen"
+  "catchupTitleOne": {
+    "message": "{n} Gewohnheit nachzuholen"
   },
-  "rhythmLabel": {
-    "message": "Rhythmus"
+  "catchupTitlePlural": {
+    "message": "{n} Gewohnheiten nachzuholen"
+  },
+  "catchupSub": {
+    "message": "Wann du willst, ohne Druck"
+  },
+  "catchupAction": {
+    "message": "Nachholen"
+  },
+  "grpRhythm": {
+    "message": "Rhythmus der Erinnerungen"
   },
   "presetPomodoro": {
     "message": "Pomodoro"
@@ -59,167 +71,38 @@
   "presetCustom": {
     "message": "Individuell"
   },
-  "rationalePomodoro": {
-    "message": "Kurze, regelmässige Zyklen (25 Min.)."
-  },
-  "rationaleDeep": {
-    "message": "52 Minuten Fokus, die 52/17-Regel."
-  },
-  "rationaleUltra": {
-    "message": "Folgt dem ultradianen Rhythmus des Körpers (90 Min.)."
-  },
-  "rationaleCustom": {
-    "message": "Wähle dein eigenes Intervall (1 bis 240 Min.)."
-  },
-  "minutesUnit": {
-    "message": "Min."
-  },
-  "muteLabel": {
-    "message": "Bei Videoanrufen pausieren"
-  },
-  "muteHint": {
-    "message": "Auf diesen Seiten nicht erscheinen."
-  },
-  "sitesLabel": {
-    "message": "Videoanruf-Seiten"
-  },
-  "sitesHint": {
-    "message": "Eine Domain pro Zeile (Subdomains inbegriffen)."
-  },
-  "idleLabel": {
-    "message": "Bei Abwesenheit pausieren"
-  },
-  "idleHint": {
-    "message": "Kein Koala, solange du nicht an der Tastatur bist."
+  "rhythmHint": {
+    "message": "Individuell nimmt 1 bis 240 Minuten."
   },
   "focusLabel": {
-    "message": "Fokusmodus"
+    "message": "Fokuspause"
   },
   "focusHint": {
-    "message": "Eine Vollbildpause, die die Seite bis zum Ende des Timers sperrt. Standardmässig aus."
+    "message": "Die Seite wird für die Dauer der Pause gesperrt, damit du wirklich abschaltest"
   },
   "focusSecondsLabel": {
-    "message": "Sperrdauer (Sekunden)"
+    "message": "Sperrdauer"
   },
-  "koalasLabel": {
-    "message": "Figuren"
+  "grpDnd": {
+    "message": "Nicht stören"
   },
-  "koalasHint": {
-    "message": "Die Figuren, die dir deine Gewohnheit ankündigen. Füge eigene PNG- oder GIF-Bilder hinzu (transparenter Hintergrund empfohlen), oder behalte die mitgelieferten Koalas."
+  "muteLabel": {
+    "message": "Während eines Videoanrufs"
   },
-  "addImages": {
-    "message": "Bilder hinzufügen (PNG, GIF)…"
+  "addSite": {
+    "message": "Hinzufügen"
   },
-  "keepDefaultKoalas": {
-    "message": "Mitgelieferte Koalas ebenfalls behalten"
+  "removeSite": {
+    "message": "Diese Seite entfernen"
   },
-  "removeImg": {
-    "message": "Entfernen"
+  "idleLabel": {
+    "message": "Wenn du die Tastatur verlässt"
   },
-  "quotesLabel": {
-    "message": "Zitate"
-  },
-  "quotesHint": {
-    "message": "Eines pro Zeile, als \"Text | Autor\" (Autor optional). Leer = mitgelieferte Zitate."
-  },
-  "quotesPlaceholder": {
-    "message": "Der Friede kommt von innen. | Buddha"
-  },
-  "loadQuotes": {
-    "message": "Mitgelieferte Zitate laden"
-  },
-  "addToQuotes": {
-    "message": "Zu den mitgelieferten Zitaten hinzufügen (statt ersetzen)"
-  },
-  "sportLabel": {
-    "message": "Gewohnheitsziele"
-  },
-  "sportHint": {
-    "message": "Ein Ziel pro Zeile, zum Beispiel \"Mach 3 Liegestütze\" oder \"Trink ein Glas Wasser\". Was du hinzufügst, ersetzt die Standardziele."
-  },
-  "sportPlaceholder": {
-    "message": "Mach 3 Liegestütze"
-  },
-  "loadSport": {
-    "message": "Mitgelieferte Ziele laden"
-  },
-  "bringNow": {
-    "message": "Koala jetzt holen"
-  },
-  "save": {
-    "message": "Speichern"
-  },
-  "saved": {
-    "message": "Gespeichert ✓"
-  },
-  "statsToday": {
-    "message": "Heute"
-  },
-  "statsYesterday": {
-    "message": "Gestern"
-  },
-  "statsThisWeek": {
-    "message": "Diese Woche"
-  },
-  "statsLastWeek": {
-    "message": "Letzte Woche"
-  },
-  "statsThisMonth": {
-    "message": "Dieser Monat"
-  },
-  "statsLastMonth": {
-    "message": "Letzter Monat"
-  },
-  "statsAllTime": {
-    "message": "Gesamt"
-  },
-  "statsDoneLabel": {
-    "message": "Gewohnheiten erledigt"
-  },
-  "statsOfWord": {
-    "message": "von"
-  },
-  "statsEnergyLabel": {
-    "message": "Energie /10"
-  },
-  "statsMeasuresWord": {
-    "message": "Einträge"
-  },
-  "statsDaysWord": {
-    "message": "T"
-  },
-  "bubbleSport": {
-    "message": "🐨 Es ist Zeit!"
-  },
-  "bubbleWisdom": {
-    "message": "🐨 Ein Hauch von Weisheit…"
-  },
-  "bubbleSnark": {
-    "message": "😼 Na sowas…"
-  },
-  "btnDone": {
-    "message": "Erledigt ✅"
-  },
-  "btnLater": {
-    "message": "Später (also nie)"
-  },
-  "btnBreakOver": {
-    "message": "Pause läuft…"
-  },
-  "energyQ": {
-    "message": "Deine Energie, 1 bis 10?"
-  },
-  "energyHead": {
-    "message": "🐨 Gut gemacht!"
-  },
-  "energySkip": {
-    "message": "Überspringen"
+  "idleHint": {
+    "message": "Nach 60 Sekunden"
   },
   "grpScreen": {
     "message": "Bildschirmzeit"
-  },
-  "screenTzHint": {
-    "message": "Der Koala zeigt deine Aktivitätszeit des Tages. Sie wird um Mitternacht in dieser Zeitzone zurückgesetzt."
   },
   "screenTzLabel": {
     "message": "Zeitzone"
@@ -227,65 +110,146 @@
   "screenTzAuto": {
     "message": "Automatisch (Browser)"
   },
-  "screenTodayLabel": {
-    "message": "Bildschirmzeit heute"
+  "screenTzHint": {
+    "message": "Wird um Mitternacht zurückgesetzt."
   },
-  "statsZonePeriod": {
-    "message": "📅 Im Zeitraum"
+  "save": {
+    "message": "Speichern"
   },
-  "statsReportsLabel": {
-    "message": "Gewohnheiten verschoben"
+  "saved": {
+    "message": "Gespeichert"
   },
-  "statsDoneWord": {
-    "message": "erledigt"
+  "bringNow": {
+    "message": "Koala holen"
   },
-  "statsReportsWord": {
-    "message": "verschoben"
+  "updatedOn": {
+    "message": "aktualisiert am"
   },
-  "statsSingleDayNote": {
-    "message": "Wähle eine Woche oder einen Monat, um den Verlauf zu sehen."
+  "sportLabel": {
+    "message": "Ziele"
   },
-  "statsZoneOverview": {
-    "message": "🌱 Gesamtüberblick"
+  "sportMeta": {
+    "message": "Immer nur eines"
   },
-  "statsZoneOverviewSub": {
-    "message": "dein ganzer Verlauf, seit Beginn"
+  "sportPlaceholder": {
+    "message": "Neues Ziel"
   },
-  "statsCorrNote": {
-    "message": "Bewerte deine Energie ein paar Tage, damit der Zusammenhang sichtbar wird."
+  "sportEmpty": {
+    "message": "Keine eigenen Ziele. Der Koala nimmt die mitgelieferten Ziele."
   },
-  "energyHeadLater": {
-    "message": "🐨 Und deine Energie gerade?"
+  "sportFallback": {
+    "message": "Beweg dich kurz"
   },
-  "statsScreenLabel": {
-    "message": "Bildschirmzeit"
+  "goalLabel": {
+    "message": "Dein Tagesziel"
   },
-  "statsHabitsPerDay": {
-    "message": "Gewohnheiten pro Tag"
+  "goalHint": {
+    "message": "Dient als Markierung in der Statistik."
   },
-  "statsScreenPerDay": {
-    "message": "Bildschirmzeit pro Tag"
+  "goalOff": {
+    "message": "keines"
   },
-  "statsStreakDays": {
-    "message": "Tage in Folge"
+  "addAria": {
+    "message": "Hinzufügen"
   },
-  "statsRecordWord": {
-    "message": "Rekord"
+  "removeItem": {
+    "message": "Entfernen"
   },
-  "statsBenefitUp": {
-    "message": "Deine Gewohnheit gibt dir Energie"
+  "quotesLabel": {
+    "message": "Zitate"
   },
-  "statsBenefitHint": {
-    "message": "deine durchschnittliche Energie nach Tagen"
+  "quotesMine": {
+    "message": "Deine"
+  },
+  "quotesBuilt": {
+    "message": "Mitgeliefert"
+  },
+  "quotesPlaceholder": {
+    "message": "Neues Zitat"
+  },
+  "quotesEmpty": {
+    "message": "Keine eigenen Zitate. Der Koala nimmt die mitgelieferten Zitate."
+  },
+  "keepDefaultQuotes": {
+    "message": "Mitgelieferte Zitate behalten"
+  },
+  "browseLink": {
+    "message": "Die {n} mitgelieferten durchsehen"
+  },
+  "authorUnknown": {
+    "message": "Unbekannt"
+  },
+  "browseTitle": {
+    "message": "Mitgelieferte Zitate"
+  },
+  "browseActive": {
+    "message": "{a} aktiv von {n}"
+  },
+  "browseSearch": {
+    "message": "Zitat suchen"
+  },
+  "browseAll": {
+    "message": "Alle"
+  },
+  "browseHidden": {
+    "message": "Ausgeblendet"
+  },
+  "browseHiddenNote": {
+    "message": "Ausgeblendet, der Koala sagt es nicht mehr"
+  },
+  "browseHide": {
+    "message": "Ausblenden"
+  },
+  "browseUnhide": {
+    "message": "Wieder anzeigen"
+  },
+  "browseMore": {
+    "message": "{n} weitere Zitate weiter unten"
+  },
+  "browseNone": {
+    "message": "Kein Zitat passt."
+  },
+  "editTitle": {
+    "message": "Du bearbeitest ein mitgeliefertes Zitat"
+  },
+  "editAuthor": {
+    "message": "Autor"
+  },
+  "editHint": {
+    "message": "Beim Speichern entsteht deine Version. Das Original bleibt unverändert in der Liste."
+  },
+  "editSave": {
+    "message": "Meine Version speichern"
+  },
+  "cancel": {
+    "message": "Abbrechen"
+  },
+  "back": {
+    "message": "Zurück"
+  },
+  "koalasLabel": {
+    "message": "Figuren"
+  },
+  "koalasHint": {
+    "message": "Deine Bilder bleiben auf deinem Gerät, ausser du nimmst sie selbst in eine kDrive-Sicherung auf."
+  },
+  "keepDefaultKoalas": {
+    "message": "Mitgelieferte Koalas behalten"
+  },
+  "defaultKoalas": {
+    "message": "Die mitgelieferten Koalas"
+  },
+  "removeImg": {
+    "message": "Entfernen"
+  },
+  "outOf": {
+    "message": "von"
   },
   "grpAnimations": {
     "message": "Animationen"
   },
-  "animationsHint": {
-    "message": "Die kleinen Animationen im Statistik-Tab."
-  },
   "animAuto": {
-    "message": "Automatisch (folgt deinem System)"
+    "message": "Automatisch"
   },
   "animAlways": {
     "message": "Immer"
@@ -293,23 +257,47 @@
   "animNever": {
     "message": "Nie"
   },
-  "grpData": {
-    "message": "Daten"
+  "animationsHint": {
+    "message": "Automatisch folgt deinem System."
   },
-  "dataHint": {
-    "message": "Deine Statistiken bleiben lebenslang auf deinem Gerät."
+  "statsDoneLabel": {
+    "message": "Gewohnheiten erledigt"
   },
-  "resetData": {
-    "message": "Alle Daten löschen"
+  "statsReportsLabel": {
+    "message": "Verschoben"
   },
-  "resetDataConfirm": {
-    "message": "Bestätigen, das ist endgültig"
+  "statsEnergyLabel": {
+    "message": "Energie"
   },
-  "dataCleared": {
-    "message": "Daten gelöscht ✓"
+  "statsScreenLabel": {
+    "message": "Bildschirmzeit"
   },
-  "statsCadence": {
-    "message": "1 Gewohnheit alle {d} Bildschirmzeit"
+  "outOfTen": {
+    "message": "/ 10"
+  },
+  "statsPerDay": {
+    "message": "Pro Tag"
+  },
+  "statsDoneWord": {
+    "message": "Erledigt"
+  },
+  "statsReportsWord": {
+    "message": "Verschoben"
+  },
+  "statsGoalLegend": {
+    "message": "Dein Ziel, {n} pro Tag"
+  },
+  "statsSingleDayNote": {
+    "message": "Wähle eine Woche oder einen Monat, um den Verlauf zu sehen."
+  },
+  "statsStreak": {
+    "message": "Deine Serie"
+  },
+  "statsStreakDays": {
+    "message": "Tage in Folge"
+  },
+  "statsRecordWord": {
+    "message": "Rekord"
   },
   "statsStreakFirst": {
     "message": "Mach eine Gewohnheit, um deine Serie zu starten."
@@ -318,10 +306,16 @@
     "message": "Nimm deine Serie heute wieder auf."
   },
   "statsStreakAtRecord": {
-    "message": "Du bist auf deinem Rekord, weiter so!"
+    "message": "Du bist auf deinem Rekord, weiter so."
   },
   "statsStreakGoal": {
-    "message": "Noch {n} Tage, um deinen Rekord zu schlagen 🎉"
+    "message": "Noch {n} Tage und du schlägst deinen Rekord."
+  },
+  "statsBenefitUp": {
+    "message": "Deine Gewohnheiten geben dir Energie"
+  },
+  "statsBenefitHint": {
+    "message": "Durchschnittliche Energie nach Anzahl Gewohnheiten am Tag"
   },
   "statsBenefitNeutral": {
     "message": "Auswirkung auf deine Energie"
@@ -330,22 +324,124 @@
     "message": "Bewerte weiter, damit der Zusammenhang sichtbar wird."
   },
   "statsBenefitUpText": {
-    "message": "An Tagen, an denen du am meisten dranbleibst: +{n} Energie"
+    "message": "An Tagen, an denen du am meisten dranbleibst, {n} mehr Energie"
   },
   "statsBenefitDownText": {
-    "message": "An Tagen, an denen du am meisten dranbleibst, ist deine Energie tiefer ({n})."
+    "message": "An Tagen, an denen du am meisten dranbleibst, ist deine Energie tiefer."
   },
   "statsBenefitNone": {
     "message": "Kein klarer Zusammenhang zwischen deiner Gewohnheit und deiner Energie."
   },
   "statsBenefitB1": {
-    "message": "selten"
+    "message": "Wenig"
   },
   "statsBenefitB2": {
-    "message": "manchmal"
+    "message": "Mittel"
   },
   "statsBenefitB3": {
-    "message": "oft"
+    "message": "Viel"
+  },
+  "statsCorrNote": {
+    "message": "Bewerte deine Energie ein paar Tage, damit der Zusammenhang sichtbar wird."
+  },
+  "backupTitle": {
+    "message": "Sichern und wiederherstellen"
+  },
+  "backupHint": {
+    "message": "Wähle, was enthalten ist, das gilt für die lokale Datei und für kDrive weiter unten."
+  },
+  "partSettings": {
+    "message": "Einstellungen"
+  },
+  "partContent": {
+    "message": "Ziele und Zitate"
+  },
+  "partStats": {
+    "message": "Statistik"
+  },
+  "partKoalas": {
+    "message": "Importierte Figuren"
+  },
+  "partKoalasShort": {
+    "message": "Figuren"
+  },
+  "partHistory": {
+    "message": "Verlauf"
+  },
+  "partContentShort": {
+    "message": "Inhalte"
+  },
+  "exportBtn": {
+    "message": "Exportieren"
+  },
+  "importBtn": {
+    "message": "Importieren"
+  },
+  "exportDone": {
+    "message": "Datei erstellt"
+  },
+  "importDone": {
+    "message": "Daten wiederhergestellt"
+  },
+  "importBad": {
+    "message": "Datei nicht lesbar"
+  },
+  "importModeLabel": {
+    "message": "Beim Import (Datei oder kDrive)"
+  },
+  "importMerge": {
+    "message": "Zusammenführen"
+  },
+  "importReplace": {
+    "message": "Ersetzen"
+  },
+  "importModeHint": {
+    "message": "Zusammenführen behält, was du hast, Ersetzen überschreibt alles."
+  },
+  "storageTitle": {
+    "message": "Was Koala Zen belegt"
+  },
+  "eraseTitle": {
+    "message": "Löschen"
+  },
+  "eraseHistory": {
+    "message": "Der Verlauf"
+  },
+  "historyDays": {
+    "message": "{n} Tage"
+  },
+  "historyEmpty": {
+    "message": "Noch nichts"
+  },
+  "eraseBtn": {
+    "message": "Löschen"
+  },
+  "eraseAll": {
+    "message": "Alles, und von vorn beginnen"
+  },
+  "eraseAllSub": {
+    "message": "Einstellungen und Inhalte inbegriffen"
+  },
+  "eraseAllBtn": {
+    "message": "Alles löschen"
+  },
+  "eraseConfirm": {
+    "message": "Bestätigen"
+  },
+  "eraseHint": {
+    "message": "Es wird eine Bestätigung verlangt, exportiere besser vorher."
+  },
+  "eraseHistoryDone": {
+    "message": "Verlauf gelöscht"
+  },
+  "eraseAllDone": {
+    "message": "Alles ist zurückgesetzt"
+  },
+  "privacyTitle": {
+    "message": "Alles bleibt bei dir"
+  },
+  "privacySub": {
+    "message": "Nichts verlässt dein Gerät, ausser du aktivierst selbst die kDrive-Sicherung oben."
   },
   "unitHour": {
     "message": "h"
@@ -353,7 +449,493 @@
   "unitMin": {
     "message": "Min"
   },
-  "tabPerso": {
-    "message": "Anpassen"
+  "unitSec": {
+    "message": "s"
+  },
+  "unitByte": {
+    "message": "B"
+  },
+  "unitKb": {
+    "message": "KB"
+  },
+  "unitMb": {
+    "message": "MB"
+  },
+  "bubblePillHabit": {
+    "message": "Hallo, es ist Zeit"
+  },
+  "bubblePillQuote": {
+    "message": "Gedanke des Tages"
+  },
+  "bubblePillSnark": {
+    "message": "Die Katze hat alles gesehen"
+  },
+  "bubblePillFocus": {
+    "message": "Fokuspause"
+  },
+  "btnDone": {
+    "message": "Erledigt"
+  },
+  "btnLater": {
+    "message": "Später"
+  },
+  "btnDoneIn": {
+    "message": "Erledigt in {n} s"
+  },
+  "snarkAuthor": {
+    "message": "Die Katze"
+  },
+  "screenTodayLine": {
+    "message": "Heute, {d} Bildschirmzeit"
+  },
+  "energyQ": {
+    "message": "Deine Energie, gerade jetzt"
+  },
+  "energyLow": {
+    "message": "Ausgelaugt"
+  },
+  "energyHigh": {
+    "message": "Topfit"
+  },
+  "energySkip": {
+    "message": "Überspringen"
+  },
+  "dayProgress": {
+    "message": "{d} von {g} heute"
+  },
+  "tallyFirst": {
+    "message": "Erste Verschiebung heute, er zählt mit"
+  },
+  "tallyNth": {
+    "message": "{n}. Verschiebung heute, er zählt mit"
+  },
+  "tallyFirstShort": {
+    "message": "Erste Verschiebung heute"
+  },
+  "tallyNthShort": {
+    "message": "{n}. Verschiebung heute"
+  },
+  "snarkGo": {
+    "message": "Also gut, ich gehe"
+  },
+  "snarkGoText": {
+    "message": "Gut. Ich lasse dich in Ruhe, wir sehen uns in {n} Minuten."
+  },
+  "snarkGoTextShort": {
+    "message": "Gut. Ich lasse dich in Ruhe."
+  },
+  "snarkNever": {
+    "message": "Nie"
+  },
+  "snarkNeverText": {
+    "message": "Nie, welch schönes Wort. Ich notiere es in meinem Heft."
+  },
+  "winTitle": {
+    "message": "Gut gemacht"
+  },
+  "winStreak": {
+    "message": "Serie"
+  },
+  "winDays": {
+    "message": "Tage"
+  },
+  "firstVisitIn": {
+    "message": "Erster Besuch in {n} Min"
+  },
+  "blankTitle": {
+    "message": "Noch nichts zu zeigen"
+  },
+  "blankSub": {
+    "message": "Deine Zahlen füllen sich von selbst. Der Koala kommt in {n} Minuten das erste Mal vorbei, und dieser Bildschirm erwacht mit deiner ersten erledigten Gewohnheit."
+  },
+  "soonTitle": {
+    "message": "Was hier erscheinen wird"
+  },
+  "soon1": {
+    "message": "Deine erledigten und verschobenen Gewohnheiten"
+  },
+  "soon1w": {
+    "message": "Ab heute"
+  },
+  "soon2": {
+    "message": "Deine Serie an Tagen in Folge"
+  },
+  "soon2w": {
+    "message": "Nach 2 Tagen"
+  },
+  "soon3": {
+    "message": "Der Zusammenhang zwischen Gewohnheiten und Energie"
+  },
+  "soon3w": {
+    "message": "Nach einer Woche"
+  },
+  "ghostPreview": {
+    "message": "Vorschau"
+  },
+  "bubbleAria": {
+    "message": "Koala Zen Erinnerung"
+  },
+  "focusRemaining": {
+    "message": "Noch {n} Sekunden"
+  },
+  "focusOver": {
+    "message": "Die Pause ist vorbei, du kannst bestätigen"
+  },
+  "bulkOpen": {
+    "message": "Mehrere aufs Mal hinzufügen"
+  },
+  "bulkTitle": {
+    "message": "Zitate hinzufügen"
+  },
+  "bulkSub": {
+    "message": "Ein Zitat pro Zeile"
+  },
+  "bulkHint": {
+    "message": "Der Text, ein Bindestrich, der Autor. Der Autor ist optional."
+  },
+  "bulkPlaceholder": {
+    "message": "Keine Eile, der Tag ist lang - Anonym"
+  },
+  "bulkHowT": {
+    "message": "Wie die Zeile gelesen wird"
+  },
+  "bulkDemoQ": {
+    "message": "Keine Eile, der Tag ist lang"
+  },
+  "bulkDemoA": {
+    "message": "Anonym"
+  },
+  "bulkDemoL1": {
+    "message": "Zitat"
+  },
+  "bulkDemoL2": {
+    "message": "Autor"
+  },
+  "bulkRule": {
+    "message": "Kommas im Text ändern nichts, nur ein von Leerzeichen umgebener Bindestrich trennt. Ohne Bindestrich wird die ganze Zeile zum Zitat und der Autor als Anonym gespeichert."
+  },
+  "bulkCheckBtn": {
+    "message": "Prüfen"
+  },
+  "bulkCancel": {
+    "message": "Abbrechen"
+  },
+  "bulkPreview": {
+    "message": "Vorschau"
+  },
+  "bulkLines": {
+    "message": "{n} Zeilen"
+  },
+  "bulkReady": {
+    "message": "{n} bereit"
+  },
+  "bulkReadyN": {
+    "message": "{n} Zitate bereit"
+  },
+  "bulkDupN": {
+    "message": "{n} Duplikate automatisch entfernt"
+  },
+  "bulkLongN": {
+    "message": "{n} zu lang, ignoriert"
+  },
+  "bulkTooMany": {
+    "message": "über 500 Zeilen hinaus wird der Rest ignoriert"
+  },
+  "bulkApplyN": {
+    "message": "Die {n} Zitate hinzufügen"
+  },
+  "bulkNothing": {
+    "message": "Nichts hinzuzufügen"
+  },
+  "bulkBackText": {
+    "message": "Zurück zum Text"
+  },
+  "phStable": {
+    "message": "stabil im Vergleich zu {p}"
+  },
+  "phMore": {
+    "message": "{n} mehr als {p}"
+  },
+  "phLess": {
+    "message": "{n} weniger als {p}"
+  },
+  "phPrevDay": {
+    "message": "am Vortag"
+  },
+  "phPrevWeek": {
+    "message": "der letzten Woche"
+  },
+  "phPrevMonth": {
+    "message": "dem letzten Monat"
+  },
+  "phPrevYear": {
+    "message": "dem letzten Jahr"
+  },
+  "phPrevPeriod": {
+    "message": "der vorherigen Periode"
+  },
+  "phSlotMorning": {
+    "message": "vor allem morgens"
+  },
+  "phSlotEarly": {
+    "message": "vor allem am frühen Nachmittag"
+  },
+  "phSlotLate": {
+    "message": "vor allem am späten Nachmittag"
+  },
+  "phSlotEvening": {
+    "message": "vor allem abends"
+  },
+  "phEnergyFlat": {
+    "message": "stabil über die Periode"
+  },
+  "phEnergyUp": {
+    "message": "steigend seit {j}"
+  },
+  "phEnergyDown": {
+    "message": "nachlassend seit {j}"
+  },
+  "phScreenAvg": {
+    "message": "{d} pro Tag im Schnitt"
+  },
+  "phStreakSpan": {
+    "message": "von {a} bis {b}"
+  },
+  "phRecordMonth": {
+    "message": "im {m}, aller Zeiten"
+  },
+  "phPace": {
+    "message": "1 Gewohnheit / {d}"
+  },
+  "stRangeDay": {
+    "message": "Tag"
+  },
+  "stRangeWeek": {
+    "message": "Woche"
+  },
+  "stRangeMonth": {
+    "message": "Monat"
+  },
+  "stRangeYear": {
+    "message": "Jahr"
+  },
+  "stRangeAll": {
+    "message": "Alles"
+  },
+  "stPrev": {
+    "message": "Vorherige Periode"
+  },
+  "stNext": {
+    "message": "Nächste Periode"
+  },
+  "stBestStreak": {
+    "message": "Beste Serie"
+  },
+  "stRecord": {
+    "message": "Dein Rekord"
+  },
+  "stTotalOf": {
+    "message": "Total über {n} Tage"
+  },
+  "stTotalAll": {
+    "message": "Total, ganzer Verlauf"
+  },
+  "daysWord": {
+    "message": "Tage"
+  },
+  "statusCall": {
+    "message": "Still, Videocall läuft"
+  },
+  "passagesLabel": {
+    "message": "Die Tiere auf Durchreise"
+  },
+  "passagesHint": {
+    "message": "Sie kommen kurz vorbei, ohne etwas zu wollen."
+  },
+  "customIntervalLabel": {
+    "message": "Dein eigenes Intervall"
+  },
+  "partStatsShort": {
+    "message": "Verlauf"
+  },
+  "frTitle": {
+    "message": "Ein Koala kommt vorbei"
+  },
+  "frSub": {
+    "message": "Er wird dich ab und zu zu einer kleinen Sache einladen. Nichts verlässt dein Gerät."
+  },
+  "frHabitLabel": {
+    "message": "Deine erste Gewohnheit"
+  },
+  "frHabitPh": {
+    "message": "Aufstehen und zwei Minuten bewegen"
+  },
+  "frStart": {
+    "message": "Los geht's"
+  },
+  "browseCopy": {
+    "message": "Zu meinen kopieren"
+  },
+  "browseCopied": {
+    "message": "Kopiert"
+  },
+  "passagesTest": {
+    "message": "Jetzt einen Besuch sehen"
+  },
+  "snarkHaha": {
+    "message": "hahaha"
+  },
+  "bulkLine": {
+    "message": "{n} Zeile"
+  },
+  "bulkReady1": {
+    "message": "{n} bereit"
+  },
+  "bulkReadyN1": {
+    "message": "{n} Zitat bereit"
+  },
+  "bulkDupN1": {
+    "message": "{n} Duplikat automatisch entfernt"
+  },
+  "bulkLongN1": {
+    "message": "{n} zu lang, ignoriert"
+  },
+  "bulkApplyN1": {
+    "message": "Das Zitat hinzufügen"
+  },
+  "passagesFreqLabel": {
+    "message": "Häufigkeit"
+  },
+  "freqRare": {
+    "message": "Selten"
+  },
+  "freqNormal": {
+    "message": "Normal"
+  },
+  "freqFrequent": {
+    "message": "Häufig"
+  },
+  "freqHintRare": {
+    "message": "Max. 1x alle 3 Std."
+  },
+  "freqHintNormal": {
+    "message": "Max. 1x alle 2 Std."
+  },
+  "freqHintFrequent": {
+    "message": "Max. 1x pro Stunde."
+  },
+  "kdriveHint": {
+    "message": "Eine automatische Kopie in deinem eigenen kDrive, Ordner Apps/Koala Zen."
+  },
+  "kdriveTokenLabel": {
+    "message": "kDrive-Zugriffstoken"
+  },
+  "kdriveTokenPh": {
+    "message": "Token hier einfügen"
+  },
+  "kdriveTokenHint": {
+    "message": "Ein Token mit dem kDrive-Bereich, erstellt im Infomaniak Manager."
+  },
+  "kdriveHowTo": {
+    "message": "Wie man ein Token erhält"
+  },
+  "kdriveShow": {
+    "message": "Anzeigen"
+  },
+  "kdriveHideTok": {
+    "message": "Verbergen"
+  },
+  "kdriveConnect": {
+    "message": "Verbinden"
+  },
+  "kdriveConnecting": {
+    "message": "Verbindung…"
+  },
+  "kdriveLastSyncAt": {
+    "message": "Letzte Sicherung am {d}"
+  },
+  "kdriveNeverSynced": {
+    "message": "Noch keine Sicherung gesendet."
+  },
+  "kdriveBackupNow": {
+    "message": "Sichern"
+  },
+  "kdriveRestoreOpen": {
+    "message": "Wiederherstellen"
+  },
+  "kdriveRestorePick": {
+    "message": "Wähle eine Sicherung"
+  },
+  "kdriveNoBackup": {
+    "message": "Keine Sicherung auf kDrive gefunden."
+  },
+  "kdriveApply": {
+    "message": "Wiederherstellen"
+  },
+  "kdriveDisconnect": {
+    "message": "kDrive trennen"
+  },
+  "kdriveBackupDone": {
+    "message": "Sicherung gesendet"
+  },
+  "kdriveLinked": {
+    "message": "Mit kDrive verbunden"
+  },
+  "kdriveUnlinked": {
+    "message": "kDrive getrennt"
+  },
+  "kdriveErrEmpty": {
+    "message": "Zuerst ein Token einfügen."
+  },
+  "kdriveErrInvalid": {
+    "message": "Dieses Token funktioniert nicht. Prüfe, ob es den kDrive-Bereich hat."
+  },
+  "kdriveErrOffline": {
+    "message": "kDrive nicht erreichbar, prüfe deine Verbindung."
+  },
+  "kdriveErrBlocked": {
+    "message": "Die Anfrage wurde unerwartet blockiert. Versuch es erneut."
+  },
+  "kdriveErrNoDrive": {
+    "message": "Kein kDrive auf diesem Konto verfügbar."
+  },
+  "kdriveErrNotConfigured": {
+    "message": "Noch kein kDrive verbunden."
+  },
+  "kdriveErrVerify": {
+    "message": "Die gesendete Sicherung konnte nicht überprüft werden, versuch es erneut."
+  },
+  "kdriveErrUnknown": {
+    "message": "Ein unerwarteter Fehler ist aufgetreten ({c})."
+  },
+  "backupLocalLabel": {
+    "message": "Lokale Datei"
+  },
+  "kdriveSectionLabel": {
+    "message": "kDrive (optional)"
+  },
+  "kdriveConnectedTo": {
+    "message": "Verbunden mit {n}"
+  },
+  "kdriveConnectedGeneric": {
+    "message": "Mit kDrive verbunden"
+  },
+  "kdrivePickTitle": {
+    "message": "Wähle dein kDrive"
+  },
+  "kdrivePickHint": {
+    "message": "Dieses Konto hat mehrere kDrives, wähle dasjenige, das die Sicherungen erhält."
+  },
+  "kdriveFreeSpace": {
+    "message": "{f} frei"
+  },
+  "kdrivePickChoose": {
+    "message": "Wählen"
+  },
+  "kdriveChangeDrive": {
+    "message": "kDrive wechseln"
+  },
+  "kdriveOnlyOneDrive": {
+    "message": "Auf diesem Konto ist nur ein kDrive verfügbar."
   }
 }

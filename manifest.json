@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Koala Zen",
-  "version": "1.0.14",
+  "version": "2.1.0",
   "default_locale": "en",
   "description": "__MSG_extDesc__",
   "permissions": [
@@ -10,12 +10,18 @@
     "storage",
     "tabs",
     "scripting",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "http://*/*",
     "https://*/*"
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      { "id": "ruleset_1", "enabled": true, "path": "rules.json" }
+    ]
+  },
   "background": {
     "service_worker": "background.js",
     "scripts": [
@@ -30,6 +36,7 @@
       ],
       "js": [
         "quotes.js",
+        "passages.js",
         "content.js"
       ],
       "run_at": "document_idle"
@@ -67,6 +74,10 @@
       "data_collection_permissions": {
         "required": [
           "none"
+        ],
+        "optional": [
+          "authenticationInfo",
+          "personallyIdentifyingInfo"
         ]
       }
     }

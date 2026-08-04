@@ -2,7 +2,8 @@
 # Build Koala Zen distribution packages from source.
 #
 #   dist/koala-zen-chrome.zip    Chrome, Edge, Brave (or the Chrome Web Store)
-#   dist/koala-zen-firefox.xpi   Firefox and addons.mozilla.org (0 warnings with addons-linter)
+#   dist/koala-zen-firefox.xpi   Firefox and addons.mozilla.org (0 errors, warnings, or
+#                                notices with addons-linter)
 #
 # The committed manifest.json targets both engines: it keeps background.service_worker
 # for Chrome. For Firefox the script strips that key and requires the Firefox versions
@@ -13,7 +14,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUT="$ROOT/dist"
-FILES=(manifest.json background.js content.js popup.html popup.js quotes.js _locales icons images)
+FILES=(manifest.json background.js content.js passages.js popup.html popup.js quotes.js rules.json _locales icons images)
 
 rm -rf "$OUT"
 mkdir -p "$OUT"

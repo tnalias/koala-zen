@@ -8,36 +8,39 @@
 
 Une petite extension de navigateur pour **Chrome et Firefox**. Toutes les 30 minutes, un koala adorable apparaît sur la page. Il t'invite d'abord à faire l'habitude que tu veux instaurer, bouger par défaut, mais tu choisis. Puis il repasse te souffler une courte pensée, avant de disparaître d'une façon différente à chaque fois. Le koala change à chaque passage : trois photos, ou les tiennes.
 
-- **Fixe tes objectifs d'habitude** (« Fais 3 pompes », « Bois un verre d'eau »), indique si c'est fait, et note ton énergie de 1 à 10.
-- **Suis ta progression** : sur la période de ton choix, tes habitudes faites, habitudes reportées, énergie moyenne et temps d'écran, avec un graphe par jour pour les habitudes et un pour le temps d'écran. Une vue d'ensemble à part montre ta série en barre de progression vers ton record, et si tenir ton habitude va de pair avec plus d'énergie. Les statistiques sont gardées à vie sur ton appareil, avec un bouton pour tout effacer.
-- **Choisis ton rythme** : Pomodoro, Deep work, Ultradien, ou ton propre intervalle (1 à 240 minutes).
-- **Reporte ou mets en pause** (plus tard, 1 h, la journée) et rattrape les pauses manquées.
-- **Pause automatique** en visioconférence (kMeet, Teams, Zoom, Meet) et quand tu quittes le clavier.
-- **Mode focus** en option : une pause plein écran qui bloque jusqu'à la fin du minuteur. Désactivé par défaut.
-- **Vois ton temps d'écran** : la bulle de sagesse, et le petit rappel affiché si tu sautes une pause, t'indiquent depuis combien de temps tu es actif sur l'ordinateur aujourd'hui. Remise à zéro à minuit dans le fuseau que tu choisis (Europe/Zurich par défaut, ou celui de ton navigateur).
-- Une soixantaine de citations modifiables, de Bouddha et Rûmî à Marc Aurèle et Steve Jobs. Ajoute aussi tes propres images de koala.
+- **Note tes habitudes** (« Faire 3 pompes », « Boire un verre d'eau »), réordonne-les au glisser-déposer, elles arrivent une par une, dans l'ordre. Valide chacune et note ton énergie de 1 à 10.
+- **Vois où tu en es dans la journée** : le rappel affiche un bâton par objectif et combien tu en as déjà fait.
+- **Un chat qui passe juste dire bonjour, parfois avec un renard** : il traverse la page, salue et repart. De temps en temps, deux passants se croisent, deux chats, ou un chat et un renard, et échangent un mot pour rire avant de repartir. Il ne demande rien, il ne compte pour rien, il est simplement là. Cinq scènes différentes, entre 8h et 20h, et jamais pendant une visio ni une pause. Choisis la fréquence : Rare (toutes les 3h), Normal (toutes les 2h, par défaut), ou Fréquent (toutes les heures) — ou coupe-le en un clic si tu préfères le silence.
+- **Suis tes progrès** : choisis le jour, la semaine, le mois, l'année ou tout, puis remonte dans les périodes passées avec les flèches. Habitudes faites, habitudes reportées, énergie moyenne et temps d'écran, chacun avec une ligne qui interprète le chiffre au lieu de le répéter, l'écart avec la période précédente, le moment de la journée où tu reportes le plus, si ton énergie monte ou baisse et depuis quand. Un graphe par jour avec ton objectif en pointillé, un graphe du temps d'écran, ta meilleure série et ton record tous temps confondus.
+- **Sauvegarde et restaure** : exporte un fichier `.json` avec les parties que tu choisis, réglages, objectifs et citations, statistiques, personnages importés. Réimporte-le ici ou sur une autre machine, en fusionnant ou en remplaçant. Une barre montre ce qui prend de la place, et tu peux effacer l'historique seul ou tout. **En option, sauvegarde aussi sur ton propre kDrive** (dossier Apps/Koala Zen) avec un jeton d'accès Infomaniak que tu fournis toi-même, et restaure depuis là de la même façon.
+- **Choisis ton rythme** : Pomodoro, Deep work, Ultradien, ou ton propre intervalle, de 5 à 240 minutes par pas de cinq. Ta valeur perso reste mémorisée même quand tu passes sur un preset.
+- **Reporte ou mets en pause** (plus tard, 1 heure, toute la journée) et rattrape les pauses manquées.
+- **Pause automatique** pendant les visios (kMeet, Teams, Zoom, Meet) et quand tu quittes le clavier. L'en-tête te dit quand il reste silencieux.
+- **Mode focus optionnel** : une pause qui assombrit la page jusqu'à la fin du minuteur. Désactivé par défaut, et le compte à rebours est annoncé aux lecteurs d'écran.
+- **Vois ton temps d'écran** : la bulle de sagesse te dit depuis combien de temps tu es actif aujourd'hui. Remise à zéro à minuit dans le fuseau que tu choisis (Europe/Zurich par défaut, ou celui de ton navigateur).
+- Une soixantaine de citations, de Bouddha et Rûmî à Marc Aurèle et Steve Jobs. **Parcours-les toutes**, cherche, masque celles qui ne te parlent pas, ou copie-en une dans ta liste. Ajoute les tiennes une par une, ou **colle-en tout un lot d'un coup**, une citation par ligne, vérifiées à l'écran avant que rien n'entre.
+- **Quelqu'un qui a un avis** : reporte et l'un des cinq personnages débarque dans une bulle graphite, comptant tes reports en bâtons. Un différent à chaque fois, et le cycle repart chaque matin. Renonce pour de bon et il fond en larmes, brièvement, sans rien demander.
+- Apporte **tes propres images ou GIF** aussi, jusqu'à 18. Les carrées et les portraits reçoivent la bulle à côté, les larges la reçoivent au-dessus.
 - **Interface en français, allemand et anglais**, selon la langue de ton navigateur.
-- Il saute, roule ou s'envole. Une sortie différente à chaque fois. Tout reste sur ton ordinateur, aucun compte, aucun suivi.
+- Tout reste sur ton ordinateur par défaut, aucun compte, aucun suivi, aucune analyse — une sauvegarde kDrive optionnelle est la seule chose qui en sort jamais, et seulement si tu l'actives toi-même.
 
 ---
 
 ## Aperçu
 
-Le koala t'invite à faire ton habitude, puis te souffle une pensée. Ensuite, tout se règle depuis le panneau et tu suis ta progression. *(interface en anglais sur les captures, elle s'affiche dans la langue de ton navigateur.)*
-
-<p align="center">
-  <img src="store-assets/screenshot-1-move.png" alt="Un rappel doux pour ton habitude" width="720"><br>
-  <sub><b>Un rappel doux pour ton habitude</b></sub>
-</p>
+Le koala t'invite à faire ton habitude, puis te souffle une pensée. Ensuite, tout se règle depuis le panneau et tu suis ta progression.
 
 <table>
   <tr>
-    <td width="50%" align="center"><img src="store-assets/screenshot-2-settings.png" alt="Choisis ton rythme" width="390"><br><sub><b>Choisis ton rythme</b></sub></td>
-    <td width="50%" align="center"><img src="store-assets/screenshot-3-customize.png" alt="Personnalise tout à ta main" width="390"><br><sub><b>Personnalise tout à ta main</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-1-move-en.png" alt="Un petit rappel, jamais un reproche" width="410"><br><sub><b>Un petit rappel, jamais un reproche</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-2-passages-en.png" alt="Parfois, deux passants se croisent et papotent" width="410"><br><sub><b>Parfois, deux passants se croisent et papotent</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><img src="store-assets/screenshot-4-stats.png" alt="Suis ta progression" width="390"><br><sub><b>Suis ta progression</b></sub></td>
-    <td width="50%" align="center"><img src="store-assets/screenshot-5-wisdom.png" alt="Une pensée de sagesse à chaque fois" width="390"><br><sub><b>Une pensée de sagesse à chaque fois</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-3-settings-en.png" alt="Ton rythme, a ta facon" width="410"><br><sub><b>Ton rythme, a ta facon</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-4-stats-en.png" alt="Ta serie, tes chiffres, ton rythme" width="410"><br><sub><b>Ta serie, tes chiffres, ton rythme</b></sub></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="store-assets/screenshot-5-fun-en.png" alt="Tes citations, tes personnages, 100% toi" width="410"><br><sub><b>Tes citations, tes personnages, 100% toi</b></sub></td>
   </tr>
 </table>
 
@@ -45,7 +48,7 @@ Le koala t'invite à faire ton habitude, puis te souffle une pensée. Ensuite, t
 
 ## Installation
 
-Koala Zen fonctionne sur **Chrome et Firefox**. Choisis ton navigateur ci-dessous. Les paquets prêts à l'emploi se trouvent dans le dossier [`download/`](download). Un build Firefox signé par Mozilla s'installe directement dans un Firefox normal (voir la section Firefox pour le faire signer).
+Koala Zen fonctionne sur **Chrome et Firefox**. Choisis ton navigateur ci-dessous. Les paquets prêts à l'emploi se trouvent dans le dossier [`download/`](download). Le `.xpi` de `download/` est déjà **signé par Mozilla**, prêt à installer directement.
 
 ### Chrome, Edge, Brave (le plus simple, environ une minute)
 L'extension n'est pas encore sur le Chrome Web Store, tu l'ajoutes donc à la main. Elle reste installée après les redémarrages, il suffit de laisser le mode développeur activé.
@@ -57,12 +60,10 @@ L'extension n'est pas encore sur le Chrome Web Store, tu l'ajoutes donc à la ma
 L'icône du koala apparaît dans la barre d'outils. Clique dessus pour ouvrir les réglages.
 
 ### Firefox
-Un Firefox normal n'installe durablement que des extensions **signées par Mozilla**, et c'est gratuit. Une fois un build signé, il s'installe de façon permanente, sans compte et sans ligne de commande. Le dossier [`download/`](download) contient le build actuel, à signer ou à installer.
+Un Firefox normal n'installe durablement que des extensions **signées par Mozilla**, ce que [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) est déjà. Il s'installe de façon permanente, sans compte ni ligne de commande.
 
-**L'installer (recommandé)**
-1. Télécharge [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi).
-2. Ouvre `about:addons`, clique sur la roue crantée puis sur **Installer un module depuis un fichier**, et choisis le `.xpi` (tu peux aussi glisser le fichier sur la fenêtre de Firefox).
-3. Confirme. Comme le fichier est signé, il reste installé après les redémarrages.
+1. Ouvre `about:addons`, clique sur la roue crantée puis sur **Installer un module depuis un fichier**, et choisis [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) (tu peux aussi glisser le fichier sur la fenêtre de Firefox).
+2. Confirme. Comme le fichier est signé, il reste installé après les redémarrages.
 
 **Essayer sans installer (temporaire)**
 L'extension disparaît à la fermeture de Firefox.
@@ -70,7 +71,7 @@ L'extension disparaît à la fermeture de Firefox.
 2. Clique sur **Charger un module temporaire** et choisis le `.xpi`.
 
 **Si tu modifies le code, signe ta propre version (gratuit)**
-Une version que tu as modifiée n'est plus couverte par la signature fournie, tu la signes donc pour toi. Tout se passe dans le navigateur, sans ligne de commande. Tu déposes l'extension sur AMO en **distribution privée** : Mozilla la signe pour ton usage, sans page publique.
+La signature fournie ne couvre que le fichier non modifié ci-dessus, une version que tu as changée a donc besoin de la sienne. Tout se passe dans le navigateur, sans ligne de commande. Tu déposes l'extension sur AMO en **distribution privée** : Mozilla la signe pour ton usage, sans page publique.
 1. Crée un compte Firefox gratuit sur https://accounts.firefox.com, puis ouvre le tableau de bord développeur : https://addons.mozilla.org/fr/developers/
 2. **Personnalise l'identifiant.** Ouvre `manifest.json`, trouve `"id": "koala-zen@public.extension"` et remplace-la par un identifiant à toi, par exemple `"id": "koala-zen@ton-prenom"`. L'identifiant d'origine est réservé à la page publique. Sélectionne ensuite **tous les fichiers du dossier** (pas le dossier lui-même) et compresse-les en un fichier `.zip`.
 3. Clique sur **Soumettre un nouveau module**, choisis **Sur votre propre serveur** (distribution privée, non listée), envoie ton `.zip`, et Mozilla te propose un `.xpi` **signé** à télécharger.
@@ -117,29 +118,37 @@ Besoin d'aide sur une étape ? Là aussi, une IA comme **Euria d'Infomaniak** pe
 ---
 
 ## Réglages du plugin
-**Tout dans Koala Zen se personnalise.** Clique sur l'icône du koala dans la barre d'outils pour ouvrir le panneau du plugin. Il a trois onglets : **Réglages** (quand et comment le koala intervient), **Personnaliser** (ce qu'il montre) et **Stats** (ta progression).
+**Tout est personnalisable dans Koala Zen.** Clique sur l'icône du koala dans la barre d'outils pour ouvrir le panneau. L'en-tête annonce la prochaine visite, et quatre onglets suivent : **Réglages** (comment et quand le koala apparaît), **Perso** (ce qu'il montre), **Stats** (ta progression) et **Données** (sauvegarde et effacement).
 
 Onglet **Réglages**, dans l'ordre :
-- **Mettre en pause** : reporte le prochain passage (**Plus tard**), mets en pause **1 h**, ou arrête pour **la journée**. Un bouton **Reprendre** annule la pause à tout moment.
-- **À rattraper** : si tu reportes ou ignores des rappels, cette section montre ton retard et te laisse en rattraper un pour faire baisser le compteur. Elle n'apparaît que si tu as du retard.
-- **Rappels** : choisis ton **rythme** parmi **Pomodoro**, **Deep work**, **Ultradien**, ou **Personnalisé** pour fixer toi-même l'intervalle (1 à 240 minutes). Pour arrêter le koala un moment, utilise **Mettre en pause**.
-- **Ne pas déranger** : **pause en visioconférence** (le koala n'apparaît pas sur les sites listés, par défaut `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, un domaine par ligne, sous-domaines compris, donc `zoom.us` couvre aussi `us02web.zoom.us`) et **pause quand tu t'absentes** du clavier.
-- **Mode focus** (désactivé par défaut) : une pause plein écran qui bloque la page jusqu'à la fin du minuteur, dont tu choisis la durée.
-- **Temps d'écran** : choisis le fuseau horaire qui définit ta journée pour le compteur affiché dans les bulles. **Automatique (navigateur)** suit ton navigateur, ou sélectionne un fuseau dans la liste. Europe/Zurich par défaut. Le compteur se remet à zéro à minuit dans ce fuseau. Il ne compte que pendant que le navigateur tourne et que tu es actif sur l'ordinateur, et tout reste sur ton appareil.
+- **Mettre en pause** : reporte la prochaine apparition (**Plus tard**), mets en pause **1 heure**, ou arrête pour **aujourd'hui**. Un bouton **Reprendre** annule la pause à tout moment, et ta série reste intacte pendant ce temps.
+- **Rattraper** : si tu reportes ou manques des pauses, un bandeau ambre indique où tu en es et te permet d'en rattraper une.
+- **Rythme des rappels** : choisis **Pomodoro** (25 min), **Deep work** (52 min), **Ultradien** (90 min), ou **Perso** et règle l'intervalle au curseur (5 à 240 minutes, par pas de cinq).
+- **Pause focus** (désactivé par défaut) : la page se voile le temps de la pause, pour couper pour de vrai. Tu choisis la durée.
+- **Les animaux de passage** (activés par défaut) : un chat traverse la page pour dire bonjour et repart. Il ne demande rien et ne compte pour rien. Parfois deux chats, ou un chat et un renard, se croisent et se saluent chacun leur tour. Au maximum un toutes les deux heures, quatre par jour, uniquement entre 8h et 20h, et jamais pendant une visio, une pause ou une pause focus.
+- **Le coucou avant une visio** (suit le même réglage que les animaux de passage) : deux secondes après l'arrivée sur une des pages de visioconférence listées, le chat passe une fois pour glisser une phrase taquine sur la réunion qui commence.
+- **Ne pas déranger** : **pendant une visio** (le koala n'apparaît jamais sur les sites listés, par défaut `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, et les sous-domaines sont couverts, donc `zoom.us` couvre aussi `us02web.zoom.us`) et **quand tu quittes le clavier**.
+- **Temps d'écran** : choisis le fuseau horaire qui définit ta journée pour le compteur affiché dans les bulles. Europe/Zurich par défaut, ou **Automatique (navigateur)**.
 
-En bas de l'onglet Réglages, sous **Enregistrer**, la version et la date de dernière mise à jour s'affichent discrètement. Le bouton **Faire venir le koala maintenant** déclenche un passage immédiat, pratique pour tester, et il ignore la pause visio.
+En bas, **Faire venir le koala** déclenche une apparition immédiate, pratique pour tester, et ignore la pause visio. La version et la date de mise à jour sont rappelées discrètement en dessous.
 
-Onglet **Personnaliser**, dans l'ordre :
-- **Objectifs de l'habitude** : les phrases courtes qui invitent à faire ton habitude, une par ligne, par exemple « Fais 3 pompes ». Laisse vide pour garder celles fournies.
-- **Citations** : une par ligne, au format « Texte | Auteur » (auteur facultatif). Laisse vide pour garder celles fournies. **Charger les citations fournies** les recopie pour que tu puisses les modifier.
-- **Personnages** : les personnages qui viennent t'annoncer ton habitude. Ajoute tes propres PNG ou GIF animés (fond transparent conseillé), ou garde les koalas fournis. Ils remplacent les koalas fournis, sauf si tu coches **Garder aussi les 3 koalas d'origine**. Un clic sur × retire une image, et les images fixes sont redimensionnées pour économiser de l'espace.
-- **Animations** : choisis si les petites animations de l'onglet Stats jouent. **Automatique** suit le réglage de mouvement réduit de ton système, ou force-les **Toujours** ou **Jamais**.
+Onglet **Perso**, dans l'ordre :
+- **Objectifs** : tes phrases d'habitude. Ajoute-les une par une, retire avec ×, et glisse la poignée pour les réordonner. Ils reviennent un par un, dans ton ordre. Laisse la liste vide pour utiliser les objectifs fournis. En dessous, **ton objectif par jour** fixe le nombre d'habitudes que tu vises quotidiennement, il pilote les traits du rappel et la ligne pointillée des statistiques.
+- **Citations** : bascule entre **Les tiennes** et **Fournies**. Ajoute les tiennes sous la forme « Texte | Auteur » (l'auteur est facultatif). **Parcourir les fournies** ouvre la liste complète où tu peux chercher, **masquer** une citation pour que le koala cesse de la dire, ou en **modifier** une, ce qui crée ta version et laisse l'originale intacte.
+- **Personnages** : ajoute tes propres fichiers PNG ou GIF animés (fond transparent conseillé). Ils remplacent les koalas fournis, sauf si tu coches **Garder les koalas d'origine**. Clique sur × pour en retirer un. Les images fixes sont redimensionnées pour économiser de la place, et tout reste sur ton appareil.
+- **Animations** : **Automatique** suit le réglage de mouvement réduit de ton système, ou force-les sur **Toujours** ou **Jamais**.
 
-Clique sur **Enregistrer** dans l'onglet Réglages ou Personnaliser après un changement (les images s'appliquent immédiatement à l'ajout ou au retrait).
+Clique sur **Enregistrer** dans l'un ou l'autre onglet après une modification.
 
-Onglet **Stats**, séparé en deux zones. **Sur la période** de ton choix (aujourd'hui, hier, la semaine, le mois, ou depuis le début) : habitudes faites, habitudes reportées, énergie moyenne et temps d'écran total, une ligne de cadence qui relie tes pauses à ton temps d'écran, plus un graphe par jour pour les habitudes (faites et reportées empilées) et un graphe par jour pour le temps d'écran. **Vue d'ensemble**, toujours sur tout ton historique : ta série en cours affichée en barre de progression vers ton record avec un compte à rebours motivant, et comment ton énergie moyenne se compare selon que tu la fais peu ou beaucoup. Le titre du bénéfice s'adapte à tes propres données, il n'affirme jamais un lien qui n'existe pas. L'énergie est demandée sur **Fait** et sur **Plus tard**. Les données sont gardées à vie et peuvent être effacées depuis la section Données, tout en bas de l'onglet Stats. Les animations suivent ton système par défaut et peuvent être forcées ou coupées.
+Onglet **Stats**. Choisis une période (aujourd'hui, hier, cette semaine ou la dernière, ce mois ou le dernier, depuis le début) et lis quatre chiffres, chacun avec une ligne de contexte : les habitudes faites comparées à la période précédente, les reportées avec le moment de la journée où tu reportes le plus, l'énergie moyenne avec sa tendance, et le temps d'écran avec une moyenne par jour. En dessous, un graphe par jour pour les habitudes (faites et reportées côte à côte) avec ton objectif quotidien en pointillé, un graphe du temps d'écran, et une ligne de cadence qui relie tes habitudes à ton temps d'écran. Puis ta série en cours en barre de progression vers ton record, et la comparaison de ton énergie moyenne selon que tu en fais peu ou beaucoup. Les formulations s'adaptent à tes données, donc rien n'affirme un lien qui n'existe pas. Au tout premier lancement, l'onglet montre ce qui va apparaître et quand, plutôt qu'un mur de zéros.
 
-Le koala s'affiche sur la page web active, pas sur les pages internes du navigateur (`chrome://`, `about:`…), qui n'autorisent pas les extensions.
+Onglet **Données** :
+- **Sauvegarde et restauration** : une seule carte, deux destinations. Coche les parties voulues (réglages, objectifs et citations, statistiques, personnages importés, chacune avec son poids) et choisis **fusionner** ou **remplacer** pour la restauration, les deux choix valent pour la destination que tu utilises plus bas. **Fichier local** : **Exporte** un fichier `.json`, **Importer** le remet en place. **kDrive** (optionnelle) : colle un jeton d'accès Infomaniak personnel avec le périmètre kDrive ([comment l'obtenir](https://faq.infomaniak.com/2582)) pour sauvegarder et restaurer exactement les mêmes données sur ton propre kDrive, dossier `Apps/Koala Zen`. Si ton compte a plusieurs kDrive, tu choisis lequel ; avec un seul, la connexion se fait directement. Un lien "Changer de kDrive" permet de revenir sur ce choix plus tard. Rien n'est envoyé tant que tu n'as pas fourni de jeton et connecté, déconnecte à tout moment pour arrêter. Le jeton est chiffré au repos et jamais inclus dans le fichier `.json` local.
+- **Ce que Koala Zen occupe** : une jauge qui répartit ton stockage entre personnages, historique et contenus.
+- **Tout reste chez toi** : aucun compte, aucun envoi, aucune analyse — sauf si tu actives la sauvegarde kDrive ci-dessus.
+- **Effacer** : l'historique seul, ou tout, réglages et contenus inclus. Les deux demandent un second clic de confirmation, pense à exporter avant.
+
+Le koala apparaît sur la page web active, pas sur les pages internes du navigateur (`chrome://`, `about:`…), qui n'autorisent pas les extensions.
 
 ---
 
@@ -149,7 +158,7 @@ Les paquets déjà construits sont dans [`download/`](download). Reconstruis-les
 bash build.sh
 ```
 - `dist/koala-zen-chrome.zip` pour Chrome, Edge, Brave ou le Chrome Web Store.
-- `dist/koala-zen-firefox.xpi` pour Firefox et addons.mozilla.org, sans aucun avertissement au validateur.
+- `dist/koala-zen-firefox.xpi` pour Firefox et addons.mozilla.org, sans aucune erreur, avertissement ou avis au validateur.
 
 Le `manifest.json` du dépôt cible les deux moteurs. Pour Firefox, le script retire la clé `service_worker` propre à Chrome et fixe la version minimale qui comprend `data_collection_permissions`, ce qui garde le rapport AMO tout vert. Le dossier `dist/` est ignoré par Git.
 
@@ -165,19 +174,26 @@ Recharge l'extension après une modification des fichiers.
 ## Structure du projet
 ```
 manifest.json     manifeste de l'extension (Manifest V3, Chrome + Firefox)
-background.js     service worker : planifie les rappels, applique la pause visio, suit le temps d'écran actif du jour
-content.js        dessine le koala, la bulle et les animations
-quotes.js         les citations et invitations d'habitude par défaut
-popup.html/js     le panneau de réglages
+background.js     service worker : planifie les rappels, applique la pause visio,
+                  suit le temps d'écran actif et les statistiques quotidiennes,
+                  et dialogue avec l'API kDrive pour la sauvegarde optionnelle
+content.js        dessine le koala, les bulles et la chorégraphie du rappel
+passages.js       les scènes des animaux de passage (chats, et parfois une rencontre avec un renard)
+quotes.js         les citations, objectifs et répliques du chat par défaut
+popup.html/js     le panneau à quatre onglets : Réglages, Perso, Stats, Données
+rules.json        regle declarativeNetRequest qui retire l'en-tete Origin sur les
+                  requetes vers api.infomaniak.com, necessaire a la sauvegarde kDrive
 build.sh          construit les paquets Chrome (.zip) et Firefox (.xpi)
 download/         paquets prêts à installer (Chrome .zip, Firefox .xpi)
-images/           les 3 koalas par défaut (PNG)
+images/           les koalas par défaut et le chat (PNG)
 icons/            icônes de la barre d'outils
-store-assets/     textes et captures d'écran pour les boutiques
+store-assets/     textes de fiche et captures pour les boutiques
 ```
 
 ## Confidentialité
-Rien ne quitte le navigateur. Tes réglages (fréquence, activation, liste visio, fuseau horaire choisi, ton compteur de temps d'écran du jour, et les images, citations ou messages que tu ajoutes) sont stockés localement via l'API de stockage du navigateur. Aucun serveur, aucune analyse, aucun suivi.
+Par défaut, rien ne quitte le navigateur. Tes réglages (fréquence, activation, liste visio, fuseau horaire choisi, ton compteur de temps d'écran du jour, et les images, citations ou messages que tu ajoutes) sont stockés localement via l'API de stockage du navigateur. Aucun serveur, aucune analyse, aucun suivi.
+
+La seule exception est la sauvegarde kDrive **optionnelle** de l'onglet Données : si tu colles ton propre jeton d'accès Infomaniak et te connectes, Koala Zen envoie les mêmes données que l'export local vers ton propre kDrive, dossier `Apps/Koala Zen`, uniquement quand tu cliques sur « Sauvegarder » (ou restaures depuis là). Rien n'est envoyé avant ça, et te déconnecter arrête tout. Le jeton est chiffré au repos dans le stockage local de l'extension et n'est jamais inclus dans le fichier `.json` exporté. Cela demande la permission `declarativeNetRequest` (pour retirer un en-tête ajouté par le navigateur qui casserait sinon la requête) et ne joint que `api.infomaniak.com`.
 
 ## Licence
 MIT. Voir [LICENSE](LICENSE).

@@ -132,7 +132,7 @@ const KZ_QUOTES_EN = [
 ];
 
 const KZ_SPORT_FR = [
-  "Debout ! 10 squats — ton canapé a besoin d'une pause loin de toi. 🛋️",
+  "Debout ! 10 squats, ton canapé a besoin d'une pause loin de toi. 🛋️",
   "Étire-toi comme un koala qui sort de 20 h de sieste. 🥱",
   "30 secondes de gainage. Ton futur toi te dira merci (ou pas). 💪",
   "Petite danse de la victoire ! Personne ne regarde… normalement. 🕺",
@@ -140,7 +140,7 @@ const KZ_SPORT_FR = [
   "15 talons-fesses. On se motive, champion·ne ! 🏃",
   "Roule des épaules, tu n'es pas une statue de musée. 🗿",
   "Marche jusqu'à la fenêtre et respire un grand coup. 🌬️",
-  "Sautille sur place — mode pop-corn activé. 🍿",
+  "Sautille sur place, mode pop-corn activé. 🍿",
   "Étirement du cou : dis « non » 5 fois, puis « oui » 5 fois. 🙅",
   "Monte un étage… ou fais semblant, mais bouge ! 🪜",
   "Grimpe à ton arbre intérieur : 10 fentes avant. 🌳",
@@ -153,7 +153,7 @@ const KZ_SPORT_FR = [
 ];
 
 const KZ_SPORT_EN = [
-  "Up! 10 squats — your couch needs a break from you. 🛋️",
+  "Up! 10 squats, your couch needs a break from you. 🛋️",
   "Stretch like a koala waking from a 20-hour nap. 🥱",
   "30 seconds of plank. Your future self will thank you (or not). 💪",
   "Little victory dance! Nobody's watching… probably. 🕺",
@@ -161,7 +161,7 @@ const KZ_SPORT_EN = [
   "15 butt kicks. Let's go, champ! 🏃",
   "Roll your shoulders, you're not a museum statue. 🗿",
   "Walk to the window and take a deep breath. 🌬️",
-  "Hop in place — popcorn mode on. 🍿",
+  "Hop in place, popcorn mode on. 🍿",
   "Neck stretch: say “no” 5 times, then “yes” 5 times. 🙅",
   "Climb a floor… or pretend to, but move! 🪜",
   "Climb your inner tree: 10 forward lunges. 🌳",
@@ -236,7 +236,7 @@ const KZ_QUOTES_DE = [
 ];
 
 const KZ_SPORT_DE = [
-  "Auf! 10 Kniebeugen — dein Sofa braucht eine Pause von dir. 🛋️",
+  "Auf! 10 Kniebeugen, dein Sofa braucht eine Pause von dir. 🛋️",
   "Streck dich wie ein Koala nach 20 Stunden Nickerchen. 🥱",
   "30 Sekunden Planke. Dein zukünftiges Ich dankt dir (oder auch nicht). 💪",
   "Kleiner Siegestanz! Niemand schaut zu… wahrscheinlich. 🕺",
@@ -244,7 +244,7 @@ const KZ_SPORT_DE = [
   "15 Fersenläufe. Los geht's, Champion! 🏃",
   "Kreise die Schultern, du bist keine Museumsstatue. 🗿",
   "Geh zum Fenster und atme einmal tief durch. 🌬️",
-  "Hüpf auf der Stelle — Popcorn-Modus an. 🍿",
+  "Hüpf auf der Stelle, Popcorn-Modus an. 🍿",
   "Nackendehnung: 5 Mal Nein sagen, dann 5 Mal Ja. 🙅",
   "Steig ein Stockwerk hoch… oder tu so, aber beweg dich! 🪜",
   "Erklimm deinen inneren Baum: 10 Ausfallschritte nach vorne. 🌳",
@@ -289,6 +289,111 @@ const KZ_SNARK_DE = [
   "Pack die Ausrede weg, raus mit den Beinen. Beim nächsten Mal bewegst du dich, versprochen?"
 ];
 
+// Les huit phrases des animaux de passage. Communes aux deux builds.
+// Aucune ne demande quoi que ce soit, aucune ne parle d'habitude ni de
+// temps d'ecran. Aucun texte n'est propre a un animal.
+const KZ_HELLO_FR = [
+  "Coucou, j'espère que tu passes une belle journée",
+  "Je passais juste par là, rien à signaler",
+  "Tu as l'air occupé, je ne dis rien de plus",
+  "Il fait beau quelque part, forcément",
+  "Petit passage, pour rien",
+  "Bonne fin de journée, sincèrement",
+  "Je vais faire un somme, tu devrais essayer",
+  "Rien à te demander, juste te dire bonjour"
+];
+const KZ_HELLO_EN = [
+  "Hello there, hope your day is going well",
+  "Just passing through, nothing to report",
+  "You look busy, I will say no more",
+  "The sun is out somewhere, it has to be",
+  "A little visit, for no reason at all",
+  "Have a lovely rest of your day, truly",
+  "I am off for a nap, you should try one",
+  "Nothing to ask of you, just saying hello"
+];
+const KZ_HELLO_DE = [
+  "Hallo, ich hoffe, du hast einen schoenen Tag",
+  "Ich gehe nur vorbei, nichts zu melden",
+  "Du siehst beschaeftigt aus, ich sage nichts weiter",
+  "Irgendwo scheint die Sonne, ganz sicher",
+  "Ein kleiner Besuch, ganz ohne Grund",
+  "Einen schoenen Tag noch, ganz ehrlich",
+  "Ich gehe ein Schlaefchen machen, versuch es auch",
+  "Ich will nichts von dir, nur hallo sagen"
+];
+
+// Vingt phrases pour le coucou du chat au tout debut d'une visioconference. Ton
+// complice comme les piques de relance, jamais culpabilisant, jamais un ordre.
+const KZ_MEETING_FR = [
+  "Bonne réu, j'espère qu'elle servira à quelque chose.",
+  "Si ta réu est trop longue, je n'oublierai pas de te rappeler tes bonnes habitudes.",
+  "Je passais avant que ça commence. Garde la caméra sur ton visage, pas sur le plafond.",
+  "Une réunion de plus. Ton café aussi mérite une pause, pense à lui.",
+  "Je repasserai si ça dépasse l'horaire prévu. Ça dépasse toujours l'horaire prévu.",
+  "Bon courage pour la réu. Résiste à l'envie de couper la caméra pour souffler un peu.",
+  "Encore une réunion qui aurait pu être un message. Mais bon courage quand même.",
+  "Je croise les pattes pour que celle-ci tienne son horaire. Sans grand espoir.",
+  "Une réunion de plus sur ton agenda, une habitude de moins sur le mien. On verra qui gagne.",
+  "Si tu t'ennuies pendant la réu, pense à moi plutôt qu'à ton téléphone.",
+  "Un carton, une réunion, c'est pareil pour moi : je m'installe dedans et je n'en ressors plus.",
+  "Je ne toucherai pas à ton clavier pendant la réu, à condition que tu restes sage, toi aussi.",
+  "Un chat n'aurait jamais organisé cette réunion. Un miaulement bien placé aurait suffi.",
+  "Si on te dit que tu es en sourdine, prends ça comme un signe. Même ton micro voulait faire une sieste.",
+  "J'ai neuf vies et aucune n'est assez longue pour cette réunion. Courage, toi qui n'en as qu'une.",
+  "Je regarde l'écran avec le même air blasé que toi pendant les tours de table.",
+  "Ma réunion à moi dure vingt heures et s'appelle une sieste. La tienne a l'air moins reposante.",
+  "Je poursuis un point rouge toute la journée, toi un ordre du jour sans fin. On fait la paire.",
+  "Si un objet tombe de ton bureau pendant l'appel, dis-leur que c'est la réunion qui craque.",
+  "J'espère que cette réunion aura plus ton attention que moi d'habitude."
+];
+const KZ_MEETING_EN = [
+  "Good luck with the meeting, hope it actually goes somewhere.",
+  "If your meeting runs long, I will not forget to remind you about your habits.",
+  "Just passing by before it starts. Keep the camera on your face, not the ceiling.",
+  "Another meeting. Your coffee deserves a break too, think of it.",
+  "I will drop by again if it runs over. It always runs over.",
+  "Good luck in there. Resist the urge to turn off your camera for a breather.",
+  "Another meeting that could have been a message. Good luck anyway.",
+  "Fingers, or paws, crossed this one keeps to schedule. Not holding my breath.",
+  "One more meeting on your calendar, one less habit on mine. We will see who wins.",
+  "If you get bored in there, think of me instead of your phone.",
+  "A cardboard box or a meeting, same thing to me. I climb in and I am not coming out.",
+  "I will not touch your keyboard during the call, as long as you behave too.",
+  "A cat would never have organised this meeting. One well placed meow would have done the job.",
+  "If they tell you that you are on mute, take it as a sign. Even your microphone wanted a nap.",
+  "I have nine lives and none of them is long enough for this meeting. Good luck, you only have one.",
+  "I stare at the screen with the same unimpressed look you have during the status round.",
+  "My version of a meeting lasts twenty hours and is called a nap. Yours looks far less restful.",
+  "I chase a red dot all day, you chase an endless agenda. We make quite the pair.",
+  "If something falls off your desk mid call, tell them it is the meeting creaking under its own weight.",
+  "I hope this meeting gets more of your attention than I usually do."
+];
+const KZ_MEETING_DE = [
+  "Viel Erfolg bei der Sitzung, hoffentlich bringt sie etwas.",
+  "Wenn deine Sitzung zu lang wird, vergesse ich deine guten Gewohnheiten nicht.",
+  "Ich schaue nur kurz vorbei, bevor es losgeht. Kamera aufs Gesicht, nicht auf die Decke.",
+  "Noch eine Sitzung. Dein Kaffee verdient auch eine Pause, denk an ihn.",
+  "Ich schaue nochmal vorbei, falls es länger dauert. Es dauert immer länger.",
+  "Viel Erfolg da drin. Widerstehe der Versuchung, die Kamera für eine Verschnaufpause auszuschalten.",
+  "Noch eine Sitzung, die auch eine Nachricht hätte sein können. Trotzdem viel Erfolg.",
+  "Ich drücke die Pfoten, dass diese im Zeitplan bleibt. Ohne grosse Hoffnung.",
+  "Eine Sitzung mehr in deinem Kalender, eine Gewohnheit weniger in meinem. Mal sehen, wer gewinnt.",
+  "Wenn dir langweilig wird, denk an mich statt an dein Handy.",
+  "Ein Karton oder eine Sitzung, für mich dasselbe. Ich steige rein und komme nicht mehr raus.",
+  "Ich fasse deine Tastatur während der Sitzung nicht an, solange du dich auch benimmst.",
+  "Eine Katze hätte diese Sitzung nie einberufen. Ein passendes Miau hätte gereicht.",
+  "Wenn man dir sagt, du bist stumm geschaltet, nimm es als Zeichen. Sogar dein Mikrofon wollte ein Nickerchen.",
+  "Ich habe neun Leben, und keins ist lang genug für diese Sitzung. Viel Glück, du hast nur eins.",
+  "Ich schaue den Bildschirm mit demselben gelangweilten Blick an wie du bei der Rundfrage.",
+  "Meine Version einer Sitzung dauert zwanzig Stunden und heisst Nickerchen. Deine wirkt weniger erholsam.",
+  "Ich jage den ganzen Tag einen roten Punkt, du eine endlose Traktandenliste. Wir passen zusammen.",
+  "Wenn etwas von deinem Tisch fällt, sag ihnen, das sei die Sitzung, die unter ihrem eigenen Gewicht ächzt.",
+  "Ich hoffe, diese Sitzung bekommt mehr von deiner Aufmerksamkeit als ich normalerweise."
+];
+
 const KZ_QUOTES = KZ_IS_FR ? KZ_QUOTES_FR : (KZ_IS_DE ? KZ_QUOTES_DE : KZ_QUOTES_EN);
 const KZ_SPORT = KZ_IS_FR ? KZ_SPORT_FR : (KZ_IS_DE ? KZ_SPORT_DE : KZ_SPORT_EN);
 const KZ_SNARK = KZ_IS_FR ? KZ_SNARK_FR : (KZ_IS_DE ? KZ_SNARK_DE : KZ_SNARK_EN);
+const KZ_MEETING = KZ_IS_FR ? KZ_MEETING_FR : (KZ_IS_DE ? KZ_MEETING_DE : KZ_MEETING_EN);
+const KZ_HELLO = KZ_IS_FR ? KZ_HELLO_FR : (KZ_IS_DE ? KZ_HELLO_DE : KZ_HELLO_EN);

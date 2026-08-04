@@ -6,433 +6,1174 @@
   <title>Koala Zen</title>
   <style>
     :root {
-      --bg: #ffffff; --ink: #23252b; --muted: #6b7280; --line: #e7e9ee;
-      --green: #1c6b45; --green-soft: #e8f3ec; --green-bar: #3f9d5f;
-      --red: #a3271c; --red-soft: #fbeae8; --red-bar: #d9534f;
-      --gold: #7a5c00; --gold-soft: #fdf6d8; --gold-bar: #edb200;
-      --violet: #45329b; --violet-soft: #efeafb; --violet-bar: #8266d6;
-      --slate: #3f4859;
+      /* Surfaces et neutres */
+      --w: #FFFFFF;
+      --g50: #FAFAFA;
+      --g100: #F5F5F5;
+      --g200: #F1F1F1;
+      --g300: #E0E0E0;
+      --g400: #9F9F9F;
+      --g500: #666666;
+      --g600: #333333;
+      /* Vert de marque */
+      --gr: #2FAE4A;
+      --gr-dark: #1F7A36;
+      --gr-ink: #1F5C2E;
+      --gr-mid: #33693F;
+      --gr-050: #F2FBF3;
+      --gr-100: #EAF7ED;
+      --gr-150: #DCEFE0;
+      --gr-200: #D6F0DB;
+      --gr-250: #B8DCC2;
+      --gr-300: #C7E5CE;
+      --gr-soft: #9BD4A8;
+      /* Ambre, les reports */
+      --am-bg: #FFF6E6;
+      --am-bd: #F5DEB4;
+      --am-bd2: #EBD9B8;
+      --am-ink: #7A4E08;
+      --am-mid: #8A6420;
+      --am-bar: #F5C877;
+      /* Vert tres clair, encadre de l'intervalle Perso */
+      --gr-025: #F7FCF8;
+      /* Graphite, les bulles de relance */
+      --gt: #2E3338;
+      --gt-bd: #454C52;
+      --gt-ink: #B9C2C9;
+      --gt-pill: #F0D9A8;
+      /* Fond du segmente de statistiques */
+      --seg: #E6E6E6;
+      /* Rouge, la zone destructive */
+      --rd: #A82722;
+      --rd-soft: #F2C9C7;
+      /* Ombres */
+      --sh-card: 0 1px 2px rgba(16,24,40,0.04);
+      --sh-tab: 0 1px 2px rgba(16,24,40,0.06);
     }
+
+    /* Module F, l'ajout en lot */
+    .bulk-ta { width: 100%; height: 186px; box-sizing: border-box; resize: none; padding: 10px 11px;
+      border: 1px solid var(--g300); border-radius: 8px; background: var(--w); color: var(--g600);
+      font-family: inherit; font-size: 12px; line-height: 17px; }
+    .bulk-ta:focus { outline: none; border-color: var(--gr); box-shadow: 0 0 0 3px rgba(47,174,74,0.20); }
+    .bulk-demo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 0 2px; }
+    .bulk-demo-q { font-size: 12px; line-height: 17px; color: var(--g600); }
+    .bulk-demo-s { font-size: 12px; font-weight: 600; color: var(--gr); }
+    .bulk-demo-a { font-size: 12px; line-height: 17px; color: var(--am-ink); }
+    .bulk-demo-lg { display: flex; gap: 6px; padding-bottom: 6px; }
+    .bulk-demo-l1 { font-size: 11px; line-height: 15px; color: var(--g400); }
+    .bulk-demo-l2 { font-size: 11px; line-height: 15px; color: var(--g400); }
+    .bulk-prev { max-height: 250px; overflow-y: auto; }
+    .info { display: flex; gap: 9px; align-items: flex-start; background: #EDF4FC; border: 1px solid #CFE0F3;
+      border-radius: 12px; padding: 10px 11px; font-size: 12px; line-height: 17px; color: #1B4A7A; }
+    .info-i { flex: 0 0 auto; width: 16px; height: 16px; border-radius: 9999px; background: #1F63A8;
+      color: var(--w); font-size: 11px; line-height: 16px; text-align: center; font-weight: 500; }
+    /* Module G, le filtre de periode et les tuiles de serie */
+    .seg--off { opacity: .5; pointer-events: none; }
+    .segbox.segbox--range { display: block; background: var(--seg); border: none;
+      border-radius: 9px; padding: 3px; }
+    .segbox.segbox--range .seg { display: flex; gap: 3px; background: none;
+      border: none; padding: 0; width: 100%; }
+    .segbox.segbox--range .seg-b { flex: 1 1 0; display: flex; align-items: center; justify-content: center;
+      height: 28px; border-radius: 7px; border: none; background: none; font: inherit;
+      font-size: 11px; color: var(--g500); cursor: pointer; padding: 0; white-space: nowrap; }
+    .segbox.segbox--range .seg-b--on { background: var(--w); font-weight: 500;
+      color: var(--g600); box-shadow: var(--sh-tab); }
+    .nav { display: flex; align-items: center; gap: 6px; }
+    .nav-a { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9999px; border: 1px solid var(--gr-300);
+      background: var(--w); color: var(--gr-ink); font: inherit; font-size: 17px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; cursor: pointer; box-shadow: var(--sh-card); }
+    .nav-a:hover { background: var(--gr-050); }
+    .nav-a[disabled] { color: var(--g400); border-color: var(--g300); background: var(--g100);
+      box-shadow: none; cursor: default; }
+    .nav-d { flex: 1 1 auto; text-align: center; font-size: 12px; line-height: 17px; color: var(--g600); }
+    .tiles--2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .surt { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--g400); }
+    /* Module C, l'encadre de l'intervalle Perso */
+    .permin { background: var(--gr-025); border: 1px solid var(--gr-300); border-radius: 12px; padding: 10px 11px; }
+    .permin-h { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 8px; }
+    .permin-l { font-size: 12px; line-height: 16px; color: var(--gr-mid); font-weight: 500; }
+    .permin-v { font-size: 13px; line-height: 18px; color: var(--gr-ink); font-weight: 600; }
+    .permin-r { display: flex; align-items: center; gap: 9px; }
+    .rnd { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9999px; border: 1px solid var(--gr-soft);
+      background: var(--w); color: var(--gr-dark); font: inherit; font-size: 18px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; cursor: pointer; box-shadow: var(--sh-card); }
+    .rnd:hover { background: var(--gr-050); border-color: var(--gr); }
+    .rnd[disabled] { color: var(--g400); border-color: var(--g300); background: var(--g100);
+      box-shadow: none; cursor: default; }
+    .permin--off { opacity: .5; }
+    /* Module H, la barre de stockage */
+    .bar { display: flex; height: 8px; border-radius: 9999px; overflow: hidden; background: var(--g200); }
+    .bar-seg { height: 8px; }
+    .bar-seg--k { background: var(--gr); }
+    .bar-seg--h { background: var(--am-bar); }
+    .bar-seg--c { background: var(--gr-soft); }
+    .bar-lg { display: flex; gap: 12px; padding-top: 2px; }
+    .bar-lgi { display: flex; align-items: center; gap: 5px; font-size: 11px; line-height: 15px; color: var(--g500); }
+    .bar-d { width: 8px; height: 8px; border-radius: 9999px; }
+    /* Module N, la premiere installation */
+    .fr { text-align: center; }
+    .fr-k { display: flex; justify-content: center; padding-top: 6px; }
+    .fr-t { font-size: 17px; line-height: 24px; font-weight: 600; color: var(--gr-ink); }
+    .fr-s { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .tiny { align-self: flex-start; padding: 0; border: none; background: none; color: var(--gr-dark);
+      font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
+    .tiny:hover { color: var(--gr-ink); }
     * { box-sizing: border-box; }
+    /* Accessibilite, anneau de focus visible sur tout element interactif. */
+    :focus-visible { outline: 3px solid var(--gr); outline-offset: 1px; border-radius: 7px; }
     html, body { margin: 0; }
     body {
       width: 300px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: var(--ink); background: var(--bg); padding: 16px 16px 18px;
+      background: var(--g200);
+      color: var(--g600);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    /* make the hidden attribute authoritative over display rules */
     [hidden] { display: none !important; }
+    button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; padding: 0; text-align: left; }
+    input, select, textarea { font: inherit; color: inherit; }
 
-    .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .head .mark { width: 34px; height: 34px; border-radius: 10px; background: var(--green-soft); display: flex; align-items: center; justify-content: center; font-size: 20px; flex: 0 0 auto; }
-    .head h1 { font-size: 15px; margin: 0; line-height: 1.1; }
-    .head p { font-size: 11.5px; color: var(--muted); margin: 2px 0 0; }
+    /* ---------- En-tete ---------- */
+    .hd {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 12px; background: var(--w); border-bottom: 1px solid var(--g300);
+    }
+    .hd-top { display: flex; align-items: center; gap: 10px; }
+    .hd-mark { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9999px; background: var(--gr-150); border: 1px solid var(--gr-250); box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+    .hd-txt { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+    .hd-name { font-size: 14px; line-height: 19px; font-weight: 500; color: var(--g600); }
+    .hd-sub { font-size: 12px; line-height: 16px; color: var(--g500); }
 
-    .tabs { display: flex; gap: 4px; background: #f2f4f7; padding: 3px; border-radius: 11px; margin-bottom: 12px; }
-    .tab { flex: 1; font: inherit; font-size: 11.5px; font-weight: 600; white-space: nowrap; border: none; background: transparent; color: var(--muted); padding: 7px 2px; border-radius: 8px; cursor: pointer; }
-    .tab--on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .tabs { display: flex; gap: 3px; padding: 3px; background: var(--g200); border-radius: 9px; }
+    .tab { flex: 1 1 0; display: flex; align-items: center; justify-content: center; height: 28px; border-radius: 7px; color: var(--g500); font-size: 11px; white-space: nowrap; }
+    .tab--on { background: var(--w); color: var(--g600); font-weight: 500; box-shadow: var(--sh-tab); }
 
-    /* section cards */
-    .group { background: #fbfbfd; border: 1px solid #ececf1; border-radius: 14px; padding: 11px 13px 13px; margin-bottom: 10px; }
-    .group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 9px; }
-    .subhead { font-size: 12.5px; font-weight: 600; color: var(--ink); margin: 13px 0 2px; }
+    /* ---------- Corps ---------- */
+    .body { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
 
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; }
-    .row--sub { padding-top: 4px; }
-    .row label { font-size: 13.5px; }
-    .hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .card { background: var(--w); border: 1px solid var(--g300); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--sh-card); }
+    .card--tight { gap: 8px; }
+    .card-h { display: flex; align-items: baseline; gap: 8px; }
+    .card-t { flex: 1 1 auto; font-size: 14px; line-height: 19px; font-weight: 500; color: var(--g600); }
+    .card-m { font-size: 12px; color: var(--g500); text-align: right; }
+    .hint { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .sep { height: 1px; background: var(--g200); margin: 0 -12px; }
 
-    .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
-    .switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
-    .track { position: absolute; inset: 0; background: #cfd3da; border-radius: 999px; transition: background .18s ease; pointer-events: none; }
-    .track::before { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .18s ease; }
-    .switch input:checked + .track { background: var(--green); }
-    .switch input:checked + .track::before { transform: translateX(18px); }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .row--top { align-items: flex-start; }
+    .row-txt { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+    .row-lab { font-size: 13px; line-height: 18px; color: var(--g600); }
+    .row-lab--big { font-size: 14px; line-height: 19px; font-weight: 500; }
+    .row-sub { font-size: 12px; line-height: 16px; color: var(--g500); }
+    .row-dim { opacity: .45; pointer-events: none; }
+    .grow { flex: 1 1 auto; }
+    .fixed { flex: 0 0 auto; }
+    #passagesFreqWrap { display: flex; flex-direction: column; gap: 6px; }
+    #kdriveSetup, #kdrivePicker, #kdriveConnected { display: flex; flex-direction: column; gap: 10px; }
 
-    .num input { width: 66px; text-align: center; font-size: 14px; padding: 7px 6px; color: var(--ink); border: 1px solid var(--line); border-radius: 9px; background: #fff; -moz-appearance: textfield; }
-    .num input:focus { outline: none; border-color: var(--green); }
-    .num--inline { display: flex; align-items: center; gap: 7px; margin-top: 8px; }
-    .num--inline .unit { font-size: 12px; color: var(--muted); }
+    /* Interrupteur */
+    .sw { position: relative; flex: 0 0 auto; width: 40px; height: 24px; }
+    .sw input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+    .sw-t { position: absolute; inset: 0; border-radius: 9999px; background: var(--g300); transition: background .18s ease; pointer-events: none; }
+    .sw-t::before { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 9999px; background: var(--w); transition: transform .18s ease; }
+    .sw input:checked + .sw-t { background: var(--gr); }
+    .sw input:checked + .sw-t::before { transform: translateX(16px); }
 
-    textarea { width: 100%; font: inherit; font-size: 12.5px; color: var(--ink); border: 1px solid var(--line); border-radius: 9px; background: #fff; padding: 8px 9px; resize: vertical; min-height: 58px; line-height: 1.5; margin-top: 8px; }
-    textarea:focus { outline: none; border-color: var(--green); }
-    .file-btn { display: inline-block; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: var(--green); background: var(--green-soft); border: 1px solid #d6e6dd; border-radius: 9px; padding: 8px 11px; cursor: pointer; }
-    .file-btn:hover { filter: brightness(0.98); }
-    .file-btn input { display: none; }
-    .gallery { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .gallery:empty { display: none; }
-    .thumb { position: relative; width: 52px; height: 52px; border-radius: 9px; overflow: hidden; border: 1px solid var(--line); background: #f3f5f7; display: flex; align-items: center; justify-content: center; }
-    .thumb img { max-width: 100%; max-height: 100%; display: block; }
-    .thumb button { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; padding: 0; border-radius: 50%; border: none; background: rgba(0,0,0,.62); color: #fff; font-size: 12px; line-height: 18px; font-weight: 700; cursor: pointer; }
-    .checkbox { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
-    .checkbox input { width: 15px; height: 15px; accent-color: var(--green); }
-    .linkbtn { display: inline-block; margin-top: 8px; padding: 0; border: none; background: none; color: var(--green); font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; text-decoration: underline; }
-    .linkbtn:hover { filter: brightness(1.08); }
+    /* Boutons */
+    .btn-main { display: flex; align-items: center; justify-content: center; width: 100%; height: 38px; border-radius: 9999px; background: var(--gr-dark); color: var(--w); font-size: 13px; font-weight: 500; }
+    .btn-main:hover { filter: brightness(1.07); }
+    .btn-sub { display: flex; align-items: center; justify-content: center; width: 100%; height: 34px; border-radius: 9999px; background: var(--g200); color: var(--g600); font-size: 12px; font-weight: 500; }
+    .btn-sub:hover { background: var(--g300); }
+    .pills { display: flex; gap: 6px; }
+    .pill { flex: 1 1 0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 9999px; background: var(--g200); color: var(--g600); font-size: 11px; font-weight: 500; }
+    .pill:hover { background: var(--g300); }
+    .pill--main { background: var(--gr-dark); color: var(--w); }
+    .pill--main:hover { background: var(--gr-dark); filter: brightness(1.07); }
+    .pill--tall { height: 36px; font-size: 12px; }
 
-    .quick { display: flex; gap: 6px; }
-    .chip-btn { flex: 1; font: inherit; font-size: 11.5px; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 9px; padding: 8px 4px; cursor: pointer; }
-    .chip-btn:hover { background: #f2f4f7; }
-    .chip-btn--accent { flex: 0 0 auto; background: var(--green-soft); color: var(--green); border-color: #d6e6dd; }
-    .paused { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff7ed; border: 1px solid #fde4c8; border-radius: 10px; padding: 9px 11px; margin-top: 9px; }
-    .paused span { font-size: 12px; color: var(--orange); font-weight: 600; }
+    /* Segments */
+    .seg { display: flex; gap: 3px; padding: 3px; background: var(--g200); border-radius: 9px; }
+    .seg-b { flex: 1 1 0; display: flex; align-items: center; justify-content: center; height: 28px; border-radius: 7px; color: var(--g500); font-size: 11px; white-space: nowrap; }
+    .seg-b--on { background: var(--w); color: var(--g600); font-weight: 500; box-shadow: var(--sh-tab); }
 
-    .catchup-line { font-size: 12.5px; }
-    .catchup-box { margin-top: 8px; }
-    .catchup-box > div { font-size: 13px; margin-bottom: 8px; }
-    .kzp-btn { font: inherit; font-size: 12.5px; font-weight: 700; border-radius: 9px; padding: 7px 13px; cursor: pointer; border: 1px solid transparent; background: var(--green); color: #fff; }
+    /* Presets de rythme */
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .pre { display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--g300); border-radius: 10px; padding: 9px 10px; }
+    .pre-n { font-size: 12px; line-height: 17px; font-weight: 500; color: var(--g600); }
+    .pre-v { font-size: 11px; line-height: 15px; color: var(--g500); }
+    .pre--on { border: 1.5px solid var(--gr); background: var(--gr-100); padding: 8.5px 9.5px; }
+    .pre--on .pre-v { color: var(--gr-dark); }
 
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
-    #rhythmHint { margin-top: 12px; }
-    #customWrap { margin-top: 8px; }
-    .chip { font: inherit; font-size: 12px; font-weight: 600; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-    .chip--on { background: var(--green); color: #fff; border-color: var(--green); }
+    /* Curseur et pas a pas */
+    .stepper { display: flex; align-items: center; gap: 8px; }
+    .stepper--tight { gap: 6px; }
+    .step-b { width: 30px; height: 30px; flex: 0 0 auto; border-radius: 9999px; background: var(--g200); color: var(--g600); font-size: 15px; display: flex; align-items: center; justify-content: center; }
+    .step-b:hover { background: var(--g300); }
+    .step-v { min-width: 44px; text-align: center; font-size: 14px; font-weight: 500; color: var(--g600); font-variant-numeric: tabular-nums; }
+    .range { flex: 1 1 auto; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 9999px; background: var(--g200); outline: none; margin: 0; }
+    .range::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 9999px; background: var(--w); border: 2px solid var(--gr); box-shadow: 0 1px 2px rgba(16,24,40,0.10); cursor: pointer; }
+    .range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 9999px; background: var(--w); border: 2px solid var(--gr); box-shadow: 0 1px 2px rgba(16,24,40,0.10); cursor: pointer; }
+    .range:focus-visible { box-shadow: 0 0 0 3px rgba(47,174,74,0.25); }
 
-    .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-    button.btn-primary, button.btn-ghost { font: inherit; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 10px 12px; cursor: pointer; border: 1px solid transparent; transition: filter .15s ease, background .15s ease; }
-    .btn-primary { background: var(--green); color: #fff; }
-    .btn-primary:hover { filter: brightness(1.06); }
-    .btn-ghost { background: #fff; color: var(--ink); border-color: var(--line); }
-    .btn-ghost:hover { background: #f7f8fa; }
-    .saved { font-size: 11.5px; color: var(--green); text-align: center; height: 14px; margin-top: 6px; opacity: 0; transition: opacity .2s ease; }
-    .saved.show { opacity: 1; }
+    /* Chips de sites */
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 4px 9px; border-radius: 9999px; background: var(--g200); color: var(--g500); font-size: 11px; }
+    .chip-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chip-x { flex: 0 0 auto; color: var(--g400); font-size: 11px; line-height: 1; }
+    .chip-x:hover { color: var(--rd); }
+    .chip--act { padding: 4px 9px; border-radius: 9999px; border: 1px dashed var(--g300); color: var(--gr-dark); font-size: 11px; }
+    .chip-in { flex: 1 1 130px; min-width: 0; height: 26px; padding: 0 10px; border: 1px solid var(--g300); border-radius: 9999px; background: var(--w); font-size: 11px; }
+    .chip-in:focus { outline: none; border-color: var(--gr); }
 
-    /* stats */
-    .block { padding: 2px 0 6px; }
-    .block > label, .sublabel { font-size: 12.5px; font-weight: 700; color: var(--ink); display: block; margin: 2px 0; }
-    .block--overview { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
-    .period { width: 100%; font: inherit; font-size: 13px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); margin-bottom: 14px; }
-    .period--inline { width: auto; margin: 0; padding: 5px 8px; font-size: 11.5px; color: var(--ink); font-weight: 600; }
-    .zonerow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
-    .zonetitle { font-size: 13.5px; font-weight: 800; color: var(--ink); }
-    .zonesub { font-size: 11.5px; color: var(--muted); margin: -2px 0 14px; }
-    .statgrid { display: flex; gap: 10px; }
-    .statgrid--4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .statcell { background: var(--green-soft); border-radius: 10px; padding: 10px 6px; text-align: center; }
-    .statgrid:not(.statgrid--4) .statcell { flex: 1; }
-    .statcell--r { background: var(--red-soft); }
-    .statcell--e { background: var(--gold-soft); }
-    .statcell--s { background: var(--violet-soft); }
-    .statbig { font-size: 24px; font-weight: 800; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
-    .statbig--r { color: var(--red); }
-    .statbig--e { color: var(--gold); }
-    .statbig--s { color: var(--violet); }
-    .statbig .u { font-size: 14px; }
-    .statlabel { font-size: 11px; font-weight: 600; color: var(--slate); margin-top: 5px; }
-    .statsub { font-size: 10px; color: var(--muted); margin-top: 1px; min-height: 12px; }
-    .cadence { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding: 10px; background: var(--violet-soft); border-radius: 9px; font-size: 12px; font-weight: 600; color: var(--violet); }
-    .clabel { font-size: 11.5px; font-weight: 700; color: var(--ink); margin: 16px 0 6px; }
-    .legendrow { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--slate); margin: 0 0 6px; }
-    .lg { display: flex; align-items: center; gap: 4px; }
-    .dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
-    .dot--done { background: var(--green-bar); } .dot--rep { background: var(--red-bar); } .dot--screen { background: var(--violet-bar); }
-    .chart { display: flex; align-items: flex-end; gap: 4px; height: 62px; margin-top: 4px; }
-    .chart--s { height: 48px; }
-    .chart--corr { height: 84px; gap: 16px; padding: 0 8px; margin-top: 4px; }
-    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
-    .bar { width: 100%; max-width: 15px; background: var(--violet-bar); border-radius: 3px 3px 0 0; min-height: 2px; transform-origin: bottom; transition: transform .55s cubic-bezier(.34,1.4,.5,1); }
-    .bar--empty { background: var(--line); }
-    .stackcol { width: 100%; max-width: 15px; display: flex; flex-direction: column; border-radius: 3px 3px 0 0; overflow: hidden; transform-origin: bottom; transition: transform .55s cubic-bezier(.34,1.4,.5,1); }
-    .stackcol--empty { background: var(--line); }
-    .seg--rep { background: var(--red-bar); } .seg--done { background: var(--green-bar); }
-    .bar-label { font-size: 8.5px; color: var(--muted); min-height: 10px; }
-    .corr-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
-    .corr-val { font-size: 13px; font-weight: 800; color: var(--gold); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
-    .corr-bar { width: 100%; background: var(--gold-bar); border-radius: 4px 4px 0 0; transform-origin: bottom; transition: transform .5s cubic-bezier(.34,1.4,.5,1); }
-    .corr-bar--empty { background: var(--line); }
-    .corr-lab { font-size: 10px; font-weight: 600; color: var(--slate); margin-top: 6px; text-align: center; }
-    .corrhint { font-size: 10.5px; color: var(--muted); margin: -1px 0 10px; }
-    .corrverdict { display: flex; align-items: center; gap: 7px; margin-top: 14px; padding: 9px 11px; background: var(--green-soft); border-radius: 9px; font-size: 12px; font-weight: 600; color: var(--green); }
-    .streakrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
-    .streaknow { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--slate); }
-    .streaknow strong { font-size: 16px; color: var(--ink); }
-    .streakrec { font-size: 11.5px; color: var(--slate); white-space: nowrap; }
-    .streakrec strong { color: var(--ink); }
-    .progress { height: 9px; background: #eef0f2; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--green-bar); border-radius: 5px; transform-origin: left; transition: transform .7s cubic-bezier(.4,1.1,.5,1); }
-    .streakgoal { font-size: 11px; font-weight: 600; color: var(--green); margin-top: 7px; }
-    .ovsep { height: 16px; }
-    .ovicon { font-size: 18px; line-height: 1; display: inline-block; }
-    .notecard { font-size: 11.5px; color: var(--muted); background: #f6f7f9; border-radius: 9px; padding: 10px 11px; margin-top: 8px; line-height: 1.5; }
-    @keyframes kzFadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    /* Champs */
+    .field { display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--g300); border-radius: 8px; background: var(--g50); font-size: 13px; color: var(--g600); }
+    select.field { -webkit-appearance: none; appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--g500) 50%), linear-gradient(135deg, var(--g500) 50%, transparent 50%); background-position: calc(100% - 15px) 17px, calc(100% - 11px) 17px; background-size: 4px 4px, 4px 4px; background-repeat: no-repeat; padding-right: 30px; }
+    select.field:focus, .field:focus { outline: none; border-color: var(--gr); }
+
+    /* Liste editable */
+    .list { display: flex; flex-direction: column; }
+    .li { display: flex; align-items: center; gap: 9px; padding: 8px 0; }
+    .li + .li { border-top: 1px solid var(--g200); }
+    .li--drag { opacity: .4; }
+    .li--over { box-shadow: inset 0 2px 0 var(--gr); }
+    .li-grab { flex: 0 0 auto; color: var(--g300); font-size: 13px; line-height: 1; cursor: grab; }
+    .li-t { flex: 1 1 auto; min-width: 0; font-size: 13px; line-height: 18px; color: var(--g600); overflow-wrap: anywhere; }
+    .li-x { flex: 0 0 auto; color: var(--g500); font-size: 12px; line-height: 1; }
+    .li-x:hover { color: var(--rd); }
+    .addrow { display: flex; gap: 6px; }
+    .add-in { flex: 1 1 auto; min-width: 0; height: 34px; padding: 0 12px; border: 1px solid var(--g300); border-radius: 8px; background: var(--w); font-size: 12px; color: var(--g600); }
+    .add-in::placeholder { color: var(--g500); }
+    .add-in:focus { outline: none; border-color: var(--gr); }
+    .add-b { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9999px; background: var(--gr-dark); color: var(--w); font-size: 15px; display: flex; align-items: center; justify-content: center; }
+    .add-b:hover { filter: brightness(1.07); }
+
+    /* Citations */
+    .qlist { display: flex; flex-direction: column; gap: 6px; }
+    .q { display: flex; gap: 9px; border-radius: 10px; padding: 9px 10px; background: var(--g50); }
+    .q-m { flex: 0 0 auto; color: var(--gr); font-size: 15px; line-height: 15px; }
+    .q-b { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 auto; }
+    .q-t { font-size: 12px; line-height: 17px; color: var(--g600); overflow-wrap: anywhere; }
+    .q-a { font-size: 11px; line-height: 15px; color: var(--g500); }
+    .q-x { flex: 0 0 auto; color: var(--g500); font-size: 12px; line-height: 1; }
+    .q-x:hover { color: var(--rd); }
+    .linkrow { display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 12px; border-radius: 10px; background: var(--g50); }
+    .linkrow:hover { background: var(--g100); }
+    .linkrow-t { flex: 1 1 auto; font-size: 12px; line-height: 17px; color: var(--gr-dark); }
+    .linkrow-c { color: var(--g500); font-size: 12px; }
+
+    /* Cases a cocher */
+    .cbx { display: flex; align-items: center; gap: 9px; width: 100%; }
+    .cbx-b { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--g300); background: var(--w); color: transparent; font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .cbx--on .cbx-b { background: var(--gr); border-color: var(--gr); color: var(--w); }
+    .cbx-t { flex: 1 1 auto; font-size: 13px; line-height: 18px; color: var(--g600); }
+    .cbx-m { flex: 0 0 auto; font-size: 11px; color: var(--g500); }
+
+    /* Galerie */
+    .gal { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .gal-i { position: relative; display: flex; align-items: center; justify-content: center; height: 58px; border: 1px solid var(--g300); border-radius: 10px; background: var(--g50); overflow: hidden; }
+    .gal-i img { max-width: 100%; max-height: 100%; display: block; }
+    .gal-x { position: absolute; top: 2px; right: 2px; width: 17px; height: 17px; border-radius: 9999px; background: rgba(26,26,26,.62); color: var(--w); font-size: 11px; line-height: 17px; text-align: center; }
+    .gal-d { display: flex; align-items: center; justify-content: center; height: 58px; border: 1.5px solid var(--gr); border-radius: 10px; background: var(--gr-100); }
+    .gal-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 58px; border: 1px dashed var(--g300); border-radius: 10px; cursor: pointer; }
+    .gal-add .p { font-size: 15px; line-height: 15px; color: var(--gr-dark); }
+    .gal-add .f { font-size: 10px; line-height: 13px; color: var(--gr-dark); }
+    .gal-add input { display: none; }
+
+    /* Bandeau de rattrapage */
+    .amber { background: var(--am-bg); border: 1px solid var(--am-bd); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .amber-t { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--am-ink); }
+    .amber-s { font-size: 12px; line-height: 16px; color: var(--am-mid); }
+    .amber-b { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 9999px; background: var(--w); border: 1px solid var(--am-bd2); color: var(--am-ink); font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .amber-b:hover { filter: brightness(.97); }
+
+    /* Pied de panneau */
+    .foot { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: var(--w); border-top: 1px solid var(--g300); }
+    .verline { text-align: center; font-size: 11px; line-height: 15px; color: var(--g500); }
+    .saved { text-align: center; font-size: 11px; line-height: 15px; color: var(--gr-dark); opacity: 0; transition: opacity .2s ease; }
+    .saved.on { opacity: 1; }
+    .saved--warn { color: var(--rd); }
+
+    /* ---------- Statistiques ---------- */
+    .per { position: relative; display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 12px; border: 1px solid var(--g300); border-radius: 9999px; background: var(--w); }
+    .per-n { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; color: var(--g600); }
+    .per-d { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: var(--g500); white-space: nowrap; }
+    .per-c { color: var(--g500); font-size: 11px; }
+    .per select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+    .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .tile { display: flex; flex-direction: column; gap: 1px; min-width: 0; border-radius: 12px; padding: 10px 12px; }
+    .tile-l { font-size: 11px; line-height: 15px; }
+    .tile-v { font-size: 24px; line-height: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tile-s { font-size: 11px; line-height: 15px; overflow-wrap: anywhere; }
+    .tile-u { font-size: 12px; }
+    .tile-row { display: flex; align-items: baseline; gap: 3px; }
+    .tile--done { background: var(--gr-050); }
+    .tile--done .tile-l, .tile--done .tile-s { color: var(--gr-mid); }
+    .tile--done .tile-v { color: var(--gr-ink); }
+    .tile--rep { background: var(--am-bg); }
+    .tile--rep .tile-l, .tile--rep .tile-s { color: var(--am-mid); }
+    .tile--rep .tile-v { color: var(--am-ink); }
+    .tile--nrj { background: var(--gr-150); }
+    .tile--nrj .tile-l, .tile--nrj .tile-s, .tile--nrj .tile-v { color: var(--gr-ink); }
+    .tile--nrj .tile-u { color: var(--gr-dark); }
+    .tile--scr { background: var(--w); border: 1px solid var(--g300); }
+    .tile--scr .tile-l, .tile--scr .tile-s { color: var(--g500); }
+    .tile--scr .tile-v { color: var(--g600); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; }
+    .lg { display: flex; align-items: center; gap: 5px; }
+    .lg-d { width: 9px; height: 9px; border-radius: 3px; }
+    .lg-l { width: 12px; border-top: 1px dashed var(--g400); }
+    .lg-t { font-size: 11px; color: var(--g500); }
+
+    .plot { position: relative; height: 72px; border-bottom: 1px solid var(--g300); }
+    .goalline { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--g400); }
+    .cols { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 72px; }
+    .col { flex: 1 1 0; display: flex; align-items: flex-end; gap: 2px; height: 72px; }
+    .col-b { flex: 1 1 0; border-radius: 3px 3px 0 0; transform-origin: bottom; transition: transform .5s cubic-bezier(0.2,0,0,1); }
+    .col-b--done { background: var(--gr); }
+    .col-b--rep { background: var(--am-bar); }
+    .col-b--none { background: var(--g200); }
+    .axis { display: flex; justify-content: space-between; gap: 6px; }
+    .ax { flex: 1 1 0; text-align: center; font-size: 10px; color: var(--g500); overflow: hidden; }
+    .scr { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 34px; }
+    .scr-b { flex: 1 1 0; border-radius: 4px; background: var(--g300); transform-origin: bottom; transition: transform .5s cubic-bezier(0.2,0,0,1); }
+
+    .streak-v { display: flex; align-items: baseline; gap: 5px; }
+    .streak-n { font-size: 26px; line-height: 28px; font-weight: 600; color: var(--g600); font-variant-numeric: tabular-nums; }
+    .streak-u { font-size: 12px; color: var(--g500); }
+    .streak-r { flex: 0 0 auto; display: flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 9999px; background: var(--g200); color: var(--g500); font-size: 11px; font-weight: 500; white-space: nowrap; }
+    .prog { height: 8px; border-radius: 9999px; background: var(--g200); overflow: hidden; }
+    .prog-f { width: 0; height: 8px; border-radius: 9999px; background: var(--gr); transition: width .7s cubic-bezier(0.2,0,0,1); }
+
+    .ben { display: flex; flex-direction: column; gap: 10px; background: var(--gr-050); border: 1px solid var(--gr-200); border-radius: 12px; padding: 12px; }
+    .ben-t { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--gr-ink); }
+    .ben-s { font-size: 12px; line-height: 16px; color: var(--gr-mid); }
+    .ben-rows { display: flex; flex-direction: column; gap: 8px; }
+    .ben-r { display: flex; align-items: center; gap: 8px; }
+    .ben-l { flex: 0 0 auto; width: 58px; font-size: 12px; color: var(--gr-mid); }
+    .ben-tr { flex: 1 1 auto; height: 9px; border-radius: 9999px; background: var(--gr-150); overflow: hidden; }
+    .ben-f { width: 0; height: 9px; border-radius: 9999px; transition: width .55s cubic-bezier(0.2,0,0,1); }
+    .ben-v { flex: 0 0 auto; width: 26px; text-align: right; font-size: 12px; font-weight: 500; color: var(--gr-ink); font-variant-numeric: tabular-nums; }
+    .note { font-size: 12px; line-height: 17px; color: var(--g500); background: var(--g50); border-radius: 10px; padding: 10px 11px; }
+    .note a { display: block; margin-top: 4px; color: var(--gr-dark); font-weight: 500; }
+    .note a:hover { color: var(--gr-ink); }
+
+    /* ---------- Donnees ---------- */
+    .parts { display: flex; flex-direction: column; gap: 8px; }
+    .dline { display: flex; height: 10px; border-radius: 9999px; overflow: hidden; background: var(--g200); }
+    .danger { display: flex; flex-direction: column; gap: 10px; background: var(--rd); border-radius: 12px; padding: 12px; }
+    .danger-t { font-size: 14px; line-height: 19px; font-weight: 500; color: var(--w); }
+    .danger-l { font-size: 13px; line-height: 18px; color: var(--w); }
+    .danger-s { font-size: 12px; line-height: 16px; color: var(--rd-soft); }
+    .danger-sep { height: 1px; background: rgba(255,255,255,.25); margin: 0 -12px; }
+    .danger-b { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 9999px; border: 1px solid rgba(255,255,255,.55); color: var(--w); font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .danger-b:hover { background: rgba(255,255,255,.14); }
+    .danger-b--solid { background: var(--w); border-color: var(--w); color: var(--rd); }
+    .danger-b--solid:hover { background: var(--g200); }
+    .privacy { display: flex; align-items: flex-start; gap: 10px; background: var(--gr-050); border-radius: 12px; padding: 12px; }
+    .privacy-i { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 9999px; background: var(--gr); color: var(--w); font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .privacy-t { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--gr-ink); }
+    .privacy-s { font-size: 12px; line-height: 16px; color: var(--gr-mid); }
+
+    /* ---------- Sous ecran des citations fournies ---------- */
+    .sub-hd { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--w); border-bottom: 1px solid var(--g300); }
+    .sub-back { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9999px; background: var(--g200); color: var(--g600); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .sub-back:hover { background: var(--g300); }
+    .search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; background: var(--w); border: 1px solid var(--g300); border-radius: 9999px; }
+    .search-i { color: var(--g500); font-size: 12px; }
+    .search input { flex: 1 1 auto; min-width: 0; border: none; background: none; font-size: 12px; color: var(--g600); }
+    .search input::placeholder { color: var(--g500); }
+    .search input:focus { outline: none; }
+    .segbox { display: flex; gap: 3px; padding: 3px; background: var(--w); border: 1px solid var(--g300); border-radius: 9px; }
+    .segbox .seg-b--on { background: var(--gr-100); color: var(--gr-ink); box-shadow: none; }
+    .bq { display: flex; gap: 9px; padding: 10px 0; }
+    .bq + .bq { border-top: 1px solid var(--g200); }
+    .bq-m { flex: 0 0 auto; color: var(--gr); font-size: 15px; line-height: 15px; }
+    .bq-b { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 1 auto; }
+    .bq-t { font-size: 12px; line-height: 17px; color: var(--g600); overflow-wrap: anywhere; }
+    .bq-a { font-size: 11px; line-height: 15px; color: var(--g500); }
+    .bq-acts { display: flex; gap: 12px; padding-top: 2px; }
+    .bq-act { font-size: 11px; line-height: 15px; font-weight: 500; color: var(--gr-dark); }
+    .bq-act--mute { color: var(--g500); }
+    .bq--off { opacity: .55; }
+    .bq--off .bq-m { color: var(--g400); }
+    .bq--off .bq-t { text-decoration: line-through; }
+    .edit { display: flex; flex-direction: column; gap: 8px; background: var(--gr-100); border-radius: 12px; padding: 12px; }
+    .edit-t { font-size: 12px; line-height: 17px; font-weight: 500; color: var(--gr-ink); }
+    .edit textarea { min-height: 52px; padding: 9px 11px; background: var(--w); border: 1px solid var(--gr-300); border-radius: 8px; font-size: 12px; line-height: 17px; color: var(--g600); resize: vertical; }
+    .edit input { height: 34px; padding: 0 11px; background: var(--w); border: 1px solid var(--gr-300); border-radius: 8px; font-size: 12px; color: var(--g600); }
+    .edit textarea:focus, .edit input:focus { outline: none; box-shadow: 0 0 0 3px rgba(47,174,74,0.20); }
+    .edit-h { font-size: 11px; line-height: 15px; color: var(--gr-mid); }
+    .edit-acts { display: flex; gap: 6px; }
+    .edit-ok { flex: 1 1 0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 9999px; background: var(--gr-dark); color: var(--w); font-size: 12px; font-weight: 500; }
+    .edit-no { display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 14px; border-radius: 9999px; background: var(--w); color: var(--g600); font-size: 12px; font-weight: 500; }
+    .more { text-align: center; font-size: 11px; line-height: 15px; color: var(--g500); }
+
+    /* ---------- Echelle d'energie ---------- */
+    .nrj { display: flex; flex-direction: column; gap: 10px; }
+    .nrj-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+    .nrj-b { height: 34px; border-radius: 9px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .nrj-b:hover { box-shadow: 0 0 0 2px rgba(47,174,74,.35); }
+    .nrj-1 { background: #F7DAD8; color: #8F2723; }
+    .nrj-2 { background: #FBE6CE; color: #8A5108; }
+    .nrj-3 { background: #FAF0C9; color: #7A5E06; }
+    .nrj-4 { background: #E2F2E5; color: var(--gr-mid); }
+    .nrj-5 { background: #CFE9D5; color: var(--gr-ink); }
+    .nrj-ends { display: flex; justify-content: space-between; }
+    .nrj-lo { font-size: 11px; color: #8F2723; }
+    .nrj-hi { font-size: 11px; color: var(--gr-ink); }
+    .nrj-skip { align-self: center; font-size: 11px; color: var(--g500); text-decoration: underline; }
+
+    /* ---------- Le koala ---------- */
+    @keyframes kzEar { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(-7deg); } 70% { transform: rotate(4deg); } }
+    @keyframes kzBlink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+    @keyframes kzSway { 0%, 100% { transform: rotate(-2.5deg) translateY(0); } 50% { transform: rotate(2.5deg) translateY(-2px); } }
+    .anim-on .kz-ear-l { animation: kzEar 6s ease-in-out infinite; transform-origin: 20px 28px; }
+    .anim-on .kz-ear-r { animation: kzEar 6s ease-in-out .4s infinite; transform-origin: 44px 28px; }
+    .anim-on .kz-eye-l { animation: kzBlink 5.5s ease-in-out infinite; transform-origin: 24px 30px; }
+    .anim-on .kz-eye-r { animation: kzBlink 5.5s ease-in-out infinite; transform-origin: 40px 30px; }
+    .anim-on .kz-sway { animation: kzSway 4.5s ease-in-out infinite; transform-origin: 50% 92%; overflow: visible; }
+
+    /* ---------- Stats, premier lancement ---------- */
+    .per--off { opacity: .5; pointer-events: none; }
+    .blank { display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--w); border: 1px solid var(--g300); border-radius: 12px; padding: 16px 14px; box-shadow: var(--sh-card); }
+    .blank-txt { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+    .blank-t { font-size: 15px; line-height: 20px; font-weight: 500; color: var(--g600); }
+    .blank-s { font-size: 12px; line-height: 17px; color: var(--g500); text-wrap: pretty; }
+    .blank-b { display: flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 9999px; background: var(--gr-dark); color: var(--w); font-size: 13px; font-weight: 500; }
+    .blank-b:hover { filter: brightness(1.07); }
+    .steps { display: flex; flex-direction: column; }
+    .step { display: flex; align-items: center; gap: 10px; padding: 9px 0; }
+    .step + .step { border-top: 1px solid var(--g200); }
+    .step-n { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .step-n--1 { background: var(--gr-150); color: var(--gr-ink); }
+    .step-n--2 { background: #FAF0C9; color: #7A5E06; }
+    .step-n--3 { background: var(--g200); color: var(--g500); }
+    .step-t { font-size: 12px; line-height: 17px; color: var(--g600); }
+    .step-w { font-size: 11px; line-height: 15px; color: var(--g500); }
+    .ghost { display: flex; flex-direction: column; gap: 10px; background: var(--w); border: 1px dashed var(--g300); border-radius: 12px; padding: 12px; opacity: .55; }
+    .ghost-t { flex: 1 1 auto; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--g500); }
+    .ghost-m { font-size: 11px; color: var(--g500); }
+    .ghost-plot { position: relative; height: 56px; border-bottom: 1px solid var(--g300); }
+    .ghost-plot .goalline { bottom: 28px; border-top-color: var(--g400); }
+    .ghost-cols { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 56px; }
+    .ghost-b { flex: 1 1 0; height: 8px; border-radius: 3px 3px 0 0; background: #E6E6E6; }
+
+    /* ---------- Animations ---------- */
+    @keyframes kzUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
     @keyframes kzPop { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: none; } }
-    @keyframes kzFlame { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18) rotate(-4deg); } }
-    @keyframes kzWiggle { 0%,88%,100% { transform: rotate(0); } 92% { transform: rotate(-10deg); } 96% { transform: rotate(10deg); } }
-    .stats-anim { animation: kzFadeUp .34s ease both; }
-    .stats-anim .statcell { animation: kzPop .42s cubic-bezier(.34,1.4,.5,1) both; }
-    .stats-anim .statcell:nth-child(2) { animation-delay: .05s; }
-    .stats-anim .statcell:nth-child(3) { animation-delay: .1s; }
-    .stats-anim .statcell:nth-child(4) { animation-delay: .15s; }
-    .anim-on .cadence .ovicon, .anim-on .streaknow .ovicon { animation: kzFlame 1.5s ease-in-out infinite; }
-    .anim-on .cadence-koala { display: inline-block; animation: kzWiggle 3.4s ease-in-out infinite; }
-
-    /* popup energy picker */
-    .kzp-energy { margin-top: 8px; }
-    .kzp-energy-q { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    .kzp-energy-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-    .kzp-energy-btn { font: inherit; font-size: 12px; font-weight: 700; height: 27px; border-radius: 7px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
-    .kzp-energy-btn:hover { background: var(--green-soft); border-color: var(--green); }
-    .kzp-energy-skip { margin-top: 6px; padding: 0; border: none; background: none; color: var(--muted); font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
-    .block--data { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
-    .block--data .zonesub { margin-bottom: 12px; }
-    .versionline { margin-top: 16px; text-align: center; font-size: 10.5px; color: var(--muted); letter-spacing: .02em; }
-    .btn-danger { width: 100%; font: inherit; font-size: 12.5px; font-weight: 700; padding: 10px; border-radius: 9px; border: 1px solid #d9534f; background: #fff; color: #b23b30; cursor: pointer; }
-    .btn-danger:hover { background: #fbeae8; }
-    .btn-danger--confirm { background: #b23b30; color: #fff; border-color: #b23b30; }
-    .btn-danger--confirm:hover { background: #9c322a; }
+    .anim-on .pane-in { animation: kzUp .3s ease both; }
+    .anim-on .pane-in .tile { animation: kzPop .42s cubic-bezier(0.2,0,0,1) both; }
+    .anim-on .pane-in .tile:nth-child(2) { animation-delay: .05s; }
+    .anim-on .pane-in .tile:nth-child(3) { animation-delay: .1s; }
+    .anim-on .pane-in .tile:nth-child(4) { animation-delay: .15s; }
+    .anim-off .col-b, .anim-off .scr-b, .anim-off .prog-f, .anim-off .ben-f { transition: none !important; }
   </style>
 </head>
 <body>
-  <div class="head">
-    <div class="mark">🐨</div>
-    <div><h1>Koala Zen</h1><p data-i18n="tagline">Une pause mouvement, puis une pensée.</p></div>
-  </div>
 
-  <div class="tabs">
-    <button type="button" class="tab tab--on" id="tabSettingsBtn" data-i18n="tabSettings">Réglages</button>
-    <button type="button" class="tab" id="tabPersoBtn" data-i18n="tabPerso">Personnaliser</button>
-    <button type="button" class="tab" id="tabStatsBtn" data-i18n="tabStats">Stats</button>
-  </div>
+  <header class="hd" id="mainHead">
+    <div class="hd-top">
+      <div class="hd-mark" id="headMark"></div>
+      <div class="hd-txt">
+        <div class="hd-name">Koala Zen</div>
+        <div class="hd-sub" id="nextVisit"></div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button type="button" class="tab tab--on" id="tabSettingsBtn" data-i18n="tabSettings">Réglages</button>
+      <button type="button" class="tab" id="tabPersoBtn" data-i18n="tabPersoShort">Perso</button>
+      <button type="button" class="tab" id="tabStatsBtn" data-i18n="tabStats">Stats</button>
+      <button type="button" class="tab" id="tabDataBtn" data-i18n="tabData">Données</button>
+    </nav>
+  </header>
 
+  <!-- ===================== RÉGLAGES ===================== -->
   <div id="panelSettings">
+    <div class="body pane-in">
 
-    <div class="group">
-      <div class="group-title" data-i18n="grpPause">Mettre en pause</div>
-      <div class="quick" id="quickActions">
-        <button type="button" class="chip-btn" id="snoozeLater" data-i18n="laterBtn">Plus tard</button>
-        <button type="button" class="chip-btn" id="snooze1h" data-i18n="pause1h">Pause 1 h</button>
-        <button type="button" class="chip-btn" id="snoozeToday" data-i18n="stopToday">Stop aujourd'hui</button>
-      </div>
-      <div class="paused" id="pausedNotice" hidden>
-        <span id="pausedText"></span>
-        <button type="button" class="chip-btn chip-btn--accent" id="resumeBtn" data-i18n="resume">Reprendre</button>
-      </div>
+      <section class="card">
+        <div class="card-h"><div class="card-t" data-i18n="grpPause">Mettre en pause</div></div>
+        <div class="pills" id="quickActions">
+          <button type="button" class="pill" id="snoozeLater" data-i18n="pauseLater">Plus tard</button>
+          <button type="button" class="pill" id="snooze1h" data-i18n="pause1h">1 heure</button>
+          <button type="button" class="pill" id="snoozeToday" data-i18n="pauseToday">Aujourd'hui</button>
+        </div>
+        <div class="row" id="pausedNotice" hidden>
+          <div class="row-txt"><div class="row-lab" id="pausedText"></div></div>
+          <button type="button" class="amber-b" id="resumeBtn" data-i18n="resume">Reprendre</button>
+        </div>
+        <div class="hint" data-i18n="pauseHint">Ta série reste intacte pendant la pause.</div>
+      </section>
+
+      <section class="amber" id="catchupCard" hidden>
+        <div class="row-txt">
+          <div class="amber-t" id="catchupTitle"></div>
+          <div class="amber-s" data-i18n="catchupSub">Quand tu veux, sans pression</div>
+        </div>
+        <button type="button" class="amber-b" id="catchupBtn" data-i18n="catchupAction">Rattraper</button>
+      </section>
+
+      <section class="card" id="catchupBox" hidden>
+        <div class="card-t" id="catchupPrompt"></div>
+        <button type="button" class="btn-main" id="catchupDone" data-i18n="btnDone">Fait</button>
+        <div id="catchupEnergy"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h">
+          <div class="card-t" data-i18n="grpRhythm">Rythme des rappels</div>
+          <div class="card-m" id="rhythmValue"></div>
+        </div>
+        <div class="grid2" id="presetGrid">
+          <button type="button" class="pre" data-preset="pomodoro" data-min="25">
+            <span class="pre-n" data-i18n="presetPomodoro">Pomodoro</span><span class="pre-v" data-min-label>25 min</span>
+          </button>
+          <button type="button" class="pre" data-preset="deepwork" data-min="52">
+            <span class="pre-n" data-i18n="presetDeep">Deep work</span><span class="pre-v" data-min-label>52 min</span>
+          </button>
+          <button type="button" class="pre" data-preset="ultradian" data-min="90">
+            <span class="pre-n" data-i18n="presetUltra">Ultradien</span><span class="pre-v" data-min-label>90 min</span>
+          </button>
+          <button type="button" class="pre" data-preset="custom">
+            <span class="pre-n" data-i18n="presetCustom">Perso</span><span class="pre-v" id="customPresetValue">30 min</span>
+          </button>
+        </div>
+        <!-- Module C. Encadre dedie a l'intervalle Perso. Toucher le curseur
+             bascule la selection sur Perso, et choisir un preset fige memorise
+             la derniere valeur Perso pour la restituer au retour. Pas de 5. -->
+        <div class="permin" id="intervalWrap">
+          <div class="permin-h">
+            <div class="permin-l" data-i18n="customIntervalLabel">Ton intervalle Perso</div>
+            <div class="permin-v" id="customIntervalValue"></div>
+          </div>
+          <div class="permin-r">
+            <button type="button" class="rnd" id="intMinus" aria-label="&minus;">&minus;</button>
+            <input type="range" class="range" id="interval" min="5" max="240" step="5" value="30" data-i18n-aria="grpRhythm">
+            <button type="button" class="rnd" id="intPlus" aria-label="+">+</button>
+          </div>
+        </div>
+        <div class="hint" data-i18n="rhythmHint">Perso accepte de 1 à 240 minutes.</div>
+      </section>
+
+      <section class="card">
+        <div class="row row--top">
+          <div class="row-txt">
+            <div class="row-lab row-lab--big" data-i18n="focusLabel">Pause focus</div>
+            <div class="hint" data-i18n="focusHint">La page se bloque le temps de la pause, pour couper pour de vrai</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="focusMode" data-i18n-aria="focusLabel"><span class="sw-t"></span></label>
+        </div>
+        <div class="row" id="focusSecWrap">
+          <div class="row-lab grow" data-i18n="focusSecondsLabel">Durée du blocage</div>
+          <div class="stepper stepper--tight fixed">
+            <button type="button" class="step-b" id="focMinus" aria-label="−">−</button>
+            <div class="step-v" id="focusValue">30 s</div>
+            <button type="button" class="step-b" id="focPlus" aria-label="+">+</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row row--top">
+          <div class="row-txt">
+            <div class="row-lab row-lab--big" data-i18n="passagesLabel">Les animaux de passage</div>
+            <div class="hint" data-i18n="passagesHint">Ils passent dire bonjour, sans rien demander.</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="passagesTgl" data-i18n-aria="passagesLabel"><span class="sw-t"></span></label>
+        </div>
+        <div id="passagesFreqWrap">
+          <div class="row-lab" data-i18n="passagesFreqLabel">Fréquence</div>
+          <div class="seg" id="passagesFreqSeg">
+            <button type="button" class="seg-b" data-freq="rare" data-i18n="freqRare">Rare</button>
+            <button type="button" class="seg-b seg-b--on" data-freq="normal" data-i18n="freqNormal">Normal</button>
+            <button type="button" class="seg-b" data-freq="frequent" data-i18n="freqFrequent">Fréquent</button>
+          </div>
+          <div class="hint" id="passagesFreqHint" data-i18n="freqHintNormal">Max. 1x toutes les 2 heures.</div>
+        </div>
+        <button type="button" class="tiny" id="passagesTest" data-i18n="passagesTest">Voir un passage maintenant</button>
+      </section>
+
+      <section class="card">
+        <div class="card-t" data-i18n="grpDnd">Ne pas déranger</div>
+        <div class="row">
+          <div class="row-lab grow" data-i18n="muteLabel">Pendant une visio</div>
+          <label class="sw"><input type="checkbox" id="muteCalls" checked data-i18n-aria="muteLabel"><span class="sw-t"></span></label>
+        </div>
+        <div class="chips" id="muteChips"></div>
+        <div class="sep"></div>
+        <div class="row">
+          <div class="row-txt">
+            <div class="row-lab" data-i18n="idleLabel">Quand tu quittes le clavier</div>
+            <div class="row-sub" data-i18n="idleHint">Après 60 secondes</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="pauseIdle" checked data-i18n-aria="idleLabel"><span class="sw-t"></span></label>
+        </div>
+      </section>
+
+      <section class="card card--tight">
+        <div class="card-t" data-i18n="grpScreen">Temps d'écran</div>
+        <select id="screenTz" class="field" data-i18n-aria="screenTzLabel">
+          <option value="auto" data-i18n="screenTzAuto">Automatique (navigateur)</option>
+          <option value="Europe/Zurich" selected>Europe/Zurich</option>
+          <option value="Europe/Paris">Europe/Paris</option>
+          <option value="Europe/Brussels">Europe/Brussels</option>
+          <option value="Europe/Berlin">Europe/Berlin</option>
+          <option value="Europe/London">Europe/London</option>
+          <option value="Europe/Madrid">Europe/Madrid</option>
+          <option value="Europe/Rome">Europe/Rome</option>
+          <option value="Europe/Lisbon">Europe/Lisbon</option>
+          <option value="Europe/Amsterdam">Europe/Amsterdam</option>
+          <option value="Europe/Vienna">Europe/Vienna</option>
+          <option value="Europe/Stockholm">Europe/Stockholm</option>
+          <option value="Europe/Copenhagen">Europe/Copenhagen</option>
+          <option value="Europe/Oslo">Europe/Oslo</option>
+          <option value="Europe/Helsinki">Europe/Helsinki</option>
+          <option value="Europe/Warsaw">Europe/Warsaw</option>
+          <option value="Europe/Athens">Europe/Athens</option>
+          <option value="Europe/Istanbul">Europe/Istanbul</option>
+          <option value="Europe/Moscow">Europe/Moscow</option>
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">America/New_York</option>
+          <option value="America/Chicago">America/Chicago</option>
+          <option value="America/Denver">America/Denver</option>
+          <option value="America/Los_Angeles">America/Los_Angeles</option>
+          <option value="America/Toronto">America/Toronto</option>
+          <option value="America/Mexico_City">America/Mexico_City</option>
+          <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+          <option value="Asia/Dubai">Asia/Dubai</option>
+          <option value="Asia/Kolkata">Asia/Kolkata</option>
+          <option value="Asia/Shanghai">Asia/Shanghai</option>
+          <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
+          <option value="Asia/Singapore">Asia/Singapore</option>
+          <option value="Asia/Tokyo">Asia/Tokyo</option>
+          <option value="Asia/Seoul">Asia/Seoul</option>
+          <option value="Australia/Sydney">Australia/Sydney</option>
+          <option value="Pacific/Auckland">Pacific/Auckland</option>
+          <option value="Africa/Johannesburg">Africa/Johannesburg</option>
+          <option value="Africa/Cairo">Africa/Cairo</option>
+        </select>
+        <div class="hint" data-i18n="screenTzHint">Remise à zéro à minuit.</div>
+      </section>
     </div>
 
-    <div class="group" id="catchupRow" hidden>
-      <div class="group-title" data-i18n="grpCatchup">À rattraper</div>
-      <div class="catchup-line"><span data-i18n="catchupBehindLabel">En retard</span> : <strong id="pendingCount">0</strong></div>
-      <button type="button" class="linkbtn" id="catchupBtn" data-i18n="catchupBtn">Rattraper une habitude</button>
-      <div class="catchup-box" id="catchupBox" hidden>
-        <div id="catchupPrompt"></div>
-        <button type="button" class="kzp-btn" id="catchupDone" data-i18n="btnDone">Fait ✅</button>
-      </div>
+    <div class="foot">
+      <button type="button" class="btn-main" id="save" data-i18n="save">Enregistrer</button>
+      <button type="button" class="btn-sub" id="now" data-i18n="bringNow">Faire venir le koala</button>
+      <div class="saved" id="saved" data-i18n="saved">Enregistré</div>
+      <div class="verline" id="versionLine"></div>
     </div>
-
-    <div class="group">
-      <div class="group-title" data-i18n="grpReminders">Rappels</div>
-      <div class="subhead" data-i18n="rhythmLabel">Rythme</div>
-      <div class="chips" id="presetChips">
-        <button type="button" class="chip" data-preset="pomodoro" data-min="25" data-i18n="presetPomodoro">Pomodoro</button>
-        <button type="button" class="chip" data-preset="deepwork" data-min="52" data-i18n="presetDeep">Deep work</button>
-        <button type="button" class="chip" data-preset="ultradian" data-min="90" data-i18n="presetUltra">Ultradien</button>
-        <button type="button" class="chip" data-preset="custom" data-i18n="presetCustom">Perso</button>
-      </div>
-      <div class="hint" id="rhythmHint"></div>
-      <div class="num num--inline" id="customWrap" hidden>
-        <input type="number" id="interval" min="1" max="240" step="1" value="30">
-        <span class="unit" data-i18n="minutesUnit">min</span>
-      </div>
-    </div>
-
-    <div class="group">
-      <div class="group-title" data-i18n="grpDnd">Ne pas déranger</div>
-      <div class="row">
-        <div><label for="muteCalls" data-i18n="muteLabel">Pause en visioconférence</label><div class="hint" data-i18n="muteHint">Ne pas apparaître sur ces sites.</div></div>
-        <span class="switch"><input type="checkbox" id="muteCalls" checked><span class="track"></span></span>
-      </div>
-      <textarea id="mutedList" spellcheck="false" placeholder="kmeet.infomaniak.com&#10;teams.microsoft.com&#10;zoom.us"></textarea>
-      <div class="row" style="margin-top:6px;">
-        <div><label for="pauseIdle" data-i18n="idleLabel">Pause si inactif</label><div class="hint" data-i18n="idleHint">Pas de koala quand tu es absent du clavier.</div></div>
-        <span class="switch"><input type="checkbox" id="pauseIdle" checked><span class="track"></span></span>
-      </div>
-    </div>
-
-    <div class="group">
-      <div class="group-title" data-i18n="focusLabel">Mode focus</div>
-      <div class="row">
-        <div class="hint" data-i18n="focusHint">Une pause plein écran qui bloque la page jusqu'à la fin du minuteur. Désactivé par défaut.</div>
-        <span class="switch"><input type="checkbox" id="focusMode" data-i18n-aria="focusLabel"><span class="track"></span></span>
-      </div>
-      <div class="row row--sub" id="focusSecWrap" hidden>
-        <div><label for="focusSeconds" data-i18n="focusSecondsLabel">Durée du blocage (secondes)</label></div>
-        <span class="num"><input type="number" id="focusSeconds" min="5" max="120" step="5" value="30"></span>
-      </div>
-    </div>
-
-    <div class="group">
-      <div class="group-title" data-i18n="grpScreen">Temps d'écran</div>
-      <div class="hint" data-i18n="screenTzHint" style="margin-bottom:8px;">Le koala affiche ton temps d'activité du jour. Il se remet à zéro à minuit dans ce fuseau horaire.</div>
-      <label for="screenTz" data-i18n="screenTzLabel" style="display:block;font-size:12.5px;margin-bottom:5px;">Fuseau horaire</label>
-      <select id="screenTz" class="period" data-i18n-aria="screenTzLabel">
-        <option value="auto" data-i18n="screenTzAuto">Automatique (navigateur)</option>
-        <option value="Europe/Zurich" selected>Europe/Zurich</option>
-        <option value="Europe/Paris">Europe/Paris</option>
-        <option value="Europe/Brussels">Europe/Brussels</option>
-        <option value="Europe/Berlin">Europe/Berlin</option>
-        <option value="Europe/London">Europe/London</option>
-        <option value="Europe/Madrid">Europe/Madrid</option>
-        <option value="Europe/Rome">Europe/Rome</option>
-        <option value="Europe/Lisbon">Europe/Lisbon</option>
-        <option value="Europe/Amsterdam">Europe/Amsterdam</option>
-        <option value="Europe/Vienna">Europe/Vienna</option>
-        <option value="Europe/Stockholm">Europe/Stockholm</option>
-        <option value="Europe/Copenhagen">Europe/Copenhagen</option>
-        <option value="Europe/Oslo">Europe/Oslo</option>
-        <option value="Europe/Helsinki">Europe/Helsinki</option>
-        <option value="Europe/Warsaw">Europe/Warsaw</option>
-        <option value="Europe/Athens">Europe/Athens</option>
-        <option value="Europe/Istanbul">Europe/Istanbul</option>
-        <option value="Europe/Moscow">Europe/Moscow</option>
-        <option value="UTC">UTC</option>
-        <option value="America/New_York">America/New_York</option>
-        <option value="America/Chicago">America/Chicago</option>
-        <option value="America/Denver">America/Denver</option>
-        <option value="America/Los_Angeles">America/Los_Angeles</option>
-        <option value="America/Toronto">America/Toronto</option>
-        <option value="America/Mexico_City">America/Mexico_City</option>
-        <option value="America/Sao_Paulo">America/Sao_Paulo</option>
-        <option value="Asia/Dubai">Asia/Dubai</option>
-        <option value="Asia/Kolkata">Asia/Kolkata</option>
-        <option value="Asia/Shanghai">Asia/Shanghai</option>
-        <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
-        <option value="Asia/Singapore">Asia/Singapore</option>
-        <option value="Asia/Tokyo">Asia/Tokyo</option>
-        <option value="Asia/Seoul">Asia/Seoul</option>
-        <option value="Australia/Sydney">Australia/Sydney</option>
-        <option value="Pacific/Auckland">Pacific/Auckland</option>
-        <option value="Africa/Johannesburg">Africa/Johannesburg</option>
-        <option value="Africa/Cairo">Africa/Cairo</option>
-      </select>
-    </div>
-
-    <div class="actions">
-      <button type="button" id="now" class="btn-ghost" data-i18n="bringNow">Faire venir le koala maintenant</button>
-      <button type="button" id="save" class="btn-primary" data-i18n="save">Enregistrer</button>
-    </div>
-    <div class="saved" id="saved" data-i18n="saved">Enregistré ✓</div>
-
-    <div class="versionline" id="versionLine"></div>
   </div>
 
+  <!-- ===================== PERSO ===================== -->
   <div id="panelPerso" hidden>
-    <div class="group">
-      <div class="group-title" data-i18n="sportLabel">Objectifs de l'habitude</div>
-      <div class="hint" data-i18n="sportHint">Un objectif par ligne, par exemple « Fais 3 pompes ». Ce que tu ajoutes remplace l'invitation par défaut.</div>
-      <textarea id="sportList" spellcheck="false" data-i18n-ph="sportPlaceholder" placeholder="Fais 3 pompes"></textarea>
-      <button type="button" class="linkbtn" id="resetSport" data-i18n="loadSport">Charger les objectifs fournis</button>
+    <div class="body pane-in">
+
+      <section class="card">
+        <div class="card-h">
+          <div class="card-t" data-i18n="sportLabel">Objectifs</div>
+          <div class="card-m" data-i18n="sportMeta">Un seul à la fois</div>
+        </div>
+        <div class="list" id="sportList"></div>
+        <div class="note" id="sportEmpty" hidden data-i18n="sportEmpty">Aucun objectif à toi. Le koala pioche dans les objectifs fournis.</div>
+        <div class="addrow">
+          <input type="text" class="add-in" id="sportInput" data-i18n-ph="sportPlaceholder" placeholder="Nouvel objectif">
+          <button type="button" class="add-b" id="sportAdd" data-i18n-aria="addAria">+</button>
+        </div>
+        <div class="sep"></div>
+        <div class="row">
+          <div class="row-txt">
+            <div class="row-lab" data-i18n="goalLabel">Ton objectif par jour</div>
+            <div class="row-sub" data-i18n="goalHint">Sert de repère dans les statistiques.</div>
+          </div>
+          <div class="stepper stepper--tight fixed">
+            <button type="button" class="step-b" id="goalMinus" aria-label="−">−</button>
+            <div class="step-v" id="goalValue">3</div>
+            <button type="button" class="step-b" id="goalPlus" aria-label="+">+</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-t" data-i18n="quotesLabel">Citations</div>
+        <div class="seg" id="quoteSeg">
+          <button type="button" class="seg-b seg-b--on" data-qseg="mine" id="qsegMine">Les tiennes</button>
+          <button type="button" class="seg-b" data-qseg="built" id="qsegBuilt">Fournies</button>
+        </div>
+        <div class="qlist" id="quoteList"></div>
+        <div class="note" id="quoteEmpty" hidden data-i18n="quotesEmpty">Aucune citation à toi. Le koala pioche dans les citations fournies.</div>
+        <div class="addrow" id="quoteAddRow">
+          <input type="text" class="add-in" id="quoteInput" data-i18n-ph="quotesPlaceholder" placeholder="Nouvelle citation">
+          <button type="button" class="add-b" id="quoteAdd" data-i18n-aria="addAria">+</button>
+        </div>
+        <button type="button" class="linkrow" id="bulkOpen">
+          <span class="linkrow-t" data-i18n="bulkOpen">En ajouter plusieurs d'un coup</span>
+          <span class="linkrow-c">&rsaquo;</span>
+        </button>
+        <button type="button" class="linkrow" id="browseQuotes">
+          <span class="linkrow-t" id="browseQuotesLabel"></span>
+          <span class="linkrow-c">›</span>
+        </button>
+        <button type="button" class="cbx" id="includeDefaultQuotes">
+          <span class="cbx-b">✓</span>
+          <span class="cbx-t" data-i18n="keepDefaultQuotes">Garder les citations d'origine</span>
+        </button>
+      </section>
+
+      <section class="card">
+        <div class="card-h">
+          <div class="card-t" data-i18n="koalasLabel">Personnages</div>
+          <div class="card-m" id="koalaCount"></div>
+        </div>
+        <div class="gal" id="gallery"></div>
+        <button type="button" class="cbx" id="includeDefault">
+          <span class="cbx-b">✓</span>
+          <span class="cbx-t" data-i18n="keepDefaultKoalas">Garder les koalas d'origine</span>
+        </button>
+        <div class="hint" data-i18n="koalasHint">Tes images restent sur ton appareil, sauf si tu les inclus toi-même dans une sauvegarde kDrive.</div>
+      </section>
+
+      <section class="card card--tight">
+        <div class="card-t" data-i18n="grpAnimations">Animations</div>
+        <div class="seg" id="animSeg">
+          <button type="button" class="seg-b seg-b--on" data-anim="auto" data-i18n="animAuto">Automatique</button>
+          <button type="button" class="seg-b" data-anim="always" data-i18n="animAlways">Toujours</button>
+          <button type="button" class="seg-b" data-anim="never" data-i18n="animNever">Jamais</button>
+        </div>
+        <div class="hint" data-i18n="animationsHint">Automatique suit ton système.</div>
+      </section>
     </div>
 
-    <div class="group">
-      <div class="group-title" data-i18n="quotesLabel">Citations</div>
-      <div class="hint" data-i18n="quotesHint">Une par ligne, au format « Texte | Auteur » (auteur facultatif). Vide = citations fournies.</div>
-      <textarea id="quotesList" spellcheck="false" data-i18n-ph="quotesPlaceholder" placeholder="La paix vient de l'intérieur. | Bouddha"></textarea>
-      <button type="button" class="linkbtn" id="resetQuotes" data-i18n="loadQuotes">Charger les citations fournies</button>
-      <label class="checkbox"><input type="checkbox" id="includeDefaultQuotes"> <span data-i18n="addToQuotes">Ajouter aux citations fournies (au lieu de remplacer)</span></label>
+    <div class="foot">
+      <button type="button" class="btn-main" id="savePerso" data-i18n="save">Enregistrer</button>
+      <div class="saved" id="savedPerso" data-i18n="saved">Enregistré</div>
     </div>
+  </div>
 
-    <div class="group">
-      <div class="group-title" data-i18n="koalasLabel">Personnages</div>
-      <div class="hint" data-i18n="koalasHint">Les personnages qui viennent t'annoncer ton habitude. Ajoute tes propres images, PNG ou GIF (fond transparent conseillé), ou garde les koalas fournis.</div>
-      <label class="file-btn"><span data-i18n="addImages">Ajouter des images (PNG, GIF)…</span><input type="file" id="koalaFile" accept="image/png,image/gif,image/*" multiple></label>
-      <div class="gallery" id="gallery"></div>
-      <label class="checkbox"><input type="checkbox" id="includeDefault"> <span data-i18n="keepDefaultKoalas">Garder aussi les koalas d'origine</span></label>
+  <!-- ===================== CITATIONS FOURNIES ===================== -->
+  <div id="panelBrowse" hidden>
+    <header class="sub-hd">
+      <button type="button" class="sub-back" id="browseBack" data-i18n-aria="back">‹</button>
+      <div class="hd-txt">
+        <div class="hd-name" data-i18n="browseTitle">Citations fournies</div>
+        <div class="hd-sub" id="browseCount"></div>
+      </div>
+    </header>
+    <div class="body">
+      <div class="search">
+        <span class="search-i">⌕</span>
+        <input type="text" id="browseSearch" data-i18n-ph="browseSearch" placeholder="Chercher une citation">
+      </div>
+      <div class="segbox" id="browseSeg">
+        <button type="button" class="seg-b seg-b--on" data-bseg="all" id="bsegAll">Toutes</button>
+        <button type="button" class="seg-b" data-bseg="hidden" id="bsegHidden">Masquées</button>
+      </div>
+      <div class="edit" id="quoteEdit" hidden>
+        <div class="edit-t" data-i18n="editTitle">Tu modifies une citation fournie</div>
+        <textarea id="editText" rows="2"></textarea>
+        <input type="text" id="editAuthor" data-i18n-ph="editAuthor" placeholder="Auteur">
+        <div class="edit-h" data-i18n="editHint">En enregistrant, tu crées ta version. L'originale reste dans la liste, intacte.</div>
+        <div class="edit-acts">
+          <button type="button" class="edit-ok" id="editSave" data-i18n="editSave">Enregistrer ma version</button>
+          <button type="button" class="edit-no" id="editCancel" data-i18n="cancel">Annuler</button>
+        </div>
+      </div>
+      <div class="card" id="browseList"></div>
+      <div class="more" id="browseMore" hidden></div>
     </div>
+  </div>
 
-    <div class="group">
-      <div class="group-title" data-i18n="grpAnimations">Animations</div>
-      <div class="hint" data-i18n="animationsHint" style="margin-bottom:8px;">Les petites animations de l'onglet Stats.</div>
-      <select id="animMode" class="period" data-i18n-aria="grpAnimations">
-        <option value="auto" data-i18n="animAuto">Automatique (suit ton système)</option>
-        <option value="always" data-i18n="animAlways">Toujours</option>
-        <option value="never" data-i18n="animNever">Jamais</option>
-      </select>
+  <!-- ===================== STATS ===================== -->
+  <!-- Module F. Ajout de citations en lot, planche 02. Deux sous ecrans plein
+       cadre, jamais une boite de dialogue. Rien n'entre dans la liste sans
+       passer par l'ecran de verification. -->
+  <div id="panelBulk" hidden>
+    <header class="sub-hd">
+      <button type="button" class="sub-back" id="bulkBack" data-i18n-aria="back">&lsaquo;</button>
+      <div class="hd-txt">
+        <div class="hd-name" data-i18n="bulkTitle">Ajouter des citations</div>
+        <div class="hd-sub" data-i18n="bulkSub">Une citation par ligne</div>
+      </div>
+    </header>
+    <div class="pane-in">
+      <div class="card">
+        <div class="hint" data-i18n="bulkHint">Le texte, un tiret, l'auteur. L'auteur est facultatif.</div>
+        <textarea id="bulkText" class="bulk-ta" rows="9" data-i18n-ph="bulkPlaceholder"
+          placeholder="Rien ne presse, la journée est longue - Anonyme"></textarea>
+        <div class="hint" id="bulkCount"></div>
+      </div>
+      <div class="card">
+        <div class="card-t" data-i18n="bulkHowT">Comment la ligne est lue</div>
+        <div class="bulk-demo">
+          <span class="bulk-demo-q" data-i18n="bulkDemoQ">Rien ne presse, la journée est longue</span>
+          <span class="bulk-demo-s">-</span>
+          <span class="bulk-demo-a" data-i18n="bulkDemoA">Anonyme</span>
+        </div>
+        <div class="bulk-demo-lg">
+          <span class="bulk-demo-l1" data-i18n="bulkDemoL1">Citation</span>
+          <span class="bulk-demo-l2" data-i18n="bulkDemoL2">Auteur</span>
+        </div>
+        <div class="hint" data-i18n="bulkRule">Les virgules du texte ne changent rien, seul le tiret entouré d'espaces sépare. Sans tiret, toute la ligne devient la citation et l'auteur est enregistré comme Anonyme.</div>
+      </div>
+      <div class="foot">
+        <button type="button" class="btn-main" id="bulkCheck" data-i18n="bulkCheckBtn">Vérifier</button>
+        <button type="button" class="btn-sub" id="bulkCancel" data-i18n="bulkCancel">Annuler</button>
+      </div>
     </div>
+  </div>
 
-    <div class="actions">
-      <button type="button" id="savePerso" class="btn-primary" data-i18n="save">Enregistrer</button>
+  <div id="panelBulkOk" hidden>
+    <header class="sub-hd">
+      <button type="button" class="sub-back" id="bulkOkBack" data-i18n-aria="back">&lsaquo;</button>
+      <div class="hd-txt">
+        <div class="hd-name" data-i18n="bulkTitle">Ajouter des citations</div>
+        <div class="hd-sub" id="bulkOkSub"></div>
+      </div>
+    </header>
+    <div class="pane-in">
+      <div class="info" id="bulkInfo"></div>
+      <div class="card">
+        <div class="card-h">
+          <div class="card-t" data-i18n="bulkPreview">Aperçu</div>
+          <div class="card-m" id="bulkPreviewN"></div>
+        </div>
+        <div class="qlist bulk-prev" id="bulkList"></div>
+      </div>
+      <div class="foot">
+        <button type="button" class="btn-main" id="bulkApply"></button>
+        <button type="button" class="btn-sub" id="bulkBackText" data-i18n="bulkBackText">Revenir au texte</button>
+      </div>
     </div>
-    <div class="saved" id="savedPerso" data-i18n="saved">Enregistré ✓</div>
+  </div>
+
+  <!-- Module N. Premiere installation, un seul ecran, une phrase, une habitude
+       preremplie et un bouton. Aucun autre etat, aucune option. -->
+  <div id="firstRun" hidden>
+    <div class="pane-in fr">
+      <div class="fr-k" id="frKoala"></div>
+      <div class="fr-t" data-i18n="frTitle">Un koala va passer te voir</div>
+      <div class="fr-s" data-i18n="frSub">Il t'invitera à faire une petite chose, de temps en temps. Rien ne sort de ton appareil.</div>
+      <div class="card">
+        <div class="hint" data-i18n="frHabitLabel">Ta première habitude</div>
+        <input type="text" class="add-in" id="frHabit" data-i18n-ph="frHabitPh" placeholder="Se lever et bouger deux minutes">
+      </div>
+      <button type="button" class="btn-main" id="frStart" data-i18n="frStart">Commencer</button>
+    </div>
   </div>
 
   <div id="panelStats" hidden>
-    <div class="block">
-      <div class="zonerow">
-        <span class="zonetitle" data-i18n="statsZonePeriod">📅 Sur la période</span>
-        <select id="statPeriod" class="period period--inline">
-          <option value="today" data-i18n="statsToday">Aujourd'hui</option>
-          <option value="yesterday" data-i18n="statsYesterday">Hier</option>
-          <option value="thisweek" data-i18n="statsThisWeek">Cette semaine</option>
-          <option value="lastweek" data-i18n="statsLastWeek">Semaine dernière</option>
-          <option value="thismonth" data-i18n="statsThisMonth">Ce mois-ci</option>
-          <option value="lastmonth" data-i18n="statsLastMonth">Le mois dernier</option>
-          <option value="all" data-i18n="statsAllTime">Depuis le début</option>
-        </select>
-      </div>
-      <div class="statgrid statgrid--4">
-        <div class="statcell">
-          <div class="statbig" id="statDone">0</div>
-          <div class="statlabel" data-i18n="statsDoneLabel">habitudes faites</div>
-          <div class="statsub" id="statOf"></div>
-        </div>
-        <div class="statcell statcell--r">
-          <div class="statbig statbig--r" id="statRep">0</div>
-          <div class="statlabel" data-i18n="statsReportsLabel">habitudes reportées</div>
-          <div class="statsub" id="statRepOf"></div>
-        </div>
-        <div class="statcell statcell--e">
-          <div class="statbig statbig--e" id="statEnergy">—</div>
-          <div class="statlabel" data-i18n="statsEnergyLabel">énergie /10</div>
-          <div class="statsub" id="statEnergyN"></div>
-        </div>
-        <div class="statcell statcell--s">
-          <div class="statbig statbig--s" id="statScreen">—</div>
-          <div class="statlabel" data-i18n="statsScreenLabel">temps d'écran</div>
-          <div class="statsub" id="statScreenSub"></div>
+    <div class="body pane-in">
+      <!-- Module G. Segmente a cinq positions puis les dates entre deux fleches.
+           Tout l'ecran depend du filtre, sans exception. La fleche avant est
+           grisee sur la periode en cours, seul le record reste tous temps confondus. -->
+      <div class="segbox segbox--range">
+        <div class="seg seg--5" id="rangeSeg">
+          <button type="button" class="seg-b seg-b--on" data-range="day" data-i18n="stRangeDay">Jour</button>
+          <button type="button" class="seg-b" data-range="week" data-i18n="stRangeWeek">Semaine</button>
+          <button type="button" class="seg-b" data-range="month" data-i18n="stRangeMonth">Mois</button>
+          <button type="button" class="seg-b" data-range="year" data-i18n="stRangeYear">Année</button>
+          <button type="button" class="seg-b" data-range="all" data-i18n="stRangeAll">Tout</button>
         </div>
       </div>
-      <div class="cadence" id="cadenceLine" hidden>
-        <span class="cadence-koala">🐨</span><span id="cadenceText"></span>
+      <div class="nav">
+        <button type="button" class="nav-a" id="rangePrev" data-i18n-aria="stPrev">&lsaquo;</button>
+        <div class="nav-d" id="periodDates"></div>
+        <button type="button" class="nav-a" id="rangeNext" data-i18n-aria="stNext">&rsaquo;</button>
       </div>
-      <div id="trendWrap">
-        <div class="clabel" data-i18n="statsHabitsPerDay">Habitudes par jour</div>
-        <div class="legendrow">
-          <span class="lg"><span class="dot dot--done"></span><span data-i18n="statsDoneWord">faites</span></span>
-          <span class="lg"><span class="dot dot--rep"></span><span data-i18n="statsReportsWord">reportées</span></span>
+
+      <section class="blank" id="statsBlank" hidden>
+        <div id="blankKoala"></div>
+        <div class="blank-txt">
+          <div class="blank-t" data-i18n="blankTitle">Rien à montrer, pour l'instant</div>
+          <div class="blank-s" id="blankSub"></div>
         </div>
-        <div class="chart" id="trendChart"></div>
-        <div class="clabel" id="screenTrendLabel" data-i18n="statsScreenPerDay">Temps d'écran par jour</div>
-        <div class="chart chart--s" id="screenChart"></div>
+        <button type="button" class="blank-b" id="blankNow" data-i18n="bringNow">Faire venir le koala</button>
+      </section>
+
+      <section class="card" id="statsSoon" hidden>
+        <div class="card-t" style="font-size:13px;line-height:18px;" data-i18n="soonTitle">Ce qui apparaîtra ici</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-n step-n--1">1</div>
+            <div class="row-txt">
+              <div class="step-t" data-i18n="soon1">Tes habitudes faites et reportées</div>
+              <div class="step-w" data-i18n="soon1w">Dès aujourd'hui</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n step-n--2">2</div>
+            <div class="row-txt">
+              <div class="step-t" data-i18n="soon2">Ta série de jours de suite</div>
+              <div class="step-w" data-i18n="soon2w">Après 2 jours</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n step-n--3">3</div>
+            <div class="row-txt">
+              <div class="step-t" data-i18n="soon3">Le lien entre habitudes et énergie</div>
+              <div class="step-w" data-i18n="soon3w">Après une semaine</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ghost" id="statsGhost" hidden>
+        <div class="card-h">
+          <div class="ghost-t" data-i18n="statsPerDay">Par jour</div>
+          <div class="ghost-m" data-i18n="ghostPreview">Aperçu</div>
+        </div>
+        <div class="ghost-plot">
+          <div class="goalline"></div>
+          <div class="ghost-cols">
+            <div class="ghost-b"></div><div class="ghost-b"></div><div class="ghost-b"></div><div class="ghost-b"></div>
+            <div class="ghost-b"></div><div class="ghost-b"></div><div class="ghost-b"></div>
+          </div>
+        </div>
+        <div class="axis" id="ghostAxis"></div>
+      </section>
+
+      <!-- Les deux tuiles de serie. La meilleure porte sur la periode, le record
+           reste tous temps confondus, planche 1d. -->
+      <div class="tiles tiles--2" id="streakTiles">
+        <div class="tile tile--nrj">
+          <div class="tile-l" data-i18n="stBestStreak">Meilleure série</div>
+          <div class="tile-row"><div class="tile-v" id="statBest">0</div><div class="tile-u" id="statBestUnit"></div></div>
+          <div class="tile-s" id="statBestSub"></div>
+        </div>
+        <div class="tile tile--scr">
+          <div class="tile-l" data-i18n="stRecord">Ton record</div>
+          <div class="tile-row"><div class="tile-v" id="statRecord">0</div><div class="tile-u" id="statRecordUnit"></div></div>
+          <div class="tile-s" id="statRecordSub"></div>
+        </div>
       </div>
-      <div class="notecard" id="trendNote" hidden data-i18n="statsSingleDayNote">Choisis une semaine ou un mois pour voir l'évolution.</div>
+      <div class="surt" id="totalHead"></div>
+      <div class="tiles" id="statsTiles">
+        <div class="tile tile--done">
+          <div class="tile-l" data-i18n="statsDoneLabel">Habitudes faites</div>
+          <div class="tile-v" id="statDone">0</div>
+          <div class="tile-s" id="statDoneSub"></div>
+        </div>
+        <div class="tile tile--rep">
+          <div class="tile-l" data-i18n="statsReportsLabel">Reportées</div>
+          <div class="tile-v" id="statRep">0</div>
+          <div class="tile-s" id="statRepSub"></div>
+        </div>
+        <div class="tile tile--nrj">
+          <div class="tile-l" data-i18n="statsEnergyLabel">Énergie</div>
+          <div class="tile-row"><div class="tile-v" id="statEnergy">—</div><div class="tile-u" id="statEnergyUnit"></div></div>
+          <div class="tile-s" id="statEnergySub"></div>
+        </div>
+        <div class="tile tile--scr">
+          <div class="tile-l" data-i18n="statsScreenLabel">Temps d'écran</div>
+          <div class="tile-v" id="statScreen">—</div>
+          <div class="tile-s" id="statScreenSub"></div>
+        </div>
+      </div>
+
+      <section class="card" id="chartsCard">
+        <div class="card-t" data-i18n="statsPerDay">Par jour</div>
+        <div class="legend">
+          <span class="lg"><span class="lg-d" style="background:#2FAE4A"></span><span class="lg-t" data-i18n="statsDoneWord">Faites</span></span>
+          <span class="lg"><span class="lg-d" style="background:#F5C877"></span><span class="lg-t" data-i18n="statsReportsWord">Reportées</span></span>
+          <span class="lg" id="goalLegend" hidden><span class="lg-l"></span><span class="lg-t" id="goalLegendText"></span></span>
+        </div>
+        <div class="plot">
+          <div class="goalline" id="goalLine" hidden></div>
+          <div class="cols" id="trendChart"></div>
+        </div>
+        <div class="axis" id="trendAxis"></div>
+        <div class="sep"></div>
+        <div class="card-h">
+          <div class="card-t" style="font-size:13px;line-height:18px;" data-i18n="statsScreenLabel">Temps d'écran</div>
+          <div class="card-m" id="cadenceText"></div>
+        </div>
+        <div class="scr" id="screenChart"></div>
+        <div class="axis" id="screenAxis"></div>
+      </section>
+
+      <div class="note" id="trendNote" hidden data-i18n="statsSingleDayNote">Choisis une semaine ou un mois pour voir l'évolution.</div>
+
+      <section class="card" id="streakCard">
+        <div class="row row--top">
+          <div class="row-txt">
+            <div class="card-t" data-i18n="statsStreak">Ta série</div>
+            <div class="streak-v"><div class="streak-n" id="statStreak">0</div><div class="streak-u" data-i18n="statsStreakDays">jours de suite</div></div>
+          </div>
+          <div class="streak-r" id="statRecordPill"></div>
+        </div>
+        <div class="prog"><div class="prog-f" id="streakFill"></div></div>
+        <div class="hint" id="streakGoal"></div>
+      </section>
+
+      <section class="ben" id="benefitCard">
+        <div>
+          <div class="ben-t" id="benefitTitle" data-i18n="statsBenefitUp">Tes habitudes te donnent de l'énergie</div>
+          <div class="ben-s" data-i18n="statsBenefitHint">Énergie moyenne selon le nombre d'habitudes du jour</div>
+        </div>
+        <div class="ben-rows" id="benefitRows"></div>
+        <div class="ben-s" id="benefitVerdict"></div>
+        <div class="ben-s" id="benefitNote" hidden data-i18n="statsCorrNote">Note ton énergie sur quelques jours pour voir le lien apparaître.</div>
+      </section>
     </div>
+  </div>
 
-    <div class="block block--overview">
-      <div class="zonetitle" data-i18n="statsZoneOverview">🌱 Vue d'ensemble</div>
-      <div class="zonesub" data-i18n="statsZoneOverviewSub">tout ton historique, depuis le début</div>
+  <!-- ===================== DONNÉES ===================== -->
+  <div id="panelData" hidden>
+    <div class="body pane-in">
 
-      <div class="streakrow">
-        <span class="streaknow"><span class="ovicon" id="streakFlame">🔥</span> <strong id="statStreak">0</strong> <span data-i18n="statsStreakDays">jours de suite</span></span>
-        <span class="streakrec">🏆 <span data-i18n="statsRecordWord">record</span> <strong id="statRecord">0</strong> <span data-i18n="statsDaysWord">j</span></span>
-      </div>
-      <div class="progress"><div class="progress-fill" id="streakFill" style="transform:scaleX(0)"></div></div>
-      <div class="streakgoal" id="streakGoal"></div>
+      <section class="card">
+        <div>
+          <div class="card-t" data-i18n="backupTitle">Sauvegarde et restauration</div>
+          <div class="hint" data-i18n="backupHint">Choisis ce qui est inclus, ça s'applique au fichier local et à kDrive ci-dessous.</div>
+        </div>
+        <div class="parts" id="partList">
+        <!-- Module H. Trois blocs nommes, sans repeter les valeurs qui sont
+             deja en bout de chaque ligne de case. Ces cases et le choix
+             fusionner/remplacer sont PARTAGES par les deux destinations plus
+             bas, fichier local et kDrive, jamais propres a l'une ou l'autre :
+             d'ou une seule carte, jamais deux, planche revue le 2026-08-02
+             pour lever l'ambiguite signalee par un premier essai utilisateur. -->
+        <div class="bar" id="storeBar">
+          <div class="bar-seg bar-seg--k" id="segKoalas"></div>
+          <div class="bar-seg bar-seg--h" id="segStats"></div>
+          <div class="bar-seg bar-seg--c" id="segContent"></div>
+        </div>
+        <div class="bar-lg">
+          <span class="bar-lgi"><i class="bar-d bar-seg--k"></i><span data-i18n="partKoalasShort">Personnages</span></span>
+          <span class="bar-lgi"><i class="bar-d bar-seg--h"></i><span data-i18n="partStatsShort">Historique</span></span>
+          <span class="bar-lgi"><i class="bar-d bar-seg--c"></i><span data-i18n="partContentShort">Contenus</span></span>
+        </div>
+          <button type="button" class="cbx cbx--on" data-part="settings">
+            <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partSettings">Réglages</span><span class="cbx-m" id="szSettings"></span>
+          </button>
+          <button type="button" class="cbx cbx--on" data-part="content">
+            <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partContent">Objectifs et citations</span><span class="cbx-m" id="szContent"></span>
+          </button>
+          <button type="button" class="cbx cbx--on" data-part="stats">
+            <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partStats">Statistiques</span><span class="cbx-m" id="szStats"></span>
+          </button>
+          <button type="button" class="cbx cbx--on" data-part="koalas">
+            <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partKoalas">Personnages importés</span><span class="cbx-m" id="szKoalas"></span>
+          </button>
+        </div>
+        <div class="sep"></div>
+        <div class="row-lab row-lab--big" data-i18n="importModeLabel">À l'import (fichier ou kDrive)</div>
+        <div class="seg" id="importSeg">
+          <button type="button" class="seg-b seg-b--on" data-mode="merge" data-i18n="importMerge">Fusionner</button>
+          <button type="button" class="seg-b" data-mode="replace" data-i18n="importReplace">Remplacer</button>
+        </div>
+        <div class="hint" data-i18n="importModeHint">Fusionner garde ce que tu as, remplacer écrase tout.</div>
 
-      <div class="ovsep"></div>
+        <div class="sep"></div>
+        <div class="row-lab row-lab--big" data-i18n="backupLocalLabel">Fichier local</div>
+        <div class="pills">
+          <button type="button" class="pill pill--tall pill--main" id="exportBtn" data-i18n="exportBtn">Exporter</button>
+          <button type="button" class="pill pill--tall" id="importBtn" data-i18n="importBtn">Importer</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <div class="saved" id="dataMsg"></div>
 
-      <label class="sublabel" id="benefitTitle" data-i18n="statsBenefitUp">Ton habitude te donne de l'énergie</label>
-      <div class="corrhint" data-i18n="statsBenefitHint">ton énergie moyenne selon les jours</div>
-      <div id="corrWrap">
-        <div class="chart chart--corr" id="corrChart"></div>
-        <div class="corrverdict" id="corrVerdict"></div>
-      </div>
-      <div class="notecard" id="corrNote" hidden data-i18n="statsCorrNote">Note ton énergie sur quelques jours pour voir le lien apparaître.</div>
-    </div>
+        <div class="sep"></div>
+        <div class="row-lab row-lab--big" data-i18n="kdriveSectionLabel">kDrive (optionnel)</div>
+        <div class="hint" data-i18n="kdriveHint">Une copie automatique dans ton propre kDrive, dossier Apps/Koala Zen.</div>
 
-    <div class="block block--data">
-      <div class="zonetitle" data-i18n="grpData">Données</div>
-      <div class="zonesub" data-i18n="dataHint">Tes statistiques sont gardées à vie sur ton appareil.</div>
-      <button type="button" class="btn-danger" id="resetData" data-i18n="resetData">Effacer toutes les données</button>
-      <div class="saved" id="dataCleared" data-i18n="dataCleared">Données effacées ✓</div>
+        <div id="kdriveSetup">
+          <div class="row-lab" data-i18n="kdriveTokenLabel">Jeton d'accès kDrive</div>
+          <div class="addrow">
+            <input type="password" class="add-in" id="kdriveTokenInput" data-i18n-ph="kdriveTokenPh" placeholder="Coller le jeton ici" autocomplete="off">
+            <button type="button" class="tiny fixed" id="kdriveTokenShow" data-i18n="kdriveShow">Afficher</button>
+          </div>
+          <div class="note">
+            <span data-i18n="kdriveTokenHint">Un jeton avec le périmètre kDrive, généré dans le Manager Infomaniak.</span>
+            <a href="https://faq.infomaniak.com/2582" target="_blank" rel="noopener noreferrer" data-i18n="kdriveHowTo">Comment obtenir un jeton</a>
+          </div>
+          <div class="pills">
+            <button type="button" class="pill pill--tall pill--main" id="kdriveConnect" data-i18n="kdriveConnect">Se connecter</button>
+          </div>
+          <div class="saved" id="kdriveSetupMsg"></div>
+        </div>
+
+        <div id="kdrivePicker" hidden>
+          <div class="row-lab" data-i18n="kdrivePickTitle">Choisis ton kDrive</div>
+          <div class="hint" data-i18n="kdrivePickHint">Ce compte a plusieurs kDrive, choisis celui qui recevra les sauvegardes.</div>
+          <div id="kdrivePickList"></div>
+          <div class="saved" id="kdrivePickMsg"></div>
+        </div>
+
+        <div id="kdriveConnected" hidden>
+          <div class="row">
+            <div class="row-txt">
+              <div class="row-lab row-lab--big" id="kdriveConnectedLabel"></div>
+              <div class="row-sub" id="kdriveLastSync"></div>
+            </div>
+          </div>
+          <div class="pills">
+            <button type="button" class="pill pill--tall pill--main" id="kdriveBackupNow" data-i18n="kdriveBackupNow">Sauvegarder</button>
+            <button type="button" class="pill pill--tall" id="kdriveRestoreOpen" data-i18n="kdriveRestoreOpen">Restaurer</button>
+          </div>
+          <div id="kdriveRestoreList" hidden>
+            <div class="row-lab" data-i18n="kdriveRestorePick">Choisis une sauvegarde</div>
+            <div id="kdriveFiles"></div>
+          </div>
+          <div class="saved" id="kdriveMsg"></div>
+          <div class="pills">
+            <button type="button" class="tiny" id="kdriveChangeDrive" data-i18n="kdriveChangeDrive">Changer de kDrive</button>
+            <button type="button" class="tiny" id="kdriveDisconnect" data-i18n="kdriveDisconnect">Déconnecter kDrive</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h">
+          <div class="card-t" data-i18n="storageTitle">Ce que Koala Zen occupe</div>
+          <div class="card-m" id="szTotal"></div>
+        </div>
+        <div class="dline">
+          <div id="dlKoalas" style="background:#2FAE4A;width:0"></div>
+          <div id="dlStats" style="background:#9BD4A8;width:0"></div>
+          <div id="dlContent" style="background:#E0E0E0;width:0"></div>
+        </div>
+        <div class="legend">
+          <span class="lg"><span class="lg-d" style="background:#2FAE4A"></span><span class="lg-t" data-i18n="partKoalasShort">Personnages</span></span>
+          <span class="lg"><span class="lg-d" style="background:#9BD4A8"></span><span class="lg-t" data-i18n="partHistory">Historique</span></span>
+          <span class="lg"><span class="lg-d" style="background:#E0E0E0"></span><span class="lg-t" data-i18n="partContentShort">Contenus</span></span>
+        </div>
+      </section>
+
+      <section class="privacy">
+        <div class="privacy-i">✓</div>
+        <div>
+          <div class="privacy-t" data-i18n="privacyTitle">Tout reste chez toi</div>
+          <div class="privacy-s" data-i18n="privacySub">Rien ne sort de ton appareil, sauf si tu actives toi-même la sauvegarde kDrive ci-dessus.</div>
+        </div>
+      </section>
+      <section class="danger">
+        <div class="danger-t" data-i18n="eraseTitle">Effacer</div>
+        <div class="row">
+          <div class="row-txt">
+            <div class="danger-l" data-i18n="eraseHistory">L'historique</div>
+            <div class="danger-s" id="historyDays"></div>
+          </div>
+          <button type="button" class="danger-b" id="resetHistory" data-i18n="eraseBtn">Effacer</button>
+        </div>
+        <div class="danger-sep"></div>
+        <div class="row">
+          <div class="row-txt">
+            <div class="danger-l" data-i18n="eraseAll">Tout, et repartir de zéro</div>
+            <div class="danger-s" data-i18n="eraseAllSub">Réglages et contenus inclus</div>
+          </div>
+          <button type="button" class="danger-b danger-b--solid" id="resetAll" data-i18n="eraseAllBtn">Tout effacer</button>
+        </div>
+        <div class="danger-s" data-i18n="eraseHint">Une confirmation est demandée, pense à exporter avant.</div>
+      </section>
+
     </div>
   </div>
 
