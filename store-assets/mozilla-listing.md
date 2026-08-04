@@ -40,7 +40,7 @@ Make it yours:
 - See your screen time for the day, in the wisdom bubble and in the statistics. It resets at midnight in the time zone you choose (Europe/Zurich by default, or your browser's).
 - Add your own images, PNG or animated GIF, up to 18, and write your own quotes one by one or paste a whole batch at once.
 - Postpone and one of five characters turns up to count your postponements on a tally, a different one each time, starting over every morning. Refusing is always a valid answer, and it is never punished.
-- New in 2.1, back up and restore the same data on your own kDrive (Infomaniak), completely optional and off by default.
+- New in 2.1, back up and restore the same data on your own kDrive (Infomaniak's cloud storage, free account at [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud) if you don't have one yet), completely optional and off by default.
 
 Privacy first, Koala Zen runs entirely on your computer by default. No account, no server, no analytics, no tracking. Your settings and anything you add stay in your browser. The only exception is an optional backup to your own kDrive, which stays off unless you turn it on yourself in the Data tab. The source is public, so you can check it line by line.
 
@@ -68,7 +68,7 @@ Rends-la tienne :
 - Vois ton temps d'écran du jour, dans la bulle de sagesse et dans les statistiques. Remis à zéro à minuit dans le fuseau que tu choisis (Europe/Zurich par défaut, ou celui de ton navigateur).
 - Ajoute tes propres images, PNG ou GIF animé, jusqu'à 18, et écris tes citations une par une ou colle-en tout un lot d'un coup.
 - Reporte et l'un des cinq personnages débarque pour compter tes reports en bâtons, un différent à chaque fois, et le cycle repart chaque matin. Refuser est toujours une réponse valable, et ce n'est jamais puni.
-- Nouveau en 2.1, sauvegarde et restaure les mêmes données sur ton propre kDrive (Infomaniak), entièrement optionnel et désactivé par défaut.
+- Nouveau en 2.1, sauvegarde et restaure les mêmes données sur ton propre kDrive (le stockage cloud d'Infomaniak, compte gratuit sur [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud) si tu n'en as pas encore), entièrement optionnel et désactivé par défaut.
 
 La confidentialité d'abord, Koala Zen fonctionne entièrement sur ton ordinateur par défaut. Aucun compte, aucun serveur, aucune analyse, aucun suivi. Tes réglages et tout ce que tu ajoutes restent dans ton navigateur. La seule exception est une sauvegarde optionnelle vers ton propre kDrive, qui reste désactivée tant que tu ne l'actives pas toi-même dans l'onglet Données. Le code source est public, tu peux le vérifier ligne par ligne.
 
@@ -95,7 +95,7 @@ Mach sie zu deiner eigenen:
 - Sieh deine Bildschirmzeit des Tages, in der Weisheitsblase und in den Statistiken. Sie wird um Mitternacht in der gewählten Zeitzone zurückgesetzt (standardmässig Europe/Zurich, oder die deines Browsers).
 - Füge deine eigenen Bilder hinzu, PNG oder animiertes GIF, bis zu 18, und schreib deine Zitate einzeln oder füge eine ganze Liste auf einmal ein.
 - Schiebst du auf, taucht eine von fünf Figuren auf, um deine Aufschiebungen mitzuzählen, jedes Mal eine andere, und der Zyklus beginnt jeden Morgen neu. Ablehnen ist immer eine gültige Antwort und wird nie bestraft.
-- Neu in 2.1, sichere und stelle dieselben Daten auf deinem eigenen kDrive (Infomaniak) wieder her, vollständig optional und standardmässig deaktiviert.
+- Neu in 2.1, sichere und stelle dieselben Daten auf deinem eigenen kDrive (dem Cloud-Speicher von Infomaniak, kostenloses Konto auf [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud), falls du noch keines hast) wieder her, vollständig optional und standardmässig deaktiviert.
 
 Datenschutz zuerst, Koala Zen läuft standardmässig vollständig auf deinem Computer. Kein Konto, kein Server, keine Analyse, kein Tracking. Deine Einstellungen und alles, was du hinzufügst, bleiben in deinem Browser. Die einzige Ausnahme ist ein optionales Backup auf deinen eigenen kDrive, das deaktiviert bleibt, bis du es selbst im Tab «Daten» aktivierst. Der Quellcode ist öffentlich, du kannst ihn Zeile für Zeile prüfen.
 

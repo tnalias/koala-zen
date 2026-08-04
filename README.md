@@ -12,7 +12,7 @@ A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adora
 - **See where you are in the day**: the reminder shows one mark per goal and how many you have already done.
 - **A cat that just drops by, sometimes with a fox**: it wanders across the page, waves and leaves. Every now and then two passers-by cross paths, two cats, or a cat and a fox, and trade a quick joke before moving on. It asks for nothing, counts for nothing, it is simply there. Five different scenes, between 8am and 8pm, and never during a call or a pause. Choose how often: Rare (every 3h), Normal (every 2h, the default), or Frequent (every hour) — or switch it off in one click if you prefer quiet.
 - **Follow your progress**: pick day, week, month, year or everything, then move back through past periods with the arrows. Habits done, habits postponed, average energy and screen time, each with a line that reads the number rather than repeating it, how it compares with the previous period, the time of day you postpone most, whether your energy is rising or easing and since when. A per-day chart with your daily target as a dashed line, a screen time chart, your best streak and your all-time record.
-- **Back up and restore**: export a `.json` file with the parts you choose, settings, goals and quotes, statistics, imported characters. Re-import it here or on another machine, merging or replacing. A storage bar shows what takes up room, and you can erase the history alone or everything. **Optionally, also back up to your own kDrive** (Apps/Koala Zen folder) with an Infomaniak access token you provide, restore from there the same way.
+- **Back up and restore**: export a `.json` file with the parts you choose, settings, goals and quotes, statistics, imported characters. Re-import it here or on another machine, merging or replacing. A storage bar shows what takes up room, and you can erase the history alone or everything. **Optionally, also back up to your own [kDrive](https://www.infomaniak.com/en/free-cloud)** (Apps/Koala Zen folder) with an Infomaniak access token you provide, restore from there the same way. kDrive is Infomaniak's cloud storage; a free account is available at [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud) if you don't have one yet.
 - **Choose your rhythm**: Pomodoro, Deep work, Ultradian, or your own interval, from 5 to 240 minutes in steps of five. Your custom value is remembered even when you switch to a preset.
 - **Snooze or pause** (later, 1 hour, the whole day) and catch up the breaks you missed.
 - **Automatic pause** during video calls (kMeet, Teams, Zoom, Meet) and when you step away from the keyboard. The header tells you when it is staying quiet.
@@ -60,8 +60,12 @@ The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays
 The koala icon appears in your toolbar. Click it to open the settings.
 
 ### Firefox
-Regular Firefox only installs extensions **signed by Mozilla**, which [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) already is. It installs permanently, no account and no command line needed.
+Koala Zen is **live on addons.mozilla.org**, install it in one click:
 
+👉 https://addons.mozilla.org/en-US/firefox/addon/koala-zen/
+
+**Alternative, install the `.xpi` from this repo directly**
+[`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) is the same Mozilla-signed build as the store listing above.
 1. Open `about:addons`, click the gear icon, then **Install Add-on From File**, and pick [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) (you can also drag the file onto the Firefox window).
 2. Confirm. Because the file is signed, it stays installed across restarts.
 
@@ -78,11 +82,6 @@ The provided signature only covers the unmodified file above, so a build you cha
 4. Install that signed `.xpi` the same way as above.
 
 Not comfortable with these steps? An AI like **Euria by Infomaniak** can walk you through them. Paste it the instructions above and describe where you're stuck.
-
-**Once the public page is live**
-After Mozilla validates and publishes the extension, anyone will be able to install it in one click from:
-
-👉 https://addons.mozilla.org/en-US/firefox/addon/koala-zen/
 
 ---
 
@@ -143,7 +142,7 @@ Click **Save** on either tab after a change.
 **Stats** tab. Pick a period (today, yesterday, this or last week, this or last month, since you started) and read four figures, each with a line of context: habits done compared with the previous period, habits postponed with the time of day you postpone most, average energy with its trend, and screen time with a daily average. Below, a per-day chart for habits (done and postponed side by side) with your daily target as a dashed line, a per-day chart for screen time, and a cadence line tying your habits to your screen time. Then your current streak as a progress bar toward your record, and how your average energy compares on days you do a little versus a lot. The wording adapts to your own data, so it never claims a link that is not there. On the very first run, the tab shows what will appear and when instead of a wall of zeros.
 
 **Data** tab:
-- **Backup and restore**: one card, two destinations. Tick the parts you want (settings, goals and quotes, statistics, imported characters, each with its weight) and choose **merge** or **replace** for restoring — both choices apply to whichever destination you use below. **Local file**: **Export** a `.json` file, **Import** brings it back. **kDrive** (optional): paste a personal Infomaniak access token with the kDrive scope ([how to get one](https://faq.infomaniak.com/2582)) to back up and restore the exact same data to your own kDrive, folder `Apps/Koala Zen`. If your account has more than one kDrive, you pick which one; with only one, it connects straight away. A "Change kDrive" link lets you switch later. Nothing is sent until you provide a token and connect; disconnect any time to stop. The token is encrypted at rest and never included in the local `.json` export.
+- **Backup and restore**: one card, two destinations. Tick the parts you want (settings, goals and quotes, statistics, imported characters, each with its weight) and choose **merge** or **replace** for restoring — both choices apply to whichever destination you use below. **Local file**: **Export** a `.json` file, **Import** brings it back. **kDrive** (optional): Infomaniak's cloud storage, [free account here](https://www.infomaniak.com/en/free-cloud) if you don't have one yet. Paste a personal Infomaniak access token with the kDrive scope ([how to get one](https://faq.infomaniak.com/2582)) to back up and restore the exact same data to your own kDrive, folder `Apps/Koala Zen`. If your account has more than one kDrive, you pick which one; with only one, it connects straight away. A "Change kDrive" link lets you switch later. Nothing is sent until you provide a token and connect; disconnect any time to stop. The token is encrypted at rest and never included in the local `.json` export.
 - **What Koala Zen takes up**: a gauge splitting your storage between characters, history and content.
 - **Everything stays with you**: no account, nothing sent, no analytics — unless you turn on kDrive backup above.
 - **Erase**: the history alone, or everything including settings and content. Both ask for a second click to confirm, so export first.

@@ -12,7 +12,7 @@ Une petite extension de navigateur pour **Chrome et Firefox**. Toutes les 30 min
 - **Vois où tu en es dans la journée** : le rappel affiche un bâton par objectif et combien tu en as déjà fait.
 - **Un chat qui passe juste dire bonjour, parfois avec un renard** : il traverse la page, salue et repart. De temps en temps, deux passants se croisent, deux chats, ou un chat et un renard, et échangent un mot pour rire avant de repartir. Il ne demande rien, il ne compte pour rien, il est simplement là. Cinq scènes différentes, entre 8h et 20h, et jamais pendant une visio ni une pause. Choisis la fréquence : Rare (toutes les 3h), Normal (toutes les 2h, par défaut), ou Fréquent (toutes les heures) — ou coupe-le en un clic si tu préfères le silence.
 - **Suis tes progrès** : choisis le jour, la semaine, le mois, l'année ou tout, puis remonte dans les périodes passées avec les flèches. Habitudes faites, habitudes reportées, énergie moyenne et temps d'écran, chacun avec une ligne qui interprète le chiffre au lieu de le répéter, l'écart avec la période précédente, le moment de la journée où tu reportes le plus, si ton énergie monte ou baisse et depuis quand. Un graphe par jour avec ton objectif en pointillé, un graphe du temps d'écran, ta meilleure série et ton record tous temps confondus.
-- **Sauvegarde et restaure** : exporte un fichier `.json` avec les parties que tu choisis, réglages, objectifs et citations, statistiques, personnages importés. Réimporte-le ici ou sur une autre machine, en fusionnant ou en remplaçant. Une barre montre ce qui prend de la place, et tu peux effacer l'historique seul ou tout. **En option, sauvegarde aussi sur ton propre kDrive** (dossier Apps/Koala Zen) avec un jeton d'accès Infomaniak que tu fournis toi-même, et restaure depuis là de la même façon.
+- **Sauvegarde et restaure** : exporte un fichier `.json` avec les parties que tu choisis, réglages, objectifs et citations, statistiques, personnages importés. Réimporte-le ici ou sur une autre machine, en fusionnant ou en remplaçant. Une barre montre ce qui prend de la place, et tu peux effacer l'historique seul ou tout. **En option, sauvegarde aussi sur ton propre [kDrive](https://www.infomaniak.com/en/free-cloud)** (dossier Apps/Koala Zen) avec un jeton d'accès Infomaniak que tu fournis toi-même, et restaure depuis là de la même façon. kDrive est le stockage cloud d'Infomaniak, un compte gratuit est disponible sur [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud) si tu n'en as pas encore.
 - **Choisis ton rythme** : Pomodoro, Deep work, Ultradien, ou ton propre intervalle, de 5 à 240 minutes par pas de cinq. Ta valeur perso reste mémorisée même quand tu passes sur un preset.
 - **Reporte ou mets en pause** (plus tard, 1 heure, toute la journée) et rattrape les pauses manquées.
 - **Pause automatique** pendant les visios (kMeet, Teams, Zoom, Meet) et quand tu quittes le clavier. L'en-tête te dit quand il reste silencieux.
@@ -60,8 +60,12 @@ L'extension n'est pas encore sur le Chrome Web Store, tu l'ajoutes donc à la ma
 L'icône du koala apparaît dans la barre d'outils. Clique dessus pour ouvrir les réglages.
 
 ### Firefox
-Un Firefox normal n'installe durablement que des extensions **signées par Mozilla**, ce que [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) est déjà. Il s'installe de façon permanente, sans compte ni ligne de commande.
+Koala Zen est **en ligne sur addons.mozilla.org**, installe-le en un clic :
 
+👉 https://addons.mozilla.org/fr/firefox/addon/koala-zen/
+
+**Alternative, installer le `.xpi` directement depuis ce dépôt**
+[`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) est le même build signé par Mozilla que la fiche ci-dessus.
 1. Ouvre `about:addons`, clique sur la roue crantée puis sur **Installer un module depuis un fichier**, et choisis [`download/koala-zen-firefox.xpi`](download/koala-zen-firefox.xpi) (tu peux aussi glisser le fichier sur la fenêtre de Firefox).
 2. Confirme. Comme le fichier est signé, il reste installé après les redémarrages.
 
@@ -78,11 +82,6 @@ La signature fournie ne couvre que le fichier non modifié ci-dessus, une versio
 4. Installe ce `.xpi` signé de la même façon que ci-dessus.
 
 Pas à l'aise avec ces étapes ? Une IA comme **Euria d'Infomaniak** peut te guider pas à pas. Colle-lui les instructions ci-dessus et décris-lui où tu bloques.
-
-**Quand la page publique sera en ligne**
-Une fois l'extension validée et publiée par Mozilla, tout le monde pourra l'installer en un clic depuis :
-
-👉 https://addons.mozilla.org/fr/firefox/addon/koala-zen/
 
 ---
 
@@ -143,7 +142,7 @@ Clique sur **Enregistrer** dans l'un ou l'autre onglet après une modification.
 Onglet **Stats**. Choisis une période (aujourd'hui, hier, cette semaine ou la dernière, ce mois ou le dernier, depuis le début) et lis quatre chiffres, chacun avec une ligne de contexte : les habitudes faites comparées à la période précédente, les reportées avec le moment de la journée où tu reportes le plus, l'énergie moyenne avec sa tendance, et le temps d'écran avec une moyenne par jour. En dessous, un graphe par jour pour les habitudes (faites et reportées côte à côte) avec ton objectif quotidien en pointillé, un graphe du temps d'écran, et une ligne de cadence qui relie tes habitudes à ton temps d'écran. Puis ta série en cours en barre de progression vers ton record, et la comparaison de ton énergie moyenne selon que tu en fais peu ou beaucoup. Les formulations s'adaptent à tes données, donc rien n'affirme un lien qui n'existe pas. Au tout premier lancement, l'onglet montre ce qui va apparaître et quand, plutôt qu'un mur de zéros.
 
 Onglet **Données** :
-- **Sauvegarde et restauration** : une seule carte, deux destinations. Coche les parties voulues (réglages, objectifs et citations, statistiques, personnages importés, chacune avec son poids) et choisis **fusionner** ou **remplacer** pour la restauration, les deux choix valent pour la destination que tu utilises plus bas. **Fichier local** : **Exporte** un fichier `.json`, **Importer** le remet en place. **kDrive** (optionnelle) : colle un jeton d'accès Infomaniak personnel avec le périmètre kDrive ([comment l'obtenir](https://faq.infomaniak.com/2582)) pour sauvegarder et restaurer exactement les mêmes données sur ton propre kDrive, dossier `Apps/Koala Zen`. Si ton compte a plusieurs kDrive, tu choisis lequel ; avec un seul, la connexion se fait directement. Un lien "Changer de kDrive" permet de revenir sur ce choix plus tard. Rien n'est envoyé tant que tu n'as pas fourni de jeton et connecté, déconnecte à tout moment pour arrêter. Le jeton est chiffré au repos et jamais inclus dans le fichier `.json` local.
+- **Sauvegarde et restauration** : une seule carte, deux destinations. Coche les parties voulues (réglages, objectifs et citations, statistiques, personnages importés, chacune avec son poids) et choisis **fusionner** ou **remplacer** pour la restauration, les deux choix valent pour la destination que tu utilises plus bas. **Fichier local** : **Exporte** un fichier `.json`, **Importer** le remet en place. **kDrive** (optionnelle) : le stockage cloud d'Infomaniak, [compte gratuit ici](https://www.infomaniak.com/en/free-cloud) si tu n'en as pas encore. Colle un jeton d'accès Infomaniak personnel avec le périmètre kDrive ([comment l'obtenir](https://faq.infomaniak.com/2582)) pour sauvegarder et restaurer exactement les mêmes données sur ton propre kDrive, dossier `Apps/Koala Zen`. Si ton compte a plusieurs kDrive, tu choisis lequel ; avec un seul, la connexion se fait directement. Un lien "Changer de kDrive" permet de revenir sur ce choix plus tard. Rien n'est envoyé tant que tu n'as pas fourni de jeton et connecté, déconnecte à tout moment pour arrêter. Le jeton est chiffré au repos et jamais inclus dans le fichier `.json` local.
 - **Ce que Koala Zen occupe** : une jauge qui répartit ton stockage entre personnages, historique et contenus.
 - **Tout reste chez toi** : aucun compte, aucun envoi, aucune analyse — sauf si tu actives la sauvegarde kDrive ci-dessus.
 - **Effacer** : l'historique seul, ou tout, réglages et contenus inclus. Les deux demandent un second clic de confirmation, pense à exporter avant.
