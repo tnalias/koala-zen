@@ -175,7 +175,7 @@ function clear(node) { while (node.firstChild) node.removeChild(node.firstChild)
 function rebuildSvgNode(foreign, doc) {
   if (foreign.nodeType === Node.TEXT_NODE) return doc.createTextNode(foreign.nodeValue);
   if (foreign.nodeType !== Node.ELEMENT_NODE) return null;
-  // Filtre (2026-10-06, revue ECC) : jamais de script, d'objet etranger, d'attribut d'evenement ni de lien javascript, meme si nos dessins n'en ont pas.
+  // Filtre : jamais de script, d'objet etranger, d'attribut d'evenement ni de lien javascript, meme si nos dessins n'en ont pas.
   if (/^(script|foreignobject|iframe|object|embed)$/i.test(foreign.localName || foreign.tagName || "")) return null;
   const ns = foreign.namespaceURI || "http://www.w3.org/2000/svg";
   const n = doc.createElementNS(ns, foreign.localName || foreign.tagName);
@@ -1534,7 +1534,7 @@ $("frConnect").addEventListener("click", async () => {
   $("frConnect").disabled = true;
   const r = await sendR("kz-agenda-connect", { token: token });
   $("frConnect").disabled = false;
-  // 2026-10-06 (revue ECC) : le jeton quitte le champ quoi qu'il arrive.
+  // Le jeton quitte le champ quoi qu'il arrive.
   $("frToken").value = "";
   if (!r || !r.ok) { frErreur(ikErrText(r && r.error, "calendar", r && r.extras)); return; }
   if (r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return; }
@@ -1976,7 +1976,7 @@ $("exportBtn").addEventListener("click", async () => {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
-  // La phrase secrete ne reste pas dans le champ (revue ECC, 2026-10-06).
+  // La phrase secrete ne reste pas dans le champ.
   $("backupPass").value = ""; passCompteur();
   dataMsg(msg("exportDone", "Fichier créé"));
 });

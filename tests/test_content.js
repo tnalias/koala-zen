@@ -596,14 +596,14 @@ async function testAuDessus() {
   verifie("sans popover, le koala s affiche quand meme, z-index maximal", !!bulle(env.w) && !h2.hasAttribute("popover") && /z-index:2147483647/.test(h2.getAttribute("style")));
 }
 
-/* ================= Durcissements de la revue ECC, 2026-10-06 ================= */
+/* ================= Protections face aux pages ================= */
 async function testDurcissementsPage() {
   const NONCE = "cd".repeat(16);
   const debut = Date.now() + 3 * 60000;
   const info = { type: "kz-meeting-soon", id: 77, title: "Point", start: debut, end: debut + 1800000, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3, canNotify: true, notifyNonce: NONCE };
   const data = { ok: true, id: 77, start: debut, title: "Point", sent: [], recipients: [{ name: "Boris", address: "boris@example.com", organizer: true }],
     templates: { late5: { subject: "Retard de 5 min · Point", body: "Corps 5" }, late10: { subject: "s", body: "b" }, absent: { subject: "s", body: "b" } } };
-  // L1 : une page rend le conteneur transparent, le clic ne vaut rien.
+  // Une page rend le conteneur transparent, le clic ne vaut rien.
   let env = monte(BASE);
   env.w.chrome.runtime.sendMessage = async (m) => { env.journal.sorties.push(m); return m.type === "kz-notify-prepare" ? data : { ok: true, count: 1 }; };
   env.ecoute(info, () => {});
@@ -633,7 +633,7 @@ async function testDurcissementsPage() {
   // jsdom ne connait pas toutes ces proprietes : on lit le style pose dans le code.
   const styleHote = (fs.readFileSync(path.join(RACINE, "content.js"), "utf8").match(/host\.setAttribute\("style", "([^"]+)"\)/) || [])[1] || "";
   verifie("les styles sensibles du conteneur sont verrouilles contre les feuilles du site", ["opacity:1!important", "visibility:visible!important", "filter:none!important", "clip-path:none!important", "transform:none!important"].every((x) => styleHote.indexOf(x) >= 0), styleHote);
-  // L3 : Echap simule par la page.
+  // Echap simule par la page.
   env = monte(BASE);
   env.montre(CTX);
   await pause(160);
@@ -1120,7 +1120,7 @@ async function testStyleBulle() {
     ["Le rendez-vous reste, et la fin en ambre", testRendezVousPersistant],
     ["Prevenir les participants, volet de la bulle", testPrevenirBulle],
     ["Une page ne pilote pas la bulle", testPageNePilotePas],
-    ["Durcissements de la revue ECC", testDurcissementsPage],
+    ["Protections face aux pages", testDurcissementsPage],
     ["Au-dessus de tout, meme un lecteur colle en bas", testAuDessus],
     ["Contenus et masquage", testContenus],
     ["Fidelite de la bulle de rappel a la planche", testStyleBulle]

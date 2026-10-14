@@ -290,7 +290,7 @@ api.alarms.onAlarm.addListener((alarm) => {
 // doit jamais pouvoir lire ou changer un jeton.
 const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url"];
 function depuisExtension(sender) {
-  // 2026-10-06 (revue ECC, L5) : refus par defaut. Seule une page de
+  // Refus par defaut. Seule une page de
   // l'extension (adresse sous la racine de l'extension) est de confiance ;
   // un expediteur sans adresse ne l'est plus.
   if (!sender || !sender.url) return false;
@@ -836,15 +836,12 @@ async function targetTab() {
 // Chiffrement AES-GCM 256. La cle est une CryptoKey NON EXPORTABLE rangee
 // dans IndexedDB : aucun code, meme celui de l'extension, ne peut en lire les
 // octets, elle n'est plus a cote des jetons dans storage.local et ne part
-// dans aucun export. Limite assumee et documentee : un programme qui lit les
-// fichiers du profil du navigateur sur le disque peut encore la retrouver.
-// Aucun coffre du systeme n'est accessible a une extension sans application
-// native installee a cote.
+// dans aucun export.
 // ===========================================================================
 const SECRET_DB = "kz-secrets";
 const SECRET_STORE = "keys";
 const SECRET_KEY_ID = "tokens";
-// 2026-10-06 (revue ECC) : un second magasin, le coffre des donnees
+// Un second magasin, le coffre des donnees
 // sensibles. Voir VAULT_KEYS plus bas.
 const VAULT_STORE = "vault";
 
@@ -951,7 +948,7 @@ async function securityMigrateV3() {
   if (avait) { try { await secretTx("readwrite", (st) => st.delete(SECRET_KEY_ID)); } catch (e) { /* noop */ } }
 }
 // ===========================================================================
-// Le coffre, 2026-10-06 (revue de securite ECC, point M1). storage.local est
+// Le coffre. storage.local est
 // lisible ET modifiable par les scripts de page (content.js) : un moteur de
 // page compromis y lisait les titres de reunion et l'adresse mail, et
 // pouvait y glisser un lien que Rejoindre ouvrirait, ou remettre a zero les
@@ -1034,7 +1031,7 @@ function ikAllowed(base, method, path) {
   const chemin = String(path || "").split("?")[0];
   // Ni remontee ni barre encodee : un identifiant ne peut pas changer de route.
   if (/\.\.|%2f|%5c|\\/i.test(chemin)) return false;
-  // 2026-10-06 (revue ECC, L10) : ni "." ni "%2e" seul, que fetch normaliserait.
+  // Ni "." ni "%2e" seul, que fetch normaliserait.
   if (chemin.split("/").some((seg) => /^(\.|%2e)+$/i.test(seg))) return false;
   return IK_ALLOWED.some((a) => a.base === base && a.method === method && a.path.test(chemin));
 }
@@ -1053,7 +1050,7 @@ async function ikFetch(token, path, opts) {
   const base = opts.base || IK_API;
   let res;
   try {
-    // 2026-10-06 (revue ECC, L8) : aucune redirection suivie. Les appels
+    // Aucune redirection suivie. Les appels
     // autorises n'en ont pas besoin ; une redirection est donc un refus.
     res = await fetch(base + path, { method: method, headers: headers, body: opts.body, credentials: "omit", redirect: "manual" });
   } catch (e) {
@@ -1092,7 +1089,7 @@ const IK_PROBES = {
   mail: { path: "/mailbox", base: MAIL_API },
   kdrive: { path: "/2/drive/users/current/drives" }
 };
-// 2026-10-06 (revue ECC, L4) : refus en cas de doute. Seul un refus franc
+// Refus en cas de doute. Seul un refus franc
 // (403 sans le perimetre, ou 401) prouve qu'un acces manque ; hors ligne, une
 // erreur serveur ou une limite de debit laissent le doute, et le jeton n'est
 // alors pas accepte.
@@ -1898,7 +1895,7 @@ async function notifyIdentity(token, r) {
 }
 
 function notifyTemplates(title, startMs) {
-  // 2026-10-06 (revue ECC, L6) : un titre d'invitation externe peut porter
+  // Un titre d'invitation externe peut porter
   // des retours a la ligne ou des caracteres de controle ; jamais dans un objet.
   const t = String(title || "").replace(/[\u0000-\u001F\u007F\u2028\u2029]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 150) || bgMsg("meetingUntitled", "Sans titre");
   const h = agendaHeure(startMs);
@@ -1917,7 +1914,7 @@ function notifyTemplates(title, startMs) {
 }
 
 // ===========================================================================
-// Jeton d'envoi, 2026-10-06 (revue ECC, point M2). Une page ne peut preparer
+// Jeton d'envoi. Une page ne peut preparer
 // ou envoyer un mail QUE pour la bulle que le fond vient de lui montrer : le
 // fond remet avec la bulle un jeton aleatoire, lie a cet onglet, a ce
 // rendez-vous et a sa fin. Le rendez-vous et son debut viennent du jeton,
@@ -2122,7 +2119,7 @@ async function connexionsExport(pass) {
 async function connexionsImport(blob, pass) {
   pass = String(pass || "");
   if (!blob || (blob.v !== 1 && blob.v !== 2) || !Array.isArray(blob.salt) || !Array.isArray(blob.iv) || !Array.isArray(blob.data)) return { ok: false, error: "bad_blob" };
-  // 2026-10-06 (revue ECC, L9) : un fichier pieges ne bloque pas le fond.
+  // Un fichier piege ne bloque pas le fond.
   const octets = (a) => a.every((x) => Number.isInteger(x) && x >= 0 && x <= 255);
   if (blob.salt.length !== 16 || blob.iv.length !== 12 || blob.data.length > 1000000 || !octets(blob.salt) || !octets(blob.iv) || !octets(blob.data)) return { ok: false, error: "bad_blob" };
   if (blob.iter !== undefined && (!Number.isFinite(Number(blob.iter)) || Number(blob.iter) > CONNEXIONS_ITER_MAX)) return { ok: false, error: "bad_blob" };

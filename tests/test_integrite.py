@@ -46,7 +46,7 @@ if "declarativeNetRequest" in man.get("permissions", []):
             "declarative_net_request" not in man, man.get("declarative_net_request"))
     verifie("aucun fichier rules.json", not os.path.exists(os.path.join(racine, "rules.json")))
     bg_dnr = lit("background.js")
-    # 2026-10-06 (revue ECC) : la regle ne vise plus que les ecritures vers l'API mail.
+    # La regle ne vise que l'API mail.
     verifie("le fond pose une regle de session limitee a l'API mail hors onglet",
             "updateSessionRules" in bg_dnr and "tabIds: [-1]" in bg_dnr and '"||mail.infomaniak.com/api/"' in bg_dnr
             and 'urlFilter: "||api.infomaniak.com"' not in bg_dnr)

@@ -1332,7 +1332,7 @@ async function testCarteAgenda() {
 }
 
 /* ---------- execution ---------- */
-/* ================= Dessins filtres, revue ECC du 2026-10-06 ================= */
+/* ================= Dessins filtres ================= */
 async function testSvgFiltre() {
   const env = monte(DEFAUT(), 12);
   await pause(60);

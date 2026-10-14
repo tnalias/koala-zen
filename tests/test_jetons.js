@@ -139,7 +139,7 @@ async function testErreursReseau() {
   verifie("un 403 all_scopes rend missing_scope", r403.ok === false && r403.error === "missing_scope", JSON.stringify(r403));
   const rOff = await charge({}, async () => { throw new TypeError("Failed to fetch"); }).contexte.ikFetch("t", "/1/calendar/pim/calendar");
   verifie("un fetch qui leve rend offline, jamais un succes silencieux", rOff.ok === false && rOff.error === "offline");
-  // 2026-10-06 (revue ECC, L8) : aucune redirection suivie, lecture ou ecriture.
+  // Aucune redirection suivie, lecture ou ecriture.
   const inits = [];
   const redir = async (url, init) => { inits.push(init || {}); return { ok: false, status: 0, type: "opaqueredirect", redirected: false, url: "", json: async () => ({}) }; };
   const rBloque = await charge({}, redir).contexte.ikFetch("t", "/mail/x/draft", { base: "https://mail.infomaniak.com/api", method: "POST", body: "{}" });
@@ -211,7 +211,7 @@ async function testSondes() {
   verifie("les sondes sont des lectures, sans corps ni cookies", vus.every((v) => (v.init.method || "GET") === "GET" && !v.init.body && v.init.credentials === "omit"));
   const env2 = charge({}, async () => { throw new TypeError("hors ligne"); });
   verifie("hors ligne, une sonde ne compte pas comme un acces en trop", (await env2.contexte.tokenExtras("jeton", "mail")).length === 0);
-  // 2026-10-06 (revue ECC, L4) : dans le doute, le jeton est refuse.
+  // Dans le doute, le jeton est refuse.
   verifie("hors ligne, le doute est signale", (await env2.contexte.tokenExtras("jeton", "mail")).doute === true);
   const env5 = charge({}, async (url) => (String(url).indexOf("/pim/calendar") >= 0 ? reponse({ result: "success", data: { calendars: [{ id: 1, name: "A", user_id: 5, default: true, permission: "owner" }] } }) : reponse({ result: "error" }, { status: 503 })));
   const r5 = await lit(env5, "agendaConnect('jeton-agenda')");

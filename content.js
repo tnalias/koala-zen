@@ -1,4 +1,4 @@
-// 2026-10-06 (revue ECC) : "=== true", un element de la page nomme
+// "=== true" : un element de la page nomme
 // __kzLoaded ne peut pas desactiver le script.
 if (globalThis.__kzLoaded !== true) {
   globalThis.__kzLoaded = true;
@@ -265,7 +265,7 @@ if (globalThis.__kzLoaded !== true) {
     // tests jsdom ne peuvent pas produire d'evenement de confiance : ils
     // posent __kzEssaiJsdom dans CE monde, ce qu'une page ne peut pas faire.
     function kzGesteReel(e) { return !!(e && (e.isTrusted || globalThis.__kzEssaiJsdom === true)); }
-    // 2026-10-06 (revue ECC, L1) : un vrai clic ne prouve pas que le bouton
+    // Un vrai clic ne prouve pas que le bouton
     // etait visible. La page peut rendre notre conteneur transparent, flou ou
     // decoupe et faire cliquer a l'aveugle. Avant Envoyer ou Rejoindre : le
     // bouton est affiche depuis au moins KZ_VU_MS, et ni le conteneur ni ses
@@ -504,7 +504,7 @@ if (globalThis.__kzLoaded !== true) {
     // Un seul ecouteur par bulle, retire des qu'une issue est choisie.
     function armEscape(onLater) {
       const h = (e) => {
-        // 2026-10-06 (revue ECC, L3) : un Echap simule par la page ne ferme rien.
+        // Un Echap simule par la page ne ferme rien.
         if (e.key === "Escape" && kzGesteReel(e)) { e.stopPropagation(); disarm(); onLater(); }
       };
       const disarm = () => { try { document.removeEventListener("keydown", h, true); } catch (err) { /* noop */ } };
@@ -665,7 +665,7 @@ if (globalThis.__kzLoaded !== true) {
     function rebuildSvgNode(foreign, doc) {
       if (foreign.nodeType === Node.TEXT_NODE) return doc.createTextNode(foreign.nodeValue);
       if (foreign.nodeType !== Node.ELEMENT_NODE) return null;
-      // Filtre (2026-10-06, revue ECC) : jamais de script, d'objet etranger, d'attribut d'evenement ni de lien javascript, meme si nos dessins n'en ont pas.
+      // Filtre : jamais de script, d'objet etranger, d'attribut d'evenement ni de lien javascript, meme si nos dessins n'en ont pas.
       if (/^(script|foreignobject|iframe|object|embed)$/i.test(foreign.localName || foreign.tagName || "")) return null;
       const ns = foreign.namespaceURI || "http://www.w3.org/2000/svg";
       const el = doc.createElementNS(ns, foreign.localName || foreign.tagName);
@@ -1134,7 +1134,7 @@ if (globalThis.__kzLoaded !== true) {
       if (!fin && info.url && /^https?:\/\//i.test(String(info.url))) {
         const join = document.createElement("button");
         join.type = "button"; join.className = "kz-btn kz-btn--join"; join.textContent = kzMsg("meetingJoin", "Rejoindre la visio");
-        // 2026-10-06 (revue ECC) : le lien vient de l'invitation, parfois
+        // Le lien vient de l'invitation, parfois
         // externe ; son site est dit avant le clic.
         try { join.title = new URL(info.url).hostname; } catch (e) { /* noop */ }
         kzMarqueVu(join);
@@ -1214,7 +1214,7 @@ if (globalThis.__kzLoaded !== true) {
         b.kzPanelClose = null;
       };
       b.kzPanelClose = fermerPanel;
-      // 2026-10-06 (revue ECC, M2) : le jeton d'envoi remis par le fond avec
+      // Le jeton d'envoi remis par le fond avec
       // cette bulle. Sans lui, le fond refuse de preparer comme d'envoyer.
       demande({ type: "kz-notify-prepare", id: info.id, nonce: info.notifyNonce || "" }).then((data) => {
         if (!b.kzPanelClose) return;
@@ -1270,7 +1270,7 @@ if (globalThis.__kzLoaded !== true) {
       const msgLigne = document.createElement("div"); msgLigne.className = "kz-notify-msg";
       const acts = document.createElement("div"); acts.className = "kz-actions";
       const envoyer = document.createElement("button"); envoyer.type = "button"; envoyer.className = "kz-btn kz-btn--send"; envoyer.textContent = kzMsg("notifySend", "Envoyer");
-      // Grise le temps d'etre vu (revue ECC, L1) : un clic trop rapide ne
+      // Grise le temps d'etre vu : un clic trop rapide ne
       // passe pas, et ca se voit au lieu d'etre ignore en silence.
       let envoyerPret = false;
       const retour = document.createElement("button"); retour.type = "button"; retour.className = "kz-btn kz-btn--close"; retour.textContent = kzMsg("notifyBack", "Retour");

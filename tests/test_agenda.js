@@ -912,7 +912,7 @@ async function testPrevenir() {
   await lit(envSans, "agendaWarnFire()");
   verifie("Prevenir eteint : canNotify est faux", envSans.journal.messages[0] && envSans.journal.messages[0].canNotify === false);
 
-  // 2026-10-06 (revue ECC, M2) : une page n'agit que pour la bulle montree.
+  // Une page n'agit que pour la bulle montree.
   verifie("la bulle de debut porte un jeton d'envoi aleatoire", !!mSoon && /^[0-9a-f]{32}$/.test(mSoon.notifyNonce || ""), JSON.stringify(mSoon));
   verifie("la bulle de fin n'en porte pas", !!mEnd && !mEnd.notifyNonce);
   verifie("le jeton vit dans le coffre, jamais dans storage.local", !!envB.store.notifyNonces && !envB.brut.notifyNonces);
@@ -957,7 +957,7 @@ async function testPrevenir() {
   const tpl = lit(envB, "notifyTemplates('Point\\r\\nBcc: pirate@evil.example\\u0000', " + debut + ")");
   verifie("retours a la ligne et caracteres de controle sont retires de l'objet", !/[\r\n\u0000]/.test(tpl.late5.subject) && tpl.late5.subject.indexOf("Point Bcc:") >= 0, JSON.stringify(tpl.late5.subject));
 
-  // 2026-10-06 (revue ECC, M1) : apres tout un parcours (rappel, jeton,
+  // Apres tout un parcours (rappel, jeton,
   // preparation, envoi), storage.local, que les pages lisent, ne contient
   // aucune cle du coffre.
   const cles = JSON.parse(fs.readFileSync(path.join(RACINE, "background.js"), "utf8").match(/const VAULT_KEYS = (\[[^\]]*\]);/)[1]);
@@ -1268,8 +1268,8 @@ async function testManifeste() {
   // limitee aux requetes sans onglet. Elle couvre tout l'hote de l'API, donc
   // l'agenda aussi, sans toucher aux pages Infomaniak ouvertes dans un onglet.
   const bg = fs.readFileSync(path.join(RACINE, "background.js"), "utf8");
-  // 2026-10-06 (revue ECC, M3) : plus que les ecritures vers l'API mail ; les
-  // lectures de l'agenda partent sans toucher a l'en-tete.
+  // La regle ne vise plus que l'API mail ; les lectures de l'agenda partent
+  // sans toucher a l'en-tete.
   verifie("la regle Origin de session ne vise plus l'hote de l'agenda, seulement les ecritures mail",
     !/urlFilter: "\|\|api\.infomaniak\.com"/.test(bg) && /urlFilter: "\|\|mail\.infomaniak\.com\/api\/"/.test(bg) && /tabIds: \[-1\]/.test(bg) && !fs.existsSync(path.join(RACINE, "rules.json")));
 }
