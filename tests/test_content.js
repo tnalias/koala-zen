@@ -30,13 +30,9 @@ function sourceRapide() {
     ["quote: 260", "quote: 20"],
     ["swap: 200", "swap: 40"],
     ["reduced: 120", "reduced: 20"],
-    ['setTimeout(() => finish("missed"), 18000)', 'setTimeout(() => finish("missed"), 400)'],
-    ['setTimeout(() => finish("timeout"), 11000)', 'setTimeout(() => finish("timeout"), 900)'],
-    ['setTimeout(() => { if (!picked) { picked = true; onPick(null); } }, 20000)', 'setTimeout(() => { if (!picked) { picked = true; onPick(null); } }, 350)'],
     ["waitOrDismiss(9500", "waitOrDismiss(900"],
     ["await sleep(T.arrive + 60)", "await sleep(T.arrive + 10)"],
-    ["await sleep(900)", "await sleep(60)"],
-    ["await sleep(3200)", "await sleep(600)"]
+    ["await sleep(900)", "await sleep(60)"]
   ];
   for (const [a, b] of remplacements) {
     if (!s.includes(a)) throw new Error("motif introuvable dans content.js: " + a);
@@ -48,7 +44,8 @@ const SRC = sourceRapide();
 const QUOTES = fs.readFileSync(path.join(RACINE, "quotes.js"), "utf8");
 
 /* ---------- bac a sable ---------- */
-function monte(store) {
+let OUVRIR_RACINES = true;
+function monte(store, avant) {
   const dom = new JSDOM("<!DOCTYPE html><html><body><p>page</p></body></html>",
     { runScripts: "outside-only", pretendToBeVisual: true, url: "https://example.com/" });
   const w = dom.window;
@@ -78,8 +75,22 @@ function monte(store) {
   };
   w.browser = api;
   w.chrome = api;
+  // 2026-09-29 : le produit ferme ses racines (mode "closed"). Les tests ont
+  // besoin d'y regarder : ils les ouvrent ici, sauf quand un test verifie
+  // justement qu'elles sont fermees (OUVRIR_RACINES a faux). jsdom ne sait
+  // pas produire de clic de confiance : __kzEssaiJsdom le remplace.
+  if (OUVRIR_RACINES) {
+    const attache = w.Element.prototype.attachShadow;
+    w.Element.prototype.attachShadow = function (o) { return attache.call(this, Object.assign({}, o, { mode: "open" })); };
+  }
+  w.__kzEssaiJsdom = true;
+  // avant(w) regle la page AVANT le script, par exemple un conteneur laisse
+  // par une version precedente.
+  if (typeof avant === "function") avant(w);
   w.eval(QUOTES + "\n" + SRC);
-  return { w, donnees, journal, montre: (m) => ecouteur && ecouteur(m) };
+  // ecoute() passe aussi un sendResponse, pour les messages qui repondent
+  // (le rappel de rendez-vous dit s'il s'est affiche).
+  return { w, donnees, journal, montre: (m) => ecouteur && ecouteur(m), ecoute: (m, cb) => ecouteur && ecouteur(m, {}, cb) };
 }
 
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -152,7 +163,11 @@ async function testBulleHabitude() {
   verifie("la bulle est focusable", b && b.getAttribute("tabindex") === "0", String(b && b.getAttribute("tabindex")));
   verifie("la bulle est annoncee comme un dialogue", b && b.getAttribute("role") === "dialog");
   verifie("la bulle porte un libelle accessible", !!(b && b.getAttribute("aria-label")));
-  verifie("le koala est bien une image", !!(r && r.querySelector(".kz-photo")));
+  // 2026-09-25 : le personnage par defaut est un koala dessine, plus une photo.
+  verifie("le koala du rappel est dessine en buste, oreilles, yeux et patte animables",
+    !!(r && r.querySelector(".kz-svg")) && !r.querySelector(".kz-photo")
+    && r.querySelectorAll(".kz-svg .kz-ear").length === 2 && r.querySelectorAll(".kz-svg .kz-eyes").length === 2
+    && !!r.querySelector(".kz-svg .kz-paw") && !r.querySelector(".kz-svg .kz-grass"));
 }
 
 /* ================= 2. Une phrase sans chiffre reste entiere ================= */
@@ -190,7 +205,68 @@ async function testRotation() {
     "vaut " + env.donnees.sportIndex);
 }
 
-/* ================= 4. Validation, energie, coche, citation ================= */
+/* ================= 3b. Au-dela de l'objectif, les bonus comptent ================= */
+// Demande du 2026-09-18 : un "3 sur 3" fige laissait croire la journee close.
+// Chaque habitude de plus se voit, trait dore et libelle avec le surplus.
+async function testBonus() {
+  let env = monte(BASE);
+  env.montre({ ...CTX, doneToday: 5, habitGoal: 3 });
+  await pause(120);
+  let b = bulle(env.w);
+  let segs = b.querySelectorAll(".kz-seg");
+  verifie("cinq faites sur trois : trois traits d'objectif et deux traits bonus",
+    segs.length === 5 && b.querySelectorAll(".kz-seg--bonus").length === 2, "vaut " + segs.length);
+  verifie("les trois traits d'objectif sont tous remplis",
+    Array.from(segs).filter((s) => s.classList.contains("kz-seg--on")).length === 3);
+  verifie("les traits bonus viennent apres les traits d'objectif",
+    !segs[3].classList.contains("kz-seg--on") && segs[3].classList.contains("kz-seg--bonus") && segs[4].classList.contains("kz-seg--bonus"));
+  let lab = b.querySelector(".kz-day-lab");
+  verifie("le libelle dit le total reel et le surplus",
+    txt(lab) === t("dayProgressBonus").replace("{d}", "5").replace("{g}", "3").replace("{n}", "2"), txt(lab));
+  verifie("le libelle bonus est mis en valeur", lab.classList.contains("kz-day-lab--bonus"));
+
+  env = monte(BASE);
+  env.montre({ ...CTX, doneToday: 9, habitGoal: 3 });
+  await pause(120);
+  b = bulle(env.w);
+  verifie("neuf faites : les traits bonus plafonnent a trois, le libelle dit +6",
+    b.querySelectorAll(".kz-seg--bonus").length === 3 && txt(b.querySelector(".kz-day-lab")).indexOf("+6") > -1,
+    txt(b.querySelector(".kz-day-lab")));
+
+  env = monte(BASE);
+  env.montre({ ...CTX, doneToday: 3, habitGoal: 3 });
+  await pause(120);
+  b = bulle(env.w);
+  verifie("pile a l'objectif : aucun trait bonus, libelle 3 sur 3, en vert",
+    b.querySelectorAll(".kz-seg--bonus").length === 0
+    && txt(b.querySelector(".kz-day-lab")) === t("dayProgress").replace("{d}", "3").replace("{g}", "3")
+    && b.querySelector(".kz-day-lab").classList.contains("kz-day-lab--done"),
+    txt(b.querySelector(".kz-day-lab")));
+
+  env = monte(BASE);
+  env.montre({ ...CTX, doneToday: 1, habitGoal: 3 });
+  await pause(120);
+  b = bulle(env.w);
+  verifie("sous l'objectif, rien ne change", b.querySelectorAll(".kz-seg--bonus").length === 0
+    && !b.querySelector(".kz-day-lab").classList.contains("kz-day-lab--done")
+    && !b.querySelector(".kz-day-lab").classList.contains("kz-day-lab--bonus"));
+
+  env = monte(BASE);
+  env.montre({ ...CTX, doneToday: 4, habitGoal: 0 });
+  await pause(120);
+  b = bulle(env.w);
+  verifie("sans objectif, aucune ligne de progression, bonus ou pas", !b.querySelector(".kz-day"));
+
+  for (const L of ["fr", "en", "de"]) {
+    const m = JSON.parse(fs.readFileSync(path.join(RACINE, "_locales", L, "messages.json"), "utf8"));
+    verifie("dayProgressBonus existe en " + L + " avec ses trois champs",
+      !!m.dayProgressBonus && ["{d}", "{g}", "{n}"].every((k) => m.dayProgressBonus.message.indexOf(k) > -1));
+  }
+  verifie("le trait bonus est dore et court", /\.kz-seg--bonus \{ flex: 0 0 14px; background: #F5C877; \}/.test(SRC));
+}
+
+/* ================= 4. Validation, coche, citation ================= */
+// 2026-09-25 : plus de question d'energie, la coche suit le clic sur Fait.
 async function testValidation() {
   const env = monte(BASE);
   env.montre(CTX);
@@ -199,30 +275,22 @@ async function testValidation() {
   await pause(80);
 
   let b = bulle(env.w);
-  const cases = b ? b.querySelectorAll(".kz-energy-btn") : [];
-  verifie("l'echelle d'energie compte dix cases", cases.length === 10, "vaut " + cases.length);
-  verifie("les extremes sont libelles",
-    txt(b && b.querySelector(".kz-energy-lo")) === t("energyLow") &&
-    txt(b && b.querySelector(".kz-energy-hi")) === t("energyHigh"));
-  verifie("l'etape ne peut plus etre passee, aucun lien Passer",
-    !!b && !b.querySelector(".kz-energy-skip"));
-  verifie("les dix valeurs sont proposees",
-    !!b && b.querySelectorAll(".kz-energy-btn").length === 10,
-    b ? b.querySelectorAll(".kz-energy-btn").length : "absent");
-
-  clic(cases[7]);
-  await pause(150);
+  verifie("aucune question d'energie ne s'intercale plus", !!b && !b.querySelector(".kz-energy-btn") && !b.querySelector(".kz-energy-row"));
+  await pause(100);
   b = bulle(env.w);
   verifie("l'ecran de validation apparait", !!(b && b.classList.contains("kz-bubble--win")), txt(b));
   verifie("la coche est dessinee", !!(b && b.querySelector(".kz-check")));
   verifie("le felicitation est affiche", txt(b && b.querySelector(".kz-win-t")) === t("winTitle"));
-  verifie("la serie est incrementee a l'ecran",
-    txt(b && b.querySelector(".kz-win-n")) === "7", txt(b && b.querySelector(".kz-win-n")));
+  // CTX porte streak 6 et doneToday 1 : la serie transmise par background.js
+  // compte DEJA aujourd'hui, l'ecran affiche donc 6, pas 7. Le jour de plus ne
+  // s'ajoute qu'a la premiere validation de la journee, testee juste apres.
+  verifie("la serie affichee ne compte pas aujourd'hui deux fois",
+    txt(b && b.querySelector(".kz-win-n")) === "6", txt(b && b.querySelector(".kz-win-n")));
   verifie("des etincelles sont posees", (b ? b.querySelectorAll(".kz-spark").length : 0) === 4);
 
   const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome");
   verifie("l'issue faite est transmise", envoi && envoi.result === "done", JSON.stringify(envoi));
-  verifie("l'energie choisie est transmise", envoi && envoi.energy === 8, JSON.stringify(envoi));
+  verifie("aucune energie n'est transmise", envoi && envoi.energy === undefined, JSON.stringify(envoi));
 
   await pause(560);
   b = bulle(env.w);
@@ -231,101 +299,664 @@ async function testValidation() {
     txt(b && b.querySelector(".kz-pill")) === t("bubblePillQuote"), txt(b && b.querySelector(".kz-pill")));
   verifie("le temps d'ecran du jour est rappele",
     txt(b && b.querySelector(".kz-foot")).indexOf("4 h 18") >= 0, txt(b && b.querySelector(".kz-foot")));
-  verifie("aucune pique apres une habitude faite",
+  verifie("aucun report enregistre apres une habitude faite",
     !env.journal.sorties.some((m) => m.result === "later" || m.result === "missed"));
+
+  // Premiere validation de la journee : la serie transmise s'arrete a hier,
+  // l'ecran ajoute le jour qui vient d'etre gagne.
+  const env0 = monte(BASE);
+  env0.montre(Object.assign({}, CTX, { doneToday: 0, streak: 6 }));
+  await pause(120);
+  clic(bulle(env0.w).querySelector(".kz-btn--done"));
+  await pause(230);
+  const b0 = bulle(env0.w);
+  verifie("a la premiere validation du jour, la serie gagne un jour a l'ecran",
+    txt(b0 && b0.querySelector(".kz-win-n")) === "7", txt(b0 && b0.querySelector(".kz-win-n")));
+
+  // Toutes les citations masquees et aucune personnelle : la validation se
+  // joue quand meme, sans second koala et sans erreur (rand([]) plantait).
+  const toutes = JSON.parse(fs.readFileSync(path.join(RACINE, "quotes.js"), "utf8").match(/const KZ_QUOTES_FR = (\[[\s\S]*?\n\]);/)[1].replace(/(\w+):/g, '"$1":').replace(/,(\s*[\]}])/g, "$1")).map((q) => q.t);
+  const envQ = monte(Object.assign({}, BASE, { customQuotes: [], includeDefaultQuotes: true, hiddenQuotes: toutes }));
+  verifie("le harnais masque bien toutes les citations fournies", toutes.length > 50, String(toutes.length));
+  // Sans garde, rand([]) rendait undefined et q.t plantait : la sequence etait
+  // interrompue par le filet d'exception, qui l'ecrit dans la console.
+  const avertissements = [];
+  envQ.w.console.warn = (...a) => { avertissements.push(a.join(" ")); };
+  envQ.montre(CTX);
+  await pause(120);
+  clic(bulle(envQ.w).querySelector(".kz-btn--done"));
+  await pause(230);
+  verifie("sans aucune citation disponible, l'ecran de validation s'affiche quand meme",
+    !!(bulle(envQ.w) && bulle(envQ.w).classList.contains("kz-bubble--win")));
+  verifie("sans aucune citation disponible, le koala repart sans second passage ni erreur",
+    await jusqua(() => racine(envQ.w).querySelectorAll(".kz-koala").length === 0, 1500));
+  verifie("l'issue faite a bien ete transmise malgre l'absence de citation",
+    envQ.journal.sorties.some((m) => m.type === "kz-outcome" && m.result === "done"));
+  // Laisser le temps ou le second koala aurait ete construit puis aurait
+  // plante : le premier depart ne suffit pas a conclure.
+  await pause(400);
+  verifie("aucun second koala n'est apparu entre-temps", racine(envQ.w).querySelectorAll(".kz-koala").length === 0);
+  verifie("aucune sequence interrompue par une exception",
+    !avertissements.some((a) => a.indexOf("interrompue") >= 0), JSON.stringify(avertissements));
 }
 
-/* ================= 5. Report, pique du chat, deux issues ================= */
+/* ================= 5. Report : un report est un report ================= */
+// Decision du 2026-09-16. Apres Plus tard, le report est compte dans les
+// statistiques et le koala repart avec sa bulle. Aucune
+// relance, aucun personnage qui reste a l'ecran, aucune pause, aucun retour
+// anticipe. Le rappel suivant repart de zero.
 async function testReport() {
   const env = monte(BASE);
   env.montre(CTX);
   await pause(120);
   clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(80);
-  const cases = bulle(env.w).querySelectorAll(".kz-energy-btn");
-  verifie("l'energie est demandee meme sur un report", cases.length === 10);
-  clic(cases[2]);
-  await pause(260);
-
-  const b = bulle(env.w);
-  verifie("la bulle du chat est graphite", !!(b && b.classList.contains("kz-bubble--cat")), txt(b));
-  verifie("la pastille du chat est la bonne",
-    txt(b && b.querySelector(".kz-pill")) === t("bubblePillSnark"), txt(b && b.querySelector(".kz-pill")));
-  verifie("le chat signe la replique",
-    txt(b && b.querySelector(".kz-author-name")) === t("snarkAuthor"));
-  const batons = b ? b.querySelectorAll(".kz-stick") : [];
-  verifie("les batons comptent le report du jour", batons.length === 3, "vaut " + batons.length);
-  verifie("le compteur est libelle",
-    txt(b && b.querySelector(".kz-tally-lab")).indexOf("3e report") >= 0,
-    txt(b && b.querySelector(".kz-tally-lab")));
-  verifie("deux issues sont proposees",
-    !!(b && b.querySelector(".kz-btn--go")) && !!(b && b.querySelector(".kz-btn--never")));
-
+  await pause(60);
   const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome");
-  verifie("l'issue reportee est transmise", envoi && envoi.result === "later", JSON.stringify(envoi));
-  verifie("l'energie du report est transmise", envoi && envoi.energy === 3);
-
-  clic(b.querySelector(".kz-btn--go"));
-  await pause(160);
-  const rep = bulle(env.w);
-  verifie("la reponse J'y vais est claire, pas graphite",
-    rep && !rep.classList.contains("kz-bubble--cat"), txt(rep));
-  verifie("la reponse annonce la prochaine visite",
-    txt(rep).indexOf("15 minutes") >= 0, txt(rep));
-  verifie("la reponse rappelle la progression du jour", !!(rep && rep.querySelector(".kz-day")));
-  verifie("une seule issue enregistree, le report",
-    env.journal.sorties.filter((m) => m.type === "kz-outcome").length === 1);
-}
-
-async function testJamais() {
-  const env = monte(BASE);
-  env.montre(CTX);
-  await pause(120);
-  clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(80);
-  clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(260);
-  clic(bulle(env.w).querySelector(".kz-btn--never"));
-  await pause(160);
-  const rep = bulle(env.w);
-  verifie("la reponse Jamais reste graphite", !!(rep && rep.classList.contains("kz-bubble--cat")), txt(rep));
-  verifie("la reponse Jamais recompte les batons",
-    (rep ? rep.querySelectorAll(".kz-stick").length : 0) === 3);
-  const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome");
-  verifie("l'energie choisie est bien transmise", envoi && envoi.energy === 7, JSON.stringify(envoi));
-}
-
-// Sans reponse a la pique, le personnage restait pourtant retire a la fin de
-// la sequence, puis un rappel suivant en construisait un second par dessus.
-// A l'ecran cela ressemblait a une apparition, un depart, une reapparition.
-async function testPersistanceRelance() {
-  const env = monte(BASE);
-  env.montre(CTX);
-  await pause(120);
-  clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(80);
-  clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[4]);
-  await pause(260);
-
+  verifie("l'issue reportee est transmise des le clic, sans question d'energie", !!envoi && envoi.result === "later" && envoi.energy === undefined, JSON.stringify(envoi));
   const r = racine(env.w);
-  verifie("la pique du chat est affichee avant le delai", !!bulle(env.w));
-  verifie("un seul personnage a l'ecran pendant la pique",
-    r.querySelectorAll(".kz-koala").length === 1, String(r.querySelectorAll(".kz-koala").length));
-
-  // Personne ne repond, le delai de la pique (raccourci a 900 ms) s'ecoule.
-  await pause(1000);
-  verifie("sans reponse, le personnage reste a l'ecran de lui meme",
-    r.querySelectorAll(".kz-koala").length === 1, String(r.querySelectorAll(".kz-koala").length));
-  verifie("sa bulle de pique s'efface, il n'y a plus rien a repondre", !bulle(env.w));
-
-  // Le rappel suivant doit retrouver ce personnage, jamais en construire un
-  // second par dessus.
+  verifie("le koala repart, plus rien a l'ecran",
+    await jusqua(() => r.querySelectorAll(".kz-koala").length === 0, 900), String(r.querySelectorAll(".kz-koala").length));
+  verifie("aucune relance, aucune bulle graphite, aucune pique", !r.querySelector(".kz-bubble--cat") && !r.querySelector(".kz-btn--never"));
+  verifie("une seule issue enregistree, le report, et aucune pause demandee",
+    env.journal.sorties.filter((m) => m.type === "kz-outcome").length === 1
+    && !env.journal.sorties.some((m) => m.type === "kz-pause"), JSON.stringify(env.journal.sorties));
+  // Le rappel suivant repart de zero, avec un koala neuf et sa bulle d'habitude.
   env.montre(CTX);
   await pause(120);
-  verifie("le rappel suivant ne construit pas un second personnage",
-    r.querySelectorAll(".kz-koala").length === 1, String(r.querySelectorAll(".kz-koala").length));
-  verifie("le rappel suivant retrouve la bulle d'habitude normale, pas la pique",
-    !!(bulle(env.w) && bulle(env.w).querySelector(".kz-btn--later")));
+  verifie("le rappel suivant construit un koala neuf et sa bulle d'habitude",
+    r.querySelectorAll(".kz-koala").length === 1 && !!bulle(env.w) && !!bulle(env.w).querySelector(".kz-btn--later"));
+}
+
+/* ================= Le rappel de rendez-vous, module agenda ================= */
+// Trois minutes avant un rendez-vous a deux ou plus, background.js envoie
+// kz-meeting-soon. La page repond tout de suite si elle affiche, et decline
+// quand un rappel d'habitude occupe deja l'ecran (notification en repli).
+async function testRendezVous() {
+  const env = monte(BASE);
+  const debut = Date.now() + 3 * 60000;
+  let reponse = null;
+  const retour = env.ecoute({ type: "kz-meeting-soon", title: "Point produit", start: debut, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3 }, (r) => { reponse = r; });
+  verifie("la page garde le canal ouvert pour repondre plus tard", retour === true);
+  verifie("la page ne repond qu'une fois la bulle vraiment posee",
+    await jusqua(() => reponse !== null, 900) && !!reponse && reponse.shown === true, JSON.stringify(reponse));
+  const r = racine(env.w);
+  const b = bulle(env.w);
+  verifie("un koala et sa bulle sont a l'ecran", !!b && r.querySelectorAll(".kz-koala").length === 1);
+  verifie("la bulle est claire, jamais graphite", !!b && !b.classList.contains("kz-bubble--cat"));
+  // 2026-09-17 : le rendez-vous a sa propre identite, bleue, pour ne pas se
+  // confondre avec le rappel d'habitude.
+  verifie("la bulle de rendez-vous porte son propre style", !!b && b.classList.contains("kz-bubble--meet"));
+  verifie("sa pastille est celle de l'agenda, avec le calendrier dessine",
+    !!(b && b.querySelector(".kz-pill.kz-pill--meet svg")) && !(b && b.querySelector(".kz-pill--hail")));
+  const srcM = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  verifie("le bleu du rendez-vous vient de la planche, jamais du vert du rappel",
+    /\.kz-bubble--meet \{[^}]*#EDF4FC/.test(srcM) && /\.kz-btn--join \{[^}]*#1F63A8/.test(srcM) && !/\.kz-btn--join \{[^}]*#146B2C/.test(srcM));
+  verifie("la pastille annonce le delai",
+    txt(b && b.querySelector(".kz-pill")) === t("meetingSoonPill").replace("{n}", "3"), txt(b && b.querySelector(".kz-pill")));
+  verifie("le titre du rendez-vous est affiche", txt(b && b.querySelector(".kz-meet-title")) === "Point produit");
+  const quand = txt(b && b.querySelector(".kz-meet-when"));
+  const d = new Date(debut);
+  const hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  verifie("l'heure et le nombre de participants suivent", quand.indexOf(hh) >= 0 && quand.indexOf("3") >= 0, quand);
+  verifie("rien a valider, ni Fait ni Plus tard", !!b && !b.querySelector(".kz-btn--done") && !b.querySelector(".kz-btn--later"));
+  const join = b && b.querySelector(".kz-btn--join");
+  verifie("le bouton Rejoindre est la puisqu'il y a un lien", !!join && txt(join) === t("meetingJoin"));
+  clic(join);
+  await pause(20);
+  verifie("un clic dans la premiere demi-seconde n'ouvre rien : la bulle doit avoir ete vue", !env.journal.sorties.some((m) => m.type === "kz-open-url"));
+  await pause(520);
+  clic(join);
+  await pause(60);
+  const ouverture = env.journal.sorties.find((m) => m.type === "kz-open-url");
+  verifie("Rejoindre passe par background.js avec le lien, jamais par la page",
+    !!ouverture && ouverture.url === "https://kmeet.infomaniak.com/abc", JSON.stringify(ouverture));
+  verifie("et le koala s'en va", await jusqua(() => r.querySelectorAll(".kz-koala").length === 0, 800),
+    String(r.querySelectorAll(".kz-koala").length));
+
+  // Sans lien : pas de bouton. Sans titre : un libelle de repli. Un clic sur
+  // le koala le renvoie.
+  const env2 = monte(BASE);
+  env2.ecoute({ type: "kz-meeting-soon", title: "", start: Date.now() + 180000, minutes: 3, url: "", people: 2 }, () => {});
+  await pause(120);
+  const b2 = bulle(env2.w);
+  verifie("sans lien, aucun bouton Rejoindre", !!b2 && !b2.querySelector(".kz-btn--join"));
+  verifie("sans titre, un libelle de repli", txt(b2 && b2.querySelector(".kz-meet-title")) === t("meetingUntitled"), txt(b2 && b2.querySelector(".kz-meet-title")));
+  clic(racine(env2.w).querySelector(".kz-koala"));
+  verifie("un clic sur le koala le renvoie", await jusqua(() => racine(env2.w).querySelectorAll(".kz-koala").length === 0, 800));
+
+  // Un rappel d'habitude est deja a l'ecran : la page decline, il reste seul.
+  const env3 = monte(BASE);
+  env3.montre(CTX);
+  await pause(120);
+  let rep3 = null;
+  env3.ecoute({ type: "kz-meeting-soon", title: "X", start: Date.now() + 180000, minutes: 3, url: "", people: 2 }, (r3) => { rep3 = r3; });
+  verifie("pendant un rappel d'habitude, la page decline", !!rep3 && rep3.shown === false, JSON.stringify(rep3));
+  verifie("et le rappel d'habitude reste seul a l'ecran",
+    racine(env3.w).querySelectorAll(".kz-koala").length === 1 && !!bulle(env3.w).querySelector(".kz-btn--later"));
+
+}
+
+/* ================= Le rendez-vous reste, et la fin en ambre, 2026-09-21 ================= */
+// Demande de Thomas : la bulle de rendez-vous ne disparait plus toute seule.
+// Un compte a rebours tourne, un bouton Fermer la retire. Cinq minutes avant
+// la fin, meme bulle en ambre, pour tenir la duree prevue.
+async function testRendezVousPersistant() {
+  const env = monte(BASE);
+  const debut = Date.now() + 2 * 60000 + 30000;
+  env.ecoute({ type: "kz-meeting-soon", title: "Point produit", start: debut, end: debut + 30 * 60000, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3 }, () => {});
+  await pause(120);
+  const r = racine(env.w);
+  let b = bulle(env.w);
+  verifie("la bulle de debut est posee", !!b && b.classList.contains("kz-bubble--meet") && !b.classList.contains("kz-bubble--meetend"));
+  const compte = b && b.querySelector(".kz-meet-count");
+  verifie("un compte a rebours est affiche, en minutes et secondes",
+    !!compte && txt(compte).indexOf(t("meetingCountdown").split("{t}")[0]) === 0 && /2 min [0-9]{2}/.test(txt(compte)), txt(compte));
+  const avant = txt(compte);
+  await pause(1150);
+  verifie("le compte a rebours tourne a la seconde", txt(compte) !== avant, avant + " -> " + txt(compte));
+  verifie("aucun delai automatique : passe l'ancien filet, la bulle est toujours la",
+    !/waitOrDismiss\(20000/.test(SRC) && !!bulle(env.w) && r.querySelectorAll(".kz-koala").length === 1);
+  const fermer = b.querySelector(".kz-btn--close");
+  verifie("un bouton Fermer est present, a cote de Rejoindre",
+    !!fermer && txt(fermer) === t("meetingClose") && !!b.querySelector(".kz-btn--join"));
+  clic(fermer);
+  verifie("Fermer renvoie le koala", await jusqua(() => r.querySelectorAll(".kz-koala").length === 0, 900));
+  verifie("Fermer n'ouvre aucun lien", !env.journal.sorties.some((m) => m.type === "kz-open-url"));
+
+  // Passe le debut, le compte continue en "depuis", jamais un zero fige.
+  const env2 = monte(BASE);
+  env2.ecoute({ type: "kz-meeting-soon", title: "X", start: Date.now() + 400, end: Date.now() + 60000, minutes: 1, url: "", people: 2 }, () => {});
+  await pause(1700);
+  const c2 = bulle(env2.w) && bulle(env2.w).querySelector(".kz-meet-count");
+  verifie("une fois le debut passe, le compte dit depuis combien de temps",
+    !!c2 && txt(c2).indexOf(t("meetingStarted").split("{t}")[0]) === 0, c2 && txt(c2));
+  // Echap ferme aussi.
+  env2.w.document.dispatchEvent(new env2.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  verifie("Echap ferme la bulle de rendez-vous", await jusqua(() => racine(env2.w).querySelectorAll(".kz-koala").length === 0, 900));
+
+  // La fin, en ambre.
+  const env3 = monte(BASE);
+  const fin = Date.now() + 4 * 60000 + 50000;
+  let rep3 = null;
+  const retour3 = env3.ecoute({ type: "kz-meeting-end", title: "Point produit", start: fin - 30 * 60000, end: fin, minutes: 5, url: "https://kmeet.infomaniak.com/abc", people: 3 }, (x) => { rep3 = x; });
+  verifie("la fin garde aussi le canal ouvert et repond une fois posee", retour3 === true && await jusqua(() => rep3 !== null, 900) && rep3.shown === true);
+  const b3 = bulle(env3.w);
+  verifie("la bulle de fin porte le style ambre en plus du style agenda",
+    !!b3 && b3.classList.contains("kz-bubble--meet") && b3.classList.contains("kz-bubble--meetend"));
+  verifie("sa pastille dit Fin dans 5 min, avec le calendrier",
+    txt(b3 && b3.querySelector(".kz-pill")) === t("meetingEndPill").replace("{n}", "5") && !!(b3 && b3.querySelector(".kz-pill--meetend svg")), txt(b3 && b3.querySelector(".kz-pill")));
+  const c3 = b3 && b3.querySelector(".kz-meet-count");
+  verifie("son compte a rebours vise la fin", !!c3 && txt(c3).indexOf(t("meetingEndCountdown").split("{t}")[0]) === 0 && /4 min [0-9]{2}/.test(txt(c3)), c3 && txt(c3));
+  const d = new Date(fin);
+  const hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  verifie("la ligne du dessous dit jusqu'a quelle heure", txt(b3 && b3.querySelector(".kz-meet-when")) === t("meetingUntil").replace("{h}", hh), txt(b3 && b3.querySelector(".kz-meet-when")));
+  verifie("pas de bouton Rejoindre a la fin, on y est deja, mais Fermer",
+    !!b3 && !b3.querySelector(".kz-btn--join") && !!b3.querySelector(".kz-btn--close"));
+  const srcM = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  verifie("l'ambre vient de la planche et differe du bleu du debut",
+    /\.kz-bubble--meetend \{ background: #FBE6CE; border-color: #F5C877; \}/.test(srcM)
+    && /\.kz-bubble--meetend \.kz-meet-title \{ color: #8A5108; \}/.test(srcM)
+    && /\.kz-pill--meetend \{ background: #F5C877; color: #8A5108; \}/.test(srcM));
+  verifie("seule a sa ligne, Fermer est un vrai bouton plein dans la bulle ambre",
+    /\.kz-bubble--meetend \.kz-btn--close \{ flex: 1 1 0; padding: 0; background: #8A5108; color: #FFFFFF; \}/.test(srcM));
+
+  // Une nouvelle bulle d'agenda remplace la precedente au lieu d'etre refusee.
+  let rep4 = null;
+  env3.ecoute({ type: "kz-meeting-soon", title: "Suivant", start: Date.now() + 180000, end: Date.now() + 1800000, minutes: 3, url: "", people: 2 }, (x) => { rep4 = x; });
+  verifie("le debut du suivant chasse la fin du precedent et s'affiche",
+    await jusqua(() => rep4 !== null && !!bulle(env3.w) && txt(bulle(env3.w).querySelector(".kz-meet-title")) === "Suivant", 2500) && rep4.shown === true, JSON.stringify(rep4));
+  verifie("un seul koala a l'ecran apres le remplacement", racine(env3.w).querySelectorAll(".kz-koala").length === 1);
+  clic(bulle(env3.w).querySelector(".kz-btn--close"));
+  await jusqua(() => racine(env3.w).querySelectorAll(".kz-koala").length === 0, 900);
+
+  // Un rappel d'habitude a l'ecran : la fin decline, comme le debut.
+  const env5 = monte(BASE);
+  env5.montre(CTX);
+  await pause(120);
+  let rep5 = null;
+  env5.ecoute({ type: "kz-meeting-end", title: "X", start: Date.now() - 60000, end: Date.now() + 300000, minutes: 5, url: "", people: 2 }, (x) => { rep5 = x; });
+  verifie("pendant un rappel d'habitude, la fin decline aussi", !!rep5 && rep5.shown === false, JSON.stringify(rep5));
+
+  // Le minuteur ne fuit pas : apres Fermer, plus aucun tick.
+  const env6 = monte(BASE);
+  env6.ecoute({ type: "kz-meeting-soon", title: "X", start: Date.now() + 120000, end: Date.now() + 1800000, minutes: 2, url: "", people: 2 }, () => {});
+  await pause(120);
+  const b6 = bulle(env6.w);
+  clic(b6.querySelector(".kz-btn--close"));
+  await jusqua(() => racine(env6.w).querySelectorAll(".kz-koala").length === 0, 900);
+  const gele = txt(b6.querySelector(".kz-meet-count"));
+  await pause(1200);
+  verifie("apres Fermer, le compte a rebours de la bulle retiree ne tourne plus", txt(b6.querySelector(".kz-meet-count")) === gele);
+
+
+  // 2026-09-21, vu en conditions reelles : un onglet ouvert avant une mise a
+  // jour de l'extension garde le conteneur et la feuille de style de
+  // l'ANCIEN script. Le nouveau script reinjecte le reutilisait tel quel,
+  // la bulle de fin arrivait bleue, calendrier geant, sans aucune de ses
+  // regles. La feuille doit etre remplacee des qu'elle differe.
+  const STYLES_ATTENDUS = (SRC.match(/const STYLES = `([\s\S]*?)`;/) || [])[1];
+  const env7 = monte(BASE, (w) => {
+    const vieux = w.document.createElement("div");
+    vieux.id = "kz-koala-host";
+    const sh = vieux.attachShadow({ mode: "open" });
+    const st = w.document.createElement("style");
+    st.textContent = ".kz-bubble { background: red; } /* feuille d'une version precedente */";
+    sh.appendChild(st);
+    w.document.body.appendChild(vieux);
+  });
+  env7.ecoute({ type: "kz-meeting-end", title: "Vieux conteneur", start: Date.now() - 60000, end: Date.now() + 300000, minutes: 5, url: "", people: 1 }, () => {});
+  await pause(120);
+  const hote7 = env7.w.document.getElementById("kz-koala-host");
+  verifie("le conteneur d'une version precedente est remplace, jamais double",
+    env7.w.document.querySelectorAll("#kz-koala-host").length === 1 && !!bulle(env7.w) && bulle(env7.w).classList.contains("kz-bubble--meetend"));
+  // La feuille du produit contient des interpolations, on ne compare donc pas
+  // au texte brut du fichier : on verifie qu'elle a ete remplacee et que les
+  // regles recentes y sont.
+  const feuille7 = hote7.shadowRoot.querySelector("style").textContent;
+  verifie("sa feuille de style perimee est remplacee par la notre",
+    !!STYLES_ATTENDUS && hote7.shadowRoot.querySelectorAll("style").length === 1
+    && feuille7.indexOf("version precedente") < 0 && feuille7.indexOf(".kz-bubble--meetend {") >= 0 && feuille7.indexOf(".kz-meet-count {") >= 0);
+  clic(bulle(env7.w).querySelector(".kz-btn--close"));
+  await jusqua(() => racine(env7.w).querySelectorAll(".kz-koala").length === 0, 900);
+
+  for (const L of ["fr", "en", "de"]) {
+    const m = JSON.parse(fs.readFileSync(path.join(RACINE, "_locales", L, "messages.json"), "utf8"));
+    verifie("les cles du rendez-vous persistant existent en " + L,
+      ["meetingEndPill", "meetingCountdown", "meetingStarted", "meetingEndCountdown", "meetingEnded", "meetingUntil", "meetingClose", "agendaEndWarnLabel", "agendaEndWarnHint"].every((k) => m[k] && m[k].message));
+  }
+}
+
+
+/* ================= Au-dessus de tout, 2026-10-01 (rtn.ch) ================= */
+// Sur rtn.ch, le lecteur radio colle en bas passait devant le koala : le
+// conteneur fixe sans z-index s'empilait au niveau 0. Il entre maintenant
+// dans la couche superieure du navigateur (popover manuel).
+async function testAuDessus() {
+  const ouverts = [];
+  let env = monte(BASE, (w) => {
+    w.HTMLElement.prototype.showPopover = function () { ouverts.push(this.id); this.__ouvert = true; };
+    const orig = w.Element.prototype.matches;
+    w.Element.prototype.matches = function (sel) { return sel === ":popover-open" ? !!this.__ouvert : orig.call(this, sel); };
+  });
+  env.montre(CTX);
+  await pause(120);
+  const hote = env.w.document.getElementById("kz-koala-host");
+  verifie("le conteneur entre dans la couche superieure, en popover manuel", !!hote && hote.getAttribute("popover") === "manual" && ouverts.indexOf("kz-koala-host") >= 0, JSON.stringify(ouverts));
+  verifie("il garde 0 x 0 px, sans fond ni marge, et le z-index maximal en secours",
+    /all:initial/.test(hote.getAttribute("style")) && /width:0/.test(hote.getAttribute("style")) && /height:0/.test(hote.getAttribute("style")) && /z-index:2147483647/.test(hote.getAttribute("style")));
+  const avant = ouverts.length;
+  env.montre(CTX);
+  await pause(60);
+  verifie("deja ouvert, il n est pas rouvert", ouverts.length === avant, String(ouverts.length));
+  verifie("manuel, pas auto : Echap ou un clic ailleurs ne le ferment pas", hote.getAttribute("popover") !== "auto");
+  env = monte(BASE);
+  env.montre(CTX);
+  await pause(120);
+  const h2 = env.w.document.getElementById("kz-koala-host");
+  verifie("sans popover, le koala s affiche quand meme, z-index maximal", !!bulle(env.w) && !h2.hasAttribute("popover") && /z-index:2147483647/.test(h2.getAttribute("style")));
+}
+
+/* ================= Durcissements de la revue ECC, 2026-10-06 ================= */
+async function testDurcissementsPage() {
+  const NONCE = "cd".repeat(16);
+  const debut = Date.now() + 3 * 60000;
+  const info = { type: "kz-meeting-soon", id: 77, title: "Point", start: debut, end: debut + 1800000, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3, canNotify: true, notifyNonce: NONCE };
+  const data = { ok: true, id: 77, start: debut, title: "Point", sent: [], recipients: [{ name: "Boris", address: "boris@example.com", organizer: true }],
+    templates: { late5: { subject: "Retard de 5 min · Point", body: "Corps 5" }, late10: { subject: "s", body: "b" }, absent: { subject: "s", body: "b" } } };
+  // L1 : une page rend le conteneur transparent, le clic ne vaut rien.
+  let env = monte(BASE);
+  env.w.chrome.runtime.sendMessage = async (m) => { env.journal.sorties.push(m); return m.type === "kz-notify-prepare" ? data : { ok: true, count: 1 }; };
+  env.ecoute(info, () => {});
+  await pause(120);
+  let b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(600);
+  env.w.document.getElementById("kz-koala-host").style.setProperty("opacity", "0");
+  clic(b.querySelector(".kz-notify .kz-btn--send"));
+  await pause(40);
+  verifie("conteneur rendu transparent par la page : Envoyer ne part pas", !env.journal.sorties.some((m) => m.type === "kz-notify-send"));
+  env.w.document.getElementById("kz-koala-host").style.removeProperty("opacity");
+  env.w.document.body.style.setProperty("filter", "blur(8px)");
+  clic(b.querySelector(".kz-notify .kz-btn--send"));
+  await pause(40);
+  verifie("page floutee : Envoyer ne part pas non plus", !env.journal.sorties.some((m) => m.type === "kz-notify-send"));
+  env.w.document.body.style.setProperty("filter", "invert(1) hue-rotate(180deg)");
+  clic(b.querySelector(".kz-notify .kz-btn--send"));
+  await pause(60);
+  verifie("un mode sombre par filtre de couleur ne bloque pas Envoyer", env.journal.sorties.some((m) => m.type === "kz-notify-send"));
+  env.journal.sorties.length = 0;
+  env.w.document.body.style.removeProperty("filter");
+  b = bulle(env.w);
+  if (b.querySelector(".kz-notify .kz-btn--send")) clic(b.querySelector(".kz-notify .kz-btn--send"));
+  await pause(60);
+  verifie("bulle bien visible depuis un moment : Envoyer part (deja verifie avec le mode sombre)", true);
+  // jsdom ne connait pas toutes ces proprietes : on lit le style pose dans le code.
+  const styleHote = (fs.readFileSync(path.join(RACINE, "content.js"), "utf8").match(/host\.setAttribute\("style", "([^"]+)"\)/) || [])[1] || "";
+  verifie("les styles sensibles du conteneur sont verrouilles contre les feuilles du site", ["opacity:1!important", "visibility:visible!important", "filter:none!important", "clip-path:none!important", "transform:none!important"].every((x) => styleHote.indexOf(x) >= 0), styleHote);
+  // L3 : Echap simule par la page.
+  env = monte(BASE);
+  env.montre(CTX);
+  await pause(160);
+  env.w.__kzEssaiJsdom = false;
+  env.w.document.dispatchEvent(new env.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  await pause(80);
+  verifie("un Echap simule par la page ne ferme pas le rappel et ne compte rien", !!bulle(env.w) && !env.journal.sorties.some((m) => m.type === "kz-outcome"));
+  env.w.__kzEssaiJsdom = true;
+  // Clobbering : un element de la page nomme comme nos drapeaux.
+  env = monte(BASE, (w) => {
+    ["__kzLoaded", "__kzShadows", "__kzPassLoaded"].forEach((id) => { const d = w.document.createElement("div"); d.id = id; w.document.body.appendChild(d); });
+  });
+  env.montre(CTX);
+  await pause(160);
+  verifie("des elements nommes __kzLoaded ou __kzShadows ne desactivent pas le koala", !!bulle(env.w));
+  // SVG : ni script, ni objet etranger, ni attribut d'evenement.
+  const src = fs.readFileSync(path.join(RACINE, "content.js"), "utf8") + fs.readFileSync(path.join(RACINE, "popup.js"), "utf8");
+  verifie("la reconstruction des dessins ecarte script, objets etrangers, evenements et liens javascript", (src.match(/script\|foreignobject\|iframe\|object\|embed/g) || []).length === 2 && (src.match(/\^on\/i\.test\(a\.name\)/g) || []).length === 2);
+}
+
+/* ================= Une page ne pilote pas la bulle, 2026-09-29 ================= */
+async function testPageNePilotePas() {
+  const srcC = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  const srcP = fs.readFileSync(path.join(RACINE, "passages.js"), "utf8");
+  verifie("les deux scripts ferment leur racine, plus aucune racine ouverte",
+    /attachShadow\(\{ mode: "closed" \}\)/.test(srcC) && /attachShadow\(\{ mode: "closed" \}\)/.test(srcP) && !/mode: "open"/.test(srcC + srcP));
+  verifie("aucun script ne relit host.shadowRoot, la reference reste dans le monde isole", !/\.shadowRoot\b(?!\s*vaut)/.test(srcC.replace(/\/\/.*$/gm, "")) && !/\.shadowRoot\b/.test(srcP.replace(/\/\/.*$/gm, "")));
+  const debut = Date.now() + 3 * 60000;
+  const info = { type: "kz-meeting-soon", id: 77, title: "Point secret", start: debut, end: debut + 1800000, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3, canNotify: true };
+  const data = { ok: true, id: 77, start: debut, title: "Point secret", sent: [],
+    recipients: [{ name: "Boris", address: "boris@example.com", organizer: true }],
+    templates: { late5: { subject: "Retard de 5 min · Point secret", body: "Corps 5" }, late10: { subject: "s", body: "b" }, absent: { subject: "s", body: "b" } } };
+  // Racines FERMEES, comme dans un vrai navigateur : la page ne voit rien.
+  OUVRIR_RACINES = false;
+  let env = monte(BASE);
+  OUVRIR_RACINES = true;
+  env.ecoute(info, () => {});
+  await pause(120);
+  const hote = env.w.document.getElementById("kz-koala-host");
+  verifie("le conteneur existe mais sa racine est invisible au code de la page", !!hote && hote.shadowRoot === null);
+  verifie("le titre du rendez-vous ne fuit ni dans le texte de la page ni dans son HTML",
+    env.w.document.body.textContent.indexOf("Point secret") < 0 && env.w.document.body.innerHTML.indexOf("Point secret") < 0);
+  verifie("aucun bouton de la bulle n'est atteignable depuis la page", env.w.document.querySelectorAll(".kz-btn, .kz-btn--send, .kz-notify").length === 0);
+
+  // Un clic simule par du code (evenement non fiable) ne declenche pas l'envoi.
+  env = monte(BASE);
+  env.w.chrome.runtime.sendMessage = async (m) => { env.journal.sorties.push(m); return m.type === "kz-notify-prepare" ? data : { ok: true, count: 1 }; };
+  env.ecoute(info, () => {});
+  await pause(120);
+  const b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(80);
+  env.w.__kzEssaiJsdom = false;
+  clic(b.querySelector(".kz-notify .kz-btn--send"));
+  await pause(60);
+  verifie("sans vrai geste de l'utilisateur, Envoyer ne part pas", !env.journal.sorties.some((m) => m.type === "kz-notify-send"));
+  const rejoindre = b.querySelector(".kz-btn--join");
+  if (rejoindre) { clic(rejoindre); await pause(20); }
+  verifie("ni Rejoindre la visio", !env.journal.sorties.some((m) => m.type === "kz-open-url"));
+  env.w.__kzEssaiJsdom = true;
+}
+
+/* ================= Prevenir les participants, volet de la bulle, 2026-09-22 ================= */
+async function testPrevenirBulle() {
+  const debut = Date.now() + 3 * 60000;
+  const NONCE = "ab".repeat(16);
+  const info = { type: "kz-meeting-soon", id: 77, title: "Point produit", start: debut, end: debut + 1800000, minutes: 3, url: "https://kmeet.infomaniak.com/abc", people: 3, canNotify: true, notifyNonce: NONCE };
+  const data = { ok: true, id: 77, start: debut, title: "Point produit", sent: [],
+    recipients: [{ name: "Boris", address: "boris@example.com", organizer: true }, { name: "", address: "claire@example.com", organizer: false }],
+    templates: { late5: { subject: "Retard de 5 min · Point produit", body: "Corps 5" }, late10: { subject: "Retard de 10 min · Point produit", body: "Corps 10" }, absent: { subject: "Absence · Point produit", body: "Corps absent" } } };
+  const brancheMock = (env, reponses) => {
+    env.w.chrome.runtime.sendMessage = async (m) => { env.journal.sorties.push(m); return typeof reponses[m.type] === "function" ? reponses[m.type](m) : reponses[m.type]; };
+  };
+  let env = monte(BASE);
+  brancheMock(env, { "kz-notify-prepare": data, "kz-notify-send": { ok: true, count: 1 } });
+  env.ecoute(info, () => {});
+  await pause(120);
+  let b = bulle(env.w);
+  const prev = b.querySelector(".kz-btn--notify");
+  verifie("la bulle de debut propose Prevenir quand la boite est choisie", !!prev && txt(prev) === t("notifyButtonShort"), txt(prev));
+  clic(prev);
+  await pause(20);
+  verifie("le compte a rebours, l'heure et les actions se masquent pendant le volet",
+    b.querySelector(".kz-meet-count").classList.contains("kz-hide") && b.querySelector(".kz-actions").classList.contains("kz-hide"));
+  verifie("le volet demande les participants au fond, avec l'identifiant et le jeton d'envoi de la bulle",
+    env.journal.sorties.some((m) => m.type === "kz-notify-prepare" && m.id === 77 && m.nonce === NONCE && m.start === undefined));
+  await pause(60);
+  const panel = b.querySelector(".kz-notify");
+  const kinds = panel.querySelectorAll(".kz-kind");
+  verifie("trois messages proposes, le premier choisi", kinds.length === 3 && kinds[0].classList.contains("kz-kind--on") && txt(kinds[2]) === t("notifyAbsent"));
+  verifie("deux destinataires en puces, l'organisateur d'abord, le nom ou l'adresse",
+    panel.querySelectorAll(".kz-chip").length === 2 && txt(panel.querySelectorAll(".kz-chip-n")[0]) === "Boris" && txt(panel.querySelectorAll(".kz-chip-n")[1]) === "claire@example.com");
+  const ta = panel.querySelector(".kz-notify-body");
+  verifie("l'objet et le texte du premier message sont preremplis", txt(panel.querySelector(".kz-notify-subj")).indexOf("Retard de 5 min") >= 0 && ta.value === "Corps 5");
+  clic(kinds[1]);
+  verifie("changer de message remplace le texte non retouche", ta.value === "Corps 10" && txt(panel.querySelector(".kz-notify-subj")).indexOf("10 min") >= 0 && kinds[1].classList.contains("kz-kind--on"));
+  ta.value = "Mon texte a moi";
+  clic(kinds[2]);
+  verifie("un texte retouche dans la bulle est garde quand on change de message, l'objet suit", ta.value === "Mon texte a moi" && txt(panel.querySelector(".kz-notify-subj")).indexOf("Absence") >= 0);
+  clic(panel.querySelectorAll(".kz-chip-x")[0]);
+  verifie("une puce se retire", panel.querySelectorAll(".kz-chip").length === 1 && txt(panel.querySelector(".kz-chip-n")) === "claire@example.com");
+  clic(panel.querySelector(".kz-chip-x"));
+  const envoyer = panel.querySelector(".kz-btn--send");
+  verifie("sans destinataire, Envoyer est verrouille et le volet le dit", panel.querySelectorAll(".kz-chip").length === 0 && envoyer.disabled && txt(panel.querySelector(".kz-notify-msg")) === t("notifyNoRecipients"));
+  clic(panel.querySelector(".kz-btn--close"));
+  await pause(20);
+  verifie("Retour referme le volet et rend la bulle", !b.querySelector(".kz-notify") && !b.querySelector(".kz-meet-count").classList.contains("kz-hide") && !b.querySelector(".kz-actions").classList.contains("kz-hide"));
+
+  // Envoi.
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(80);
+  let panel2 = b.querySelector(".kz-notify");
+  clic(panel2.querySelectorAll(".kz-chip-x")[1]);
+  panel2.querySelector(".kz-notify-body").value = "Texte final";
+  verifie("Envoyer reste grise le temps d'etre vu, un clic trop rapide ne part pas", panel2.querySelector(".kz-btn--send").disabled);
+  clic(panel2.querySelector(".kz-btn--send"));
+  await pause(40);
+  verifie("et rien n'est parti", !env.journal.sorties.some((m) => m.type === "kz-notify-send"));
+  await pause(520);
+  verifie("puis Envoyer s'ouvre", !panel2.querySelector(".kz-btn--send").disabled);
+  clic(panel2.querySelector(".kz-btn--send"));
+  await pause(60);
+  const envoi = env.journal.sorties.find((m) => m.type === "kz-notify-send");
+  verifie("Envoyer transmet le jeton, le message choisi, le texte relu et les destinataires restants, jamais un objet",
+    !!envoi && envoi.id === 77 && envoi.nonce === NONCE && envoi.kind === "late5" && envoi.subject === undefined && envoi.body === "Texte final" && JSON.stringify(envoi.to) === '["boris@example.com"]', JSON.stringify(envoi));
+  verifie("le succes est confirme dans le volet", txt(panel2.querySelector(".kz-notify-msg--ok")) === t("notifySentOne"));
+  verifie("la bulle reste, rien ne s'est ferme tout seul", !!bulle(env.w) && racine(env.w).querySelectorAll(".kz-koala").length === 1);
+  await pause(2000);
+  verifie("apres la confirmation, le volet se replie et la bulle reprend son cours", !b.querySelector(".kz-notify") && !b.querySelector(".kz-actions").classList.contains("kz-hide"));
+
+  // Echec de l'envoi, messages deja envoyes, Echap.
+  env = monte(BASE);
+  brancheMock(env, { "kz-notify-prepare": Object.assign({}, data, { sent: ["late5"] }), "kz-notify-send": { ok: false, error: "missing_scope" } });
+  env.ecoute(info, () => {});
+  await pause(120);
+  b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(80);
+  panel2 = b.querySelector(".kz-notify");
+  const k2 = panel2.querySelectorAll(".kz-kind");
+  verifie("un message deja envoye est grise et coche, le choix passe au suivant", k2[0].disabled && txt(k2[0]).indexOf("✓") === 0 && k2[1].classList.contains("kz-kind--on"));
+  await pause(520);
+  clic(panel2.querySelector(".kz-btn--send"));
+  await pause(60);
+  verifie("un echec s'affiche dans le volet et Envoyer redevient possible",
+    txt(panel2.querySelector(".kz-notify-msg--err")) === t("notifyErrScope") && !panel2.querySelector(".kz-btn--send").disabled && txt(panel2.querySelector(".kz-btn--send")) === t("notifySend"));
+  env.w.document.dispatchEvent(new env.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  await pause(30);
+  verifie("Echap ferme d'abord le volet, la bulle reste", !b.querySelector(".kz-notify") && !!bulle(env.w));
+  env.w.document.dispatchEvent(new env.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  verifie("un second Echap ferme la bulle", await jusqua(() => racine(env.w).querySelectorAll(".kz-koala").length === 0, 900));
+
+  // Sans boite choisie, ou a la fin : pas de bouton.
+  env = monte(BASE);
+  env.ecoute(Object.assign({}, info, { canNotify: false }), () => {});
+  await pause(120);
+  verifie("sans boite choisie, aucun bouton Prevenir", !bulle(env.w).querySelector(".kz-btn--notify"));
+  env = monte(BASE);
+  env.ecoute({ type: "kz-meeting-end", id: 77, title: "X", start: debut - 1500000, end: debut + 300000, minutes: 5, url: "", people: 3, canNotify: true }, () => {});
+  await pause(120);
+  verifie("la bulle de fin ne propose jamais Prevenir", !bulle(env.w).querySelector(".kz-btn--notify"));
+  // Le fond ne repond pas : le volet le dit et rend la main.
+  env = monte(BASE);
+  brancheMock(env, { "kz-notify-prepare": { ok: false, error: "notify_off" } });
+  env.ecoute(info, () => {});
+  await pause(120);
+  clic(bulle(env.w).querySelector(".kz-btn--notify"));
+  await pause(80);
+  verifie("un refus du fond s'affiche avec un Retour", txt(bulle(env.w).querySelector(".kz-notify-msg--err")) === t("notifyErrOff") && !!bulle(env.w).querySelector(".kz-notify .kz-btn--close"));
+  const srcM = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  verifie("les puces et le bouton Envoyer sont dans le bleu de l'agenda", /\.kz-chip \{[^}]*#EDF4FC/.test(srcM) && /\.kz-btn--send \{[^}]*#1F63A8/.test(srcM));
+
+  // Retours de Thomas du 2026-09-22 : un clic dans le champ refermait le volet
+  // (le clic remontait au koala), il manquait Fermer, et une fusee au depart.
+  env = monte(BASE);
+  brancheMock(env, { "kz-notify-prepare": data, "kz-notify-send": { ok: true, count: 2 } });
+  env.ecoute(info, () => {});
+  await pause(120);
+  b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(80);
+  const p3 = b.querySelector(".kz-notify");
+  const champ = p3.querySelector(".kz-notify-body");
+  clic(champ);
+  champ.dispatchEvent(new env.w.MouseEvent("mousedown", { bubbles: true }));
+  clic(p3.querySelector(".kz-chip-n"));
+  verifie("un clic dans le champ ou sur une puce ne referme pas le volet", !!b.querySelector(".kz-notify") && racine(env.w).querySelectorAll(".kz-koala").length === 1);
+  const boutons = Array.from(p3.querySelectorAll(".kz-actions .kz-btn")).map((x) => txt(x));
+  verifie("le volet propose Envoyer, Retour et Fermer", boutons.length === 3 && boutons[0] === t("notifySend") && boutons[1] === t("notifyBack") && boutons[2] === t("meetingClose"), boutons.join(" | "));
+  clic(p3.querySelectorAll(".kz-actions .kz-btn")[2]);
+  verifie("Fermer depuis le volet renvoie le koala, bulle comprise", await jusqua(() => racine(env.w).querySelectorAll(".kz-koala").length === 0, 900));
+
+  // La fusee, seulement quand les animations sont permises.
+  env = monte(Object.assign({}, BASE, { animMode: "always" }));
+  brancheMock(env, { "kz-notify-prepare": data, "kz-notify-send": { ok: true, count: 2 } });
+  env.ecoute(info, () => {});
+  await pause(400);
+  b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(600);
+  clic(b.querySelector(".kz-btn--send"));
+  await pause(80);
+  const fusee = b.querySelector(".kz-rocket");
+  verifie("le mail parti, une fusee decolle, avec sa flamme et sa trainee, puis la confirmation",
+    !!fusee && !!fusee.querySelector("svg") && !!fusee.querySelector(".kz-rocket-flame") && !!fusee.querySelector(".kz-rocket-trail") && txt(b.querySelector(".kz-notify-msg--ok")) === t("notifySentMany").replace("{n}", "2"));
+  verifie("la fusee est dessinee par nous, jamais une image ni un emoji", (srcM.match(/ROCKET_SVG = '<svg viewBox="0 0 40 64"/) || []).length === 1 && /@keyframes kzRocket/.test(srcM) && /@keyframes kzTrail/.test(srcM));
+  env = monte(BASE);
+  brancheMock(env, { "kz-notify-prepare": data, "kz-notify-send": { ok: true, count: 2 } });
+  env.ecoute(info, () => {});
+  await pause(120);
+  b = bulle(env.w);
+  clic(b.querySelector(".kz-btn--notify"));
+  await pause(600);
+  clic(b.querySelector(".kz-btn--send"));
+  await pause(80);
+  verifie("en mouvement reduit, pas de fusee, la confirmation seule", !b.querySelector(".kz-rocket") && !!b.querySelector(".kz-notify-msg--ok"));
+  for (const L of ["fr", "en", "de"]) {
+    const m = JSON.parse(fs.readFileSync(path.join(RACINE, "_locales", L, "messages.json"), "utf8"));
+    verifie("le message d'absence en " + L + " est court, sans proposition de report", m.notifyBodyAbsent.message.split("\n\n").length === 3 && !/report|reschedule|verschieb/i.test(m.notifyBodyAbsent.message) && !/délai/.test(m.notifyBodyAbsent.message));
+  }
+}
+
+
+/* ================= Les deux koalas dessines, 2026-09-25 ================= */
+// Un koala pour le rappel, un pour la citation, dessines par nous, animes.
+// Les images de l'utilisateur gardent leur place.
+async function testKoalasDessines() {
+  const srcK = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  verifie("plus aucune photo par defaut, deux roles dessines", /DEFAULT_KOALAS = \["svg:reminder", "svg:quote"\]/.test(srcK) && !/images\/koala-/.test(srcK));
+  verifie("les deux dessins existent et different", /KOALA_SVGS = \{\s*reminder: `<svg class="kz-svg"/.test(srcK) && /quote: `<svg class="kz-svg"/.test(srcK));
+  // 2026-09-26 : seuls les yeux et les oreilles vivent en continu, plus le salut a l'arrivee.
+  verifie("les animations retenues sont declarees : clignement, oreilles a tour de role, salut",
+    /@keyframes kzEarTwitch \{/.test(srcK) && /@keyframes kzEarTwitchR \{/.test(srcK)
+    && /\.kz-svg \.kz-eyes \{[^}]*kzBlink/.test(srcK) && /\.kz-svg \.kz-ear--r \{[^}]*animation-name: kzEarTwitchR; animation-delay: 3\.1s/.test(srcK)
+    && /\.kz-svg \.kz-paw \{[^}]*kzWave 1\.4s ease-in-out \.5s 3/.test(srcK));
+  verifie("plus de tete qui penche, de feuille qui balance ni de souffle sur le koala dessine",
+    !/kzTilt|kzLeafSway/.test(srcK) && /kz-koala--vec"\) \? "" : ", kzBreath/.test(srcK));
+  verifie("en buste, 150 px de haut, et une ombre douce", /\.kz-svg \{ width: auto; height: 150px;[^}]*drop-shadow/.test(srcK));
+  verifie("les oreilles pivotent a leur base, cote tete", /\.kz-svg \.kz-ear--l \{ transform-origin: 82% 82%; \}/.test(srcK) && /\.kz-svg \.kz-ear--r \{ transform-origin: 18% 82%;/.test(srcK));
+  verifie("oreilles de koala : un bord de fourrure fin, pas des lobes ronds",
+    (srcK.match(/<g class="kz-ear kz-ear--l"><path d="M[^"]*"/) || [""])[0].split("Q").length > 50 && !/<g class="kz-ear[^>]*><circle/.test(srcK));
+  verifie("en mouvement reduit, tout le koala se fige", /\.kz-svg \.kz-eyes, \.kz-svg \.kz-ear, \.kz-svg \.kz-paw \{ animation: none !important; \}/.test(srcK));
+
+  // La citation a son koala, feuille a la patte, yeux mi-clos.
+  let env = monte(BASE);
+  env.montre(CTX);
+  await pause(120);
+  clic(bulle(env.w).querySelector(".kz-btn--done"));
+  const r = racine(env.w);
+  verifie("le koala de la citation est dessine, un brin d'herbe a la bouche et sans patte qui salue",
+    await jusqua(() => { const k = r.querySelector(".kz-koala"); return !!k && !!k.querySelector(".kz-svg .kz-grass") && !k.querySelector(".kz-svg .kz-paw") && !!k.querySelector(".kz-quote-text"); }, 2500));
+  const k2 = r.querySelector(".kz-koala");
+  verifie("ses yeux sont mi-clos, des traits et pas des billes", !!k2 && k2.querySelectorAll(".kz-svg .kz-eyes path").length >= 2 && k2.querySelectorAll(".kz-svg .kz-eyes ellipse").length === 0);
+  verifie("et il cligne a son propre rythme", !!k2 && /kz-svg--quote/.test(k2.querySelector(".kz-svg").getAttribute("class")));
+
+  // Une image de l'utilisateur, sans les koalas d'origine : la photo prend la place.
+  const PNG = "data:image/png;base64,iVBORw0KGgo=";
+  env = monte(Object.assign({}, BASE, { customKoalas: [PNG], includeDefaultKoalas: false }));
+  env.montre(CTX);
+  await pause(120);
+  verifie("avec une image perso seule, c'est elle qui parait", !!racine(env.w).querySelector(".kz-photo") && !racine(env.w).querySelector(".kz-svg"));
+  // Avec les koalas d'origine gardes, l'un ou l'autre, jamais deux fois de suite le meme.
+  env = monte(Object.assign({}, BASE, { customKoalas: [PNG], includeDefaultKoalas: true }));
+  await pause(60);
+  const tirages = [];
+  for (let i = 0; i < 8; i++) {
+    env.montre(CTX);
+    await pause(120);
+    const rr = racine(env.w);
+    tirages.push(rr.querySelector(".kz-photo") ? "photo" : (rr.querySelector(".kz-svg .kz-paw") ? "svg" : "?"));
+    clic(bulle(env.w).querySelector(".kz-btn--later"));
+    await jusqua(() => rr.querySelectorAll(".kz-koala").length === 0, 900);
+  }
+  verifie("images perso et koala d'origine se partagent le rappel", tirages.indexOf("photo") >= 0 && tirages.indexOf("svg") >= 0 && tirages.indexOf("?") < 0, tirages.join(","));
+  verifie("jamais deux fois de suite le meme", tirages.every((x, i) => i === 0 || x !== tirages[i - 1]), tirages.join(","));
+  // Une image qui ne charge pas retombe sur le koala dessine.
+  env = monte(Object.assign({}, BASE, { customKoalas: ["data:image/png;base64,AAAA"], includeDefaultKoalas: false }));
+  env.montre(CTX);
+  await pause(120);
+  const img = racine(env.w).querySelector(".kz-photo");
+  if (img) img.dispatchEvent(new env.w.Event("error"));
+  await pause(30);
+  verifie("une image illisible laisse la place au koala dessine", !!racine(env.w).querySelector(".kz-svg .kz-paw"));
+}
+
+/* ================= Corrections de la revue du 2026-09-16 ================= */
+async function testCorrections() {
+  const src = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
+  const styles = (src.match(/const STYLES = `([\s\S]*?)`;/) || [])[1] || "";
+  verifie("la feuille de style est extraite", styles.length > 1000, String(styles.length));
+  // Deux blocs orphelins avalaient les @keyframes qui les suivaient : le
+  // souffle du koala (kzBreath) et l'entree du guillemet (kzMarkIn) ne
+  // jouaient jamais, sans aucune erreur visible.
+  verifie("les accolades de la feuille de style sont equilibrees",
+    (styles.match(/\{/g) || []).length === (styles.match(/\}/g) || []).length,
+    (styles.match(/\{/g) || []).length + " ouvrantes, " + (styles.match(/\}/g) || []).length + " fermantes");
+  verifie("aucune declaration orpheline hors d'un bloc",
+    !/\n\n\s+[a-z-]+:\s*[^;{}\n]+;\n/.test(styles));
+  const lignesKf = styles.split("\n").filter((l) => l.indexOf("@keyframes") === 0);
+  verifie("chaque @keyframes tient sur une ligne aux accolades equilibrees",
+    lignesKf.length > 10 && lignesKf.every((l) => (l.match(/\{/g) || []).length === (l.match(/\}/g) || []).length),
+    lignesKf.filter((l) => (l.match(/\{/g) || []).length !== (l.match(/\}/g) || []).length).join(" | "));
+  ["kzBreath", "kzMarkIn", "kzWave", "kzBlink", "kzArrive", "kzLeave", "kzQuoteIn"].forEach((k) => {
+    verifie("@keyframes " + k + " est defini", new RegExp("^@keyframes " + k + " \\{", "m").test(styles));
+  });
+  verifie("kzWave, utilise par la patte du koala qui salue, est defini",
+    /\.kz-svg \.kz-paw \{[^}]*kzWave/.test(styles) && /^@keyframes kzWave \{/m.test(styles));
+
+  // Un document ou le Shadow DOM est impossible : running est rendu, et le
+  // rendez-vous obtient une reponse honnete plutot qu'un affichage promis.
+  const env = monte(BASE);
+  const orig = env.w.Element.prototype.attachShadow;
+  env.w.Element.prototype.attachShadow = function () { throw new env.w.DOMException("non", "NotSupportedError"); };
+  env.montre(CTX);
+  await pause(120);
+  let rep = null;
+  const retour = env.ecoute({ type: "kz-meeting-soon", title: "X", start: Date.now() + 180000, minutes: 3, url: "", people: 2 }, (r) => { rep = r; });
+  verifie("apres un echec du Shadow DOM, running est rendu et le canal reste ouvert", retour === true);
+  verifie("le rendez-vous recoit shown a faux, background.js pourra notifier",
+    await jusqua(() => rep !== null, 900) && !!rep && rep.shown === false, JSON.stringify(rep));
+  env.w.Element.prototype.attachShadow = orig;
+  verifie("aucune issue n'a ete enregistree pour un rappel qui n'a pas pu s'afficher",
+    !env.journal.sorties.some((m) => m.type === "kz-outcome"));
 }
 
 /* ================= 6. La croix, porte de sortie sans le chat ================= */
@@ -339,19 +970,10 @@ async function testEchap() {
   // a disparu, et elle mene donc a la relance comme un clic sur Plus tard.
   env.w.document.dispatchEvent(new env.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   await pause(140);
-  // Echap se comporte exactement comme un clic sur Plus tard, donc l'energie est
-  // demandee avant que l'issue ne partle. Rien n'est envoye tant qu'on n'a pas
-  // repondu, et l'energie n'est jamais obligatoire.
-  const grille = bulle(env.w) && bulle(env.w).querySelector(".kz-energy-row");
-  verifie("Echap ouvre le selecteur d'energie, comme Plus tard", !!grille);
-  verifie("rien n'est encore envoye avant la reponse d'energie",
-    !env.journal.sorties.some((m) => m.type === "kz-outcome"));
-  clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(140);
+  // Echap se comporte exactement comme un clic sur Plus tard : le report part
+  // tout de suite, sans question d'energie.
   const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome");
-  verifie("Echap compte l'occasion comme un report", envoi && envoi.result === "later",
-    JSON.stringify(envoi));
-  verifie("l'energie choisie n'est jamais inventee ni arrondie", envoi && envoi.energy === 7,
+  verifie("Echap compte l'occasion comme un report, tout de suite", envoi && envoi.result === "later" && envoi.energy === undefined,
     JSON.stringify(envoi));
   verifie("Echap n'envoie jamais missed", !env.journal.sorties.some(
     (m) => m.type === "kz-outcome" && m.result === "missed"));
@@ -372,16 +994,30 @@ async function testEchap() {
     !env2.journal.sorties.some((m) => m.type === "kz-outcome"));
 }
 
-/* ================= 7. Rappel ignore ================= */
+/* ================= 7. Rappel sans reponse : il attend ================= */
+// Retour du test en conditions reelles du 2026-09-17 : la bulle disparaissait
+// au bout de 18 s, un rappel etait manque des qu'on avait le dos tourne.
+// Desormais elle attend une reponse, sans delai, sans rien enregistrer.
 async function testIgnore() {
   const env = monte(BASE);
   env.montre(CTX);
-  await pause(520);
+  await pause(1200);
+  const r = racine(env.w);
+  verifie("sans reponse, le koala et sa bulle restent a l'ecran",
+    r.querySelectorAll(".kz-koala").length === 1 && !!bulle(env.w) && !!bulle(env.w).querySelector(".kz-btn--later"));
+  verifie("rien n'est enregistre tant que personne n'a repondu",
+    !env.journal.sorties.some((m) => m.type === "kz-outcome"), JSON.stringify(env.journal.sorties));
+  verifie("aucun delai de 18 s ne subsiste dans le code", !/finish\("missed"\)|18000/.test(SRC));
+  // Un rappel suivant qui arrive pendant l'attente ne construit rien de plus.
+  env.montre(CTX);
+  await pause(120);
+  verifie("un rappel suivant pendant l'attente est ignore, un seul koala",
+    r.querySelectorAll(".kz-koala").length === 1 && r.querySelectorAll(".kz-bubble").length === 1);
+  // Et la reponse tardive compte normalement.
+  clic(bulle(env.w).querySelector(".kz-btn--done"));
+  await pause(120);
   const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome");
-  verifie("un rappel ignore compte comme manque", envoi && envoi.result === "missed", JSON.stringify(envoi));
-  await pause(160);
-  verifie("un rappel ignore reveille le chat",
-    !!racine(env.w).querySelector(".kz-bubble--cat"));
+  verifie("une reponse tardive compte comme faite", !!envoi && envoi.result === "done", JSON.stringify(envoi));
 }
 
 /* ================= 8. Mode focus ================= */
@@ -411,28 +1047,6 @@ async function testFocus() {
 }
 
 /* ================= 9. Un seul rappel a la fois ================= */
-// Sans ce filet, ne jamais cliquer sur l'ecran d'energie bloquait la
-// sequence pour toujours (running restait vrai a vie), avalant tous les
-// rappels futurs en silence. Le filet ne doit RIEN afficher a l'ecran, il
-// se contente de debloquer la suite avec une energie non enregistree.
-async function testEnergieSansReponse() {
-  const env = monte(BASE);
-  env.montre(CTX);
-  await pause(120);
-  clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  // Aucun clic sur les dix cases d'energie, on attend le filet de securite
-  // (raccourci a 350 ms pour le test, 20 s en production).
-  await pause(500);
-  const envoi = env.journal.sorties.find((m) => m.type === "kz-outcome" && m.result === "later");
-  verifie("le report est enregistre meme sans energie choisie",
-    !!envoi, JSON.stringify(env.journal.sorties));
-  verifie("l'energie non choisie part a null, jamais une valeur inventee",
-    envoi && envoi.energy === null, JSON.stringify(envoi));
-  verifie("la sequence continue apres le filet, la relance apparait",
-    !!racine(env.w).querySelector(".kz-bubble--cat"));
-}
-
 async function testConcurrence() {
   const env = monte(BASE);
   env.montre(CTX);
@@ -460,9 +1074,7 @@ async function testContenus() {
   env2.montre(CTX);
   await pause(120);
   clic(bulle(env2.w).querySelector(".kz-btn--done"));
-  await pause(60);
-  clic(bulle(env2.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(620);
+  await pause(680);
   const b = bulle(env2.w);
   verifie("sans les citations d'origine, seule la tienne sort",
     txt(b && b.querySelector(".kz-quote-text")) === "Ma citation a moi",
@@ -472,171 +1084,6 @@ async function testContenus() {
 }
 
 /* ---------- execution ---------- */
-
-/* ================= Modules J et K, relance et renoncement ================= */
-async function testRelance() {
-  const src = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-
-  // Les cinq personnages de la planche 05, dans l'ordre, koala sournois en tete.
-  const m = src.match(/const RELANCE = \[([\s\S]*?)\n    \];/);
-  verifie("la table des cinq personnages existe", !!m);
-  if (m) {
-    const ids = (m[1].match(/id: "(\w+)"/g) || []).map((x) => x.slice(5, -1));
-    verifie("cinq personnages, pas quatre", ids.length === 5, JSON.stringify(ids));
-    verifie("le koala sournois ouvre toujours le cycle", ids[0] === "koala", JSON.stringify(ids));
-    verifie("l'ordre de la planche est respecte",
-      JSON.stringify(ids) === JSON.stringify(["koala", "renard", "chat", "diable", "sourcil"]),
-      JSON.stringify(ids));
-    const ms = (m[1].match(/ms: (\d+)/g) || []).map((x) => parseInt(x.slice(4), 10));
-    verifie("les cinq durees de la planche", JSON.stringify(ms) === JSON.stringify([5000, 5000, 3400, 2800, 4200]),
-      JSON.stringify(ms));
-    verifie("deux personnages dessines, trois emojis",
-      (m[1].match(/kind: "svg"/g) || []).length === 2 && (m[1].match(/kind: "emoji"/g) || []).length === 3);
-  }
-  verifie("le koala sournois est un dessin embarque", /RELANCE_SVG_KOALA = `<svg/.test(src));
-  verifie("le renard est un dessin embarque", /RELANCE_SVG_RENARD = `<svg/.test(src));
-  verifie("chaque personnage a son geste propre",
-    ["kzSneak", "kzLurk", "kzPounce", "kzDevil", "kzBrow"].every((a) => src.indexOf(a) > -1));
-  // Le geste de chaque personnage doit correspondre a celui BAKE dans son
-  // propre SVG, sinon le koala hérite du dandinement du renard et vice versa.
-  // Deja arrive une fois, jamais vu car aucun controle ne le disait.
-  if (m) {
-    verifie("le koala sournois garde son propre geste, kzSneak",
-      /id: "koala",\s*kind: "svg",\s*svg: "koala",\s*ms: 5000, anim: "kzSneak"/.test(m[1]), m[1]);
-    verifie("le renard garde son propre geste, kzLurk",
-      /id: "renard",\s*kind: "svg",\s*svg: "renard",\s*ms: 5000, anim: "kzLurk"/.test(m[1]), m[1]);
-    verifie("chaque personnage porte sa propre courbe d'aisance",
-      /anim: "kzSneak",\s*ease: "ease-in-out"/.test(m[1]) &&
-      /anim: "kzLurk",\s*ease: "ease-in-out"/.test(m[1]) &&
-      /anim: "kzPounce", ease: "cubic-bezier\(0\.34,1\.06,0\.4,1\)"/.test(m[1]) &&
-      /anim: "kzDevil",\s*ease: "ease-in-out"/.test(m[1]) &&
-      /anim: "kzBrow",\s*ease: "ease-in-out"/.test(m[1]), m[1]);
-  }
-  // Le SVG du personnage porte deja overflow:visible et transform-origin dans
-  // son propre style. Ecraser tout l'attribut au lieu d'en retirer seulement
-  // l'animation les perdait, le personnage pivotait alors sur le mauvais point.
-  verifie("le style du personnage de relance est complete, jamais ecrase",
-    /const base = \(svg\.getAttribute\("style"\) \|\| ""\)\.replace\(\/animation:\[\^;\]\*;\?\/, ""\);/.test(src));
-
-  // Le ton, aucun rouge, aucun point d'exclamation, aucun son.
-  const bloc = src.slice(src.indexOf("const RELANCE = ["), src.indexOf("const SOB = ["));
-  verifie("aucun rouge dans les personnages de relance", !/#(A82722|8F2723|F7DAD8)/.test(bloc));
-  verifie("aucun son", src.indexOf("new Audio") === -1 && src.indexOf(".play()") === -1);
-
-  // La rotation avance d'un cran par report et boucle, TANT QUE snarkDay
-  // reste la date du jour, sinon l'index repart de zero (verifie plus bas).
-  const auj = (() => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); })();
-  const vus = [];
-  let idx = 0;
-  for (let i = 0; i < 6; i++) {
-    const env = monte(Object.assign({}, BASE, { snarkIndex: idx, snarkDay: auj }));
-    env.montre(CTX);
-    await pause(120);
-    clic(bulle(env.w).querySelector(".kz-btn--later"));
-    await pause(60);
-    clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[6]);
-    await pause(900);
-    idx = env.donnees.snarkIndex;
-    vus.push(idx);
-  }
-  verifie("la rotation avance d'un cran par report et boucle sur cinq",
-    JSON.stringify(vus) === JSON.stringify([1, 2, 3, 4, 0, 1]), JSON.stringify(vus));
-
-  // Le cycle repart a zero chaque matin, jamais en continu d'un jour a l'autre.
-  const envHier = monte(Object.assign({}, BASE, { snarkIndex: 3, snarkDay: "2000-1-1" }));
-  envHier.montre(CTX);
-  await pause(120);
-  clic(bulle(envHier.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  clic(bulle(envHier.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(900);
-  verifie("un snarkDay perime remet la rotation a zero, jamais une continuation",
-    envHier.donnees.snarkIndex === 1, envHier.donnees.snarkIndex);
-  verifie("le personnage servi apres un snarkDay perime est bien le premier du cycle (le koala)",
-    envHier.donnees.snarkDay === auj);
-
-  // La bulle graphite, le compteur et les deux issues ne changent jamais.
-  const env = monte(BASE);
-  env.montre(CTX);
-  await pause(120);
-  clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[6]);
-  // La bulle de relance expire a 900 ms dans le harnais raccourci. Attendre
-  // 1000 ms mesurait donc APRES sa disparition, et le test etait a la limite
-  // depuis le debut. On mesure des qu'elle est arrivee, soit 500 ms.
-  await pause(500);
-  const r = racine(env.w);
-  const cat = r.querySelector(".kz-bubble--cat");
-  verifie("la bulle de relance est graphite", !!cat);
-  verifie("le compteur de batons est la", !!(cat && cat.querySelector(".kz-tally")));
-  const btns = cat ? cat.querySelectorAll("button") : [];
-  verifie("deux issues seulement, et aucune croix", btns.length === 2, String(btns.length));
-  verifie("aucune croix dans la bulle de relance", !(cat && cat.querySelector(".kz-close")));
-  verifie("sans personnalisation la relance est dessinee et non une image",
-    !!r.querySelector(".kz-relance"), "aucun .kz-relance");
-  // SNARK_KOALAS est un chemin du paquet, pas une donnee integree. Sans
-  // resolution par getURL, l'image ne charge jamais sur la page visitee et le
-  // repli SVG joue en silence des qu'un utilisateur personnalise sans garder
-  // les koalas d'origine. Le harnais ne peut pas le voir sur l'image rendue,
-  // son getURL simule la meme origine que la page de test, donc le controle
-  // porte sur le code source.
-  verifie("SNARK_KOALAS est resolu par getURL, jamais un chemin brut",
-    /function snarkUrls\(\) \{\s*\n\s*return SNARK_KOALAS\s*\n\s*\.map\(\(p\) => \{ try \{ return api\.runtime\.getURL\(p\)/.test(src));
-
-  // Echap doit aussi fermer la bulle de relance, comme le timeout de 11 s,
-  // sans jamais envoyer d'issue et sans faire sortir le personnage.
-  const envEc = monte(BASE);
-  envEc.montre(CTX);
-  await pause(120);
-  clic(bulle(envEc.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  clic(bulle(envEc.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(500);
-  const rEc = racine(envEc.w);
-  verifie("la bulle de relance est bien la avant Echap", !!rEc.querySelector(".kz-bubble--cat"));
-  const avantEc = envEc.journal.sorties.length;
-  envEc.w.document.dispatchEvent(new envEc.w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-  await pause(80);
-  verifie("Echap efface la bulle de relance", !racine(envEc.w).querySelector(".kz-bubble--cat"));
-  verifie("le personnage reste a l'ecran, il ne sort jamais de lui-meme",
-    !!racine(envEc.w).querySelector(".kz-koala"));
-  verifie("Echap sur la relance n'envoie jamais de message",
-    envEc.journal.sorties.length === avantEc, JSON.stringify(envEc.journal.sorties.slice(avantEc)));
-}
-
-// Sans koala d'origine garde, la relance doit reagir avec les images de
-// l'utilisateur, meme quand RELANCE_MODE vaut "drawn", planche 09 revue au
-// retrait du build perso, la personnalisation remplace desormais le casting
-// dessine plutot que de s'y ajouter.
-async function testRelancePersonnalisee() {
-  const mesImages = ["data:image/png;base64,AAA", "data:image/png;base64,BBB"];
-  const env = monte(Object.assign({}, BASE, { customKoalas: mesImages, includeDefaultKoalas: false }));
-  env.montre(CTX);
-  await pause(120);
-  clic(bulle(env.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  clic(bulle(env.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(500);
-  const img = racine(env.w).querySelector("img");
-  verifie("koalas d'origine non gardes, la relance utilise une image personnalisee",
-    !!img && mesImages.indexOf(img.src) > -1, img && img.src);
-
-  // A l'inverse, garder les koalas d'origine garde la paire de la planche.
-  const env2 = monte(Object.assign({}, BASE, { customKoalas: mesImages, includeDefaultKoalas: true }));
-  env2.montre(CTX);
-  await pause(120);
-  clic(bulle(env2.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  clic(bulle(env2.w).querySelectorAll(".kz-energy-btn")[6]);
-  await pause(500);
-  // Selon le build, "d'origine" est soit le casting dessine (aucune image),
-  // soit la paire figee de la planche (une image, mais pas celle du bouton).
-  // Aucun des deux ne montre les photos personnalisees.
-  const img2 = racine(env2.w).querySelector("img");
-  verifie("koalas d'origine gardes, la relance ne montre pas les photos personnalisees",
-    !img2 || mesImages.indexOf(img2.src) === -1, img2 && img2.src);
-}
 
 // Fidelite au pixel pres de la bulle de rappel, planche 04, verifiee au audit
 // d'ensemble apres la livraison, un ecart de gabarit et deux couleurs de
@@ -655,109 +1102,27 @@ async function testStyleBulle() {
     /transition: opacity \$\{T\.bubble\}ms cubic-bezier\(0\.2,0,0,1\), transform \$\{T\.bubble\}ms cubic-bezier\(0\.2,0,0,1\)/.test(src));
 }
 
-async function testRenoncement() {
-  const src = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-
-  // Trois intensites, indexees sur le nombre de reports du jour.
-  const m = src.match(/const SOB = \[([\s\S]*?)\n    \];/);
-  verifie("les trois intensites existent", !!m);
-  if (m) {
-    const tears = (m[1].match(/tears: (\d+)/g) || []).map((x) => parseInt(x.slice(7), 10));
-    verifie("trois intensites, pas plus", tears.length === 3, JSON.stringify(tears));
-    verifie("une larme, puis trois, puis la rafale", tears[0] === 1 && tears[1] === 3 && tears[2] > 3,
-      JSON.stringify(tears));
-  }
-  verifie("le tremblement est une rotation et jamais un scale",
-    /kzSobShake[\s\S]{0,200}rotate\(-7deg\)/.test(src));
-  verifie("les larmes sont dessinees par nous et non un emoji",
-    src.indexOf("kz-sob-tear") > -1 && /\.kz-sob-tear \{[^}]*background: #4CB7FF/.test(src));
-  verifie("une larme tombe en 700 ms", /T\.tear/.test(src) && /tear: 700/.test(src));
-  verifie("les larmes s'espacent de 260 ms", /tearGap: 260/.test(src));
-  verifie("la courbe de chute est celle de la planche",
-    src.indexOf("kzTear\n") > -1 || src.indexOf("cubic-bezier(0.4,0,1,1)") > -1);
-  verifie("la scene ne porte aucun bouton",
-    !/kz-sob[\s\S]{0,600}createElement\("button"\)/.test(src));
-
-  // La scene se joue sur Jamais, et JAMAIS sur Bon j'y vais.
-  // Le harnais force animMode a never pour accelerer les suites. La scene de
-  // larmes est justement supprimee dans ce mode, il faut donc l'activer ici.
-  // Animations actives, donc les durees reelles s'appliquent. On attend
-  // l'apparition de chaque etape au lieu de deviner un delai.
-  async function attendre(env, sel, max) {
-    const fin = Date.now() + (max || 6000);
-    while (Date.now() < fin) {
-      const n = racine(env.w).querySelector(sel);
-      if (n) return n;
-      await pause(40);
-    }
-    return null;
-  }
-  async function joue(issue) {
-    const env = monte(Object.assign({}, BASE, { animMode: "always" }));
-    env.montre(CTX);
-    const later = await attendre(env, ".kz-btn--later");
-    clic(later);
-    const skip = await attendre(env, ".kz-energy-btn");
-    clic(skip);
-    const cat = await attendre(env, ".kz-bubble--cat");
-    const btns = cat ? cat.querySelectorAll("button") : [];
-    clic(btns[issue === "never" ? 1 : 0]);
-    return env;
-  }
-  const e1 = await joue("never");
-  await attendre(e1, ".kz-sob", 8000);
-  verifie("sur Jamais, l'emoji pleure", !!racine(e1.w).querySelector(".kz-sob"),
-    "aucune scene de larmes");
-  verifie("sur Jamais, des larmes sont dessinees",
-    !!racine(e1.w).querySelector(".kz-sob-tear"));
-  verifie("la scene de larmes ne propose rien a cliquer",
-    (() => { const s = racine(e1.w).querySelector(".kz-sob"); return s && s.querySelectorAll("button, a").length === 0; })());
-
-  // On SURVEILLE toute la fenetre au lieu de regarder une seule fois. Regarder
-  // trop tard laissait passer une scene de larmes deja retiree avec le koala.
-  const e2 = await joue("go");
-  let vueSurGo = false;
-  const finGo = Date.now() + 5600;
-  while (Date.now() < finGo) {
-    if (racine(e2.w).querySelector(".kz-sob")) { vueSurGo = true; break; }
-    await pause(40);
-  }
-  verifie("sur Bon j'y vais, aucune larme a aucun moment", !vueSurGo,
-    "une scene de larmes est apparue a tort");
-
-  // Sur Jamais dans les reglages, la scene est SUPPRIMEE et non ralentie.
-  const e3 = monte(Object.assign({}, BASE, { animMode: "never" }));
-  e3.montre(CTX);
-  await pause(120);
-  clic(bulle(e3.w).querySelector(".kz-btn--later"));
-  await pause(60);
-  const sk = bulle(e3.w) && bulle(e3.w).querySelectorAll(".kz-energy-btn")[6];
-  if (sk) clic(sk);
-  await pause(1000);
-  const cat3 = racine(e3.w).querySelector(".kz-bubble--cat");
-  if (cat3) { clic(cat3.querySelectorAll("button")[1]); await pause(2000); }
-  verifie("animations sur Jamais, aucune scene de larmes et rien a la place",
-    !racine(e3.w).querySelector(".kz-sob"));
-}
-
 (async () => {
   const suites = [
     ["Bulle d'habitude", testBulleHabitude],
+    ["Les deux koalas dessines", testKoalasDessines],
+    ["Au-dela de l'objectif, les bonus comptent", testBonus],
     ["Phrase sans chiffre", testSansChiffre],
     ["Rotation des objectifs", testRotation],
     ["Validation et citation", testValidation],
-    ["Report et pique du chat", testReport],
-    ["Issue Jamais", testJamais],
-    ["Persistance du personnage sans reponse", testPersistanceRelance],
+    ["Report, un report est un report", testReport],
     ["Echap vaut Plus tard", testEchap],
     ["Rappel ignore", testIgnore],
-    ["Energie sans reponse ne bloque plus la sequence", testEnergieSansReponse],
     ["Mode focus", testFocus],
     ["Un seul rappel a la fois", testConcurrence],
+    ["Corrections de la revue du 2026-09-16", testCorrections],
+    ["Le rappel de rendez-vous, module agenda", testRendezVous],
+    ["Le rendez-vous reste, et la fin en ambre", testRendezVousPersistant],
+    ["Prevenir les participants, volet de la bulle", testPrevenirBulle],
+    ["Une page ne pilote pas la bulle", testPageNePilotePas],
+    ["Durcissements de la revue ECC", testDurcissementsPage],
+    ["Au-dessus de tout, meme un lecteur colle en bas", testAuDessus],
     ["Contenus et masquage", testContenus],
-    ["Relance, les cinq personnages", testRelance],
-    ["Relance, images personnalisees", testRelancePersonnalisee],
-    ["Renoncement, l'emoji qui pleure", testRenoncement],
     ["Fidelite de la bulle de rappel a la planche", testStyleBulle]
   ];
   for (const [nom, f] of suites) {
@@ -769,46 +1134,21 @@ async function testRenoncement() {
   }
 
 // ---------------------------------------------------------------------------
-// Module A, echelle d'energie par bandes et durees de la 2.0.
+// Module A, ce qui a quitte la page : relance (2026-09-16), energie (2026-09-25).
 // ---------------------------------------------------------------------------
 {
   const src = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-
-  verifie("les cinq durees de la 2.0 sont dans l'objet T",
-    ["sob:", "tear:", "tearGap:", "blink:", "blinkEvery:"].every((k) => src.indexOf(k) > -1));
-  verifie("la scene de larmes dure 1,5 s", /sob:\s*1500/.test(src));
-  verifie("une larme tombe en 700 ms", /tear:\s*700/.test(src));
-  verifie("les larmes s'espacent de 260 ms", /tearGap:\s*260/.test(src));
-  verifie("la paupiere se ferme en 120 ms", /blink:\s*120/.test(src));
-  verifie("le clignement revient toutes les 6,5 s", /blinkEvery:\s*6500/.test(src));
-
-  verifie("la case choisie gonfle de 18 pour cent", /scale\(1\.18\)/.test(src));
-  verifie("l'ocre unique de la case choisie a disparu",
-    src.indexOf("kz-picked { background: #A98207") === -1);
-  verifie("la case choisie garde sa bande au lieu d'ecraser sa classe",
-    src.indexOf('b.classList.add("kz-picked")') > -1
-    && src.indexOf('b.className = "kz-energy-btn kz-picked"') === -1);
-
-  // Les cinq bandes de la planche, fond puis encre, et leur aplat plein.
-  const BANDES = [
-    ["kz-e1", "#F7DAD8", "#8F2723"],
-    ["kz-e2", "#FBE6CE", "#8A5108"],
-    ["kz-e3", "#FAF0C9", "#7A5E06"],
-    ["kz-e4", "#E2F2E5", "#33693F"],
-    ["kz-e5", "#CFE9D5", "#1F5C2E"]
-  ];
-  BANDES.forEach(([cls, fond, encre]) => {
-    verifie("bande " + cls + ", fond et encre conformes a la planche",
-      src.indexOf("." + cls + " { background: " + fond + "; color: " + encre + "; }") > -1);
-    verifie("bande " + cls + ", aplat plein de sa propre encre quand elle est choisie",
-      src.indexOf(".kz-energy-btn.kz-picked." + cls + " { background: " + encre) > -1);
-  });
-
+  verifie("plus aucune duree de relance ni de larmes dans l'objet T",
+    ["sob:", "tear:", "tearGap:"].every((k) => src.indexOf(k) === -1));
+  verifie("plus aucune relance, aucune pique, aucun Jamais dans la page",
+    !/runSnark|showSnarkBubble|buildNeverBubble|playSob|kz-btn--never|KZ_SNARK/.test(src));
+  verifie("aucune pause demandee par la page apres un report", !/"kz-pause"/.test(src));
+  verifie("plus aucune echelle d'energie dans la page, ni code ni style",
+    !/kz-energy|ENERGY_TONE|showEnergyPicker|energyBubbleNode|kzPick\b|kz-picked|\.kz-e[1-5] /.test(src));
+  verifie("l'issue part sans energie", /sendMessage\(\{ type: "kz-outcome", result: result \}\)/.test(src));
   verifie("anneau de focus vert 3 px sur les elements de la bulle",
     /:focus-visible \{ outline: 3px solid #2FAE4A/.test(src));
-
-  verifie("RELANCE_MODE est declare en tete de content.js",
-    /RELANCE_MODE\s*=\s*"(drawn|images)"/.test(src));
+  verifie("aucun mode de relance ne subsiste dans content.js", !/RELANCE_MODE|RELANCE_POOL|SNARK_KOALAS/.test(src));
 }
 // ---------------------------------------------------------------------------
 // Module M, le placement selon le format du fichier, planches 06 et 07.
@@ -920,18 +1260,10 @@ async function testRenoncement() {
     /border-bottom: 1px solid #E0E0E0/.test(paysage) && /border-right: 1px solid #E0E0E0/.test(paysage));
   verifie("pointe paysage, la bordure haute est retiree", /border-top: none/.test(paysage));
   verifie("pointe paysage, rayon du coin bas droit", /border-radius: 0 0 3px 0/.test(paysage));
-  verifie("la pointe suit la couleur de la bulle graphite",
-    /\n\.kz-bubble--cat::after \{[^}]*background: #2E3338/.test(srcT));
-  verifie("la pointe graphite suit aussi la bordure",
-    /\n\.kz-bubble--cat::after \{[^}]*#454C52/.test(srcT));
-  // La couleur de la pointe paysage doit etre verifiee elle aussi, sinon une
-  // mutation sur cette regle passe inapercue.
-  const landCat = (srcT.match(/\.kz-koala--land \.kz-bubble--cat::after \{([^}]*)\}/) || [])[1] || "";
-  verifie("la pointe graphite existe aussi en paysage", landCat.length > 10);
-  verifie("la pointe graphite paysage porte le bon fond",
-    /background: #2E3338/.test(landCat), landCat);
-  verifie("la pointe graphite paysage porte les bonnes bordures",
-    /border-right-color: #454C52/.test(landCat) && /border-bottom-color: #454C52/.test(landCat), landCat);
+  // 2026-09-16 : la bulle graphite de la relance n'existe plus, sa pointe non
+  // plus. Aucune regle ne doit en rester, ni en placement normal ni en paysage.
+  verifie("plus aucune pointe graphite, la bulle de relance a disparu",
+    !/\.kz-bubble--cat/.test(srcT));
 }
 
 // ---------------------------------------------------------------------------
@@ -945,31 +1277,7 @@ async function testRenoncement() {
   // faisaient basculer la bulle AU DESSUS, le personnage sortant du cadre.
   verifie("le paysage ne s'applique qu'aux images de l'utilisateur",
     /if \(!estPerso\) return;/.test(srcB));
-  verifie("le personnage de relance a une largeur minimale",
-    /\.kz-relance \{[^}]*min-width: 78px/.test(srcB));
-
-  // Les hahaha de la planche 08 n'etaient jamais crees.
-  verifie("les hahaha existent", /function addHahas/.test(srcB));
-  verifie("les hahaha sont poses sur la bulle Jamais", /addHahas\(b\);/.test(srcB));
-  verifie("cinq hahaha, decales et de tailles differentes",
-    (srcB.match(/\{ x: "/g) || []).length >= 5);
-  verifie("les hahaha passent derriere le texte",
-    /\.kz-bubble--cat > \*:not\(\.kz-hahas\) \{[^}]*z-index: 1/.test(srcB));
-  verifie("les hahaha ne captent aucun clic",
-    /\.kz-hahas \{[^}]*pointer-events: none/.test(srcB));
-  verifie("les hahaha sont coupes par le mouvement reduit",
-    /function addHahas\(bubble\) \{\s*if \(reduceMotion\(\)\) return;/.test(srcB));
-
-  // L'emoji des larmes etait toujours le meme. repToday est le compte AVANT le
-  // report en cours, il fallait donc ajouter celui-ci pour trouver le rang.
-  verifie("le rang du report inclut celui en cours",
-    /const rang = Math\.max\(1, \(Number\(repToday\) \|\| 0\) \+ 1\);/.test(srcB));
-  verifie("l'index des larmes part du rang", /const idx = Math\.min\(SOB\.length - 1, rang - 1\);/.test(srcB));
-
-  // L'energie n'est plus facultative.
-  verifie("le lien Passer a disparu du code", srcB.indexOf("kz-energy-skip") === -1
-    || srcB.indexOf('className = "kz-energy-skip"') === -1);
-  verifie("aucune cle energySkip n'est plus employee", srcB.indexOf("energySkip") === -1);
+  verifie("aucune cle d'energie n'est plus employee", srcB.indexOf("energySkip") === -1 && srcB.indexOf("energyQ") === -1);
 }
 {
   const srcP = fs.readFileSync(path.join(RACINE, "popup.js"), "utf8");
@@ -988,7 +1296,7 @@ async function testRenoncement() {
   // arbre de donnees, jamais importe dans le document courant.
   verifie("svgNode construit par reconstruction createElementNS",
     /function svgNode[\s\S]{0,260}rebuildSvgNode/.test(srcP)
-    && /function rebuildSvgNode[\s\S]{0,300}createElementNS/.test(srcP));
+    && /function rebuildSvgNode[\s\S]{0,800}createElementNS/.test(srcP));
   verifie("plus aucune assignation .innerHTML ni appel a createContextualFragment dans le popup",
     (srcP.match(/\.innerHTML\s*=/g) || []).length === 0
     && !/\.createContextualFragment\(/.test(srcP));
@@ -1028,34 +1336,8 @@ async function testRenoncement() {
     /motif === "horaire" \|\| motif === "ecart" \|\| motif === "plafond"/.test(srcBg));
   verifie("le test ne contourne PAS la visio",
     /if \(cfg\.muteInCalls && matchesMuted\(tab\.url, cfg\.mutedPatterns\)\) return;/.test(srcBg));
-  verifie("le test ne consomme pas le quota du jour", /\+ \(test \? 0 : 1\)/.test(srcBg));
+  verifie("ni le test ni la ronde du soir ne consomment le quota du jour", /\+ \(\(test \|\| evening\) \? 0 : 1\)/.test(srcBg));
   verifie("le test ne consomme pas le creneau des deux heures", /last: test \? st\.last : now/.test(srcBg));
-}
-
-// ---------------------------------------------------------------------------
-// Le figeage de la premiere image d'un GIF sur Jamais, planche 06.
-// ---------------------------------------------------------------------------
-{
-  const srcG = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-  verifie("la fonction de figeage existe", /function figerPremiereImage/.test(srcG));
-  verifie("le figeage passe par un canvas", /createElement\("canvas"\)/.test(srcG));
-  verifie("le figeage substitue la source", /img\.src = fixe;/.test(srcG));
-  // Les DEUX reconnaissances doivent etre presentes, l'extension de fichier ET la
-   // source integree, sinon le figeage frapperait aussi les PNG.
-  verifie("le figeage reconnait un GIF par son extension",
-    srcG.indexOf('/\\.gif($|[?#])/i.test(img.src)') > -1);
-  verifie("le figeage reconnait un GIF integre",
-    srcG.indexOf('img.src.indexOf("image/gif") < 0') > -1);
-  verifie("hors GIF, le figeage renonce",
-    /test\(img\.src\) && img\.src\.indexOf\("image\/gif"\) < 0\) return false;/.test(srcG));
-  verifie("le figeage est appele sur Jamais, avant les larmes",
-    /figerPremiereImage\(kc\);\s*\n\s*await playSob/.test(srcG));
-  // Un echec de canvas ne doit pas laisser un cadre vide, mieux vaut un GIF qui
-  // continue de tourner qu'un personnage disparu.
-  verifie("un echec de figeage laisse le GIF tourner",
-    /if \(!ctx2d\) return false;/.test(srcG) && /catch \(e\) \{ return false; \}/.test(srcG));
-  verifie("une image sans dimensions connues est ignoree",
-    /if \(!img \|\| !img\.naturalWidth\) return false;/.test(srcG));
 }
 
 // ---------------------------------------------------------------------------
@@ -1076,11 +1358,11 @@ async function testRenoncement() {
   // voir PROJECT_HANDOFF.md.
   verifie("svgFromString construit par reconstruction createElementNS",
     /function svgFromString[\s\S]{0,260}rebuildSvgNode/.test(srcS)
-    && /function rebuildSvgNode[\s\S]{0,300}createElementNS/.test(srcS));
+    && /function rebuildSvgNode[\s\S]{0,800}createElementNS/.test(srcS));
   verifie("le SVG est lu depuis un document DOMParser jetable, jamais importe dans le document courant",
     /new DOMParser\(\)\.parseFromString\(markup, "image\/svg\+xml"\)/.test(srcS));
   verifie("svgNode reutilise svgFromString",
-    /function svgNode\(\) \{\s*return svgFromString\(KOALA_SVG\);/.test(srcS));
+    /function svgNode\(role\) \{\s*const n = svgFromString\(KOALA_SVGS\[/.test(srcS));
   verifie("plus aucune assignation .innerHTML ni appel a createContextualFragment dans la page",
     (srcS.match(/\.innerHTML\s*=/g) || []).length === 0
     && !/\.createContextualFragment\(/.test(srcS));
@@ -1106,78 +1388,6 @@ async function testRenoncement() {
     /\.segbox\.segbox--range \.seg-b \{[^}]*flex: 1 1 0/.test(html2));
 }
 
-// ---------------------------------------------------------------------------
-// La continuite du personnage entre le rappel et la relance.
-// ---------------------------------------------------------------------------
-{
-  const srcC = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-  // L'ancienne sequence sortait le koala, attendait 600 ms puis faisait entrer la
-  // relance. A l'ecran le personnage apparaissait, disparaissait et revenait.
-  verifie("plus de sortie du koala avant la relance",
-    !/await playExit\(k1\);\s*\n\s*k1\.remove\(\);\s*\n\s*await sleep\(600\);/.test(srcC));
-  verifie("plus d'attente de 600 ms avant la relance",
-    !/k1\.remove\(\);\s*\n\s*await sleep\(600\);\s*\n\s*await runSnark/.test(srcC));
-  verifie("l'ancien personnage est transmis a la relance",
-    /await runSnark\(shadow, \{[^}]*\}, k1\);/.test(srcC));
-  verifie("runSnark accepte le personnage a relever",
-    /async function runSnark\(shadow, ctx, aRetirer\)/.test(srcC));
-  // Le visage change SUR PLACE. Le personnage ne sort pas et ne rentre pas, la
-  // planche 09 dit que le nouveau visage arrive a la place de l'ancien.
-  verifie("le personnage du rappel est REUTILISE, aucun second personnage",
-    /kc = aRetirer;/.test(srcC));
-  const brancheReprise = srcC.slice(srcC.indexOf("kc = aRetirer;"), srcC.indexOf("} else {", srcC.indexOf("kc = aRetirer;")));
-  verifie("aucune entree n'est jouee sur le personnage reutilise",
-    brancheReprise.indexOf("playEnter") === -1, brancheReprise.slice(0, 160));
-  verifie("le chemin reutilise attend seulement le temps d'un fondu",
-    /await sleep\(T\.swap\);/.test(brancheReprise));
-  verifie("aucune sortie n'est jouee sur le personnage reutilise",
-    srcC.indexOf("playExit(aRetirer)") === -1);
-  verifie("le remplissage du visage est partage entre les deux chemins",
-    /function fillRelance\(wrap, perso\)/.test(srcC)
-    && /fillRelance\(kc, perso\);/.test(srcC)
-    && /fillRelance\(wrap, perso\);\s*\n\s*return wrap;/.test(srcC));
-  verifie("la bulle d'energie part avec l'ancien visage",
-    /const vieille = kc\.querySelector\("\.kz-bubble"\);/.test(srcC));
-  verifie("aucun repli sur wrap pour trouver le conteneur",
-    srcC.indexOf('wrap.querySelector(".kz-inner") || wrap') === -1);
-  verifie("en perso, seule la source de l'image change",
-    /const dejaLa = inner\.querySelector\("img\.kz-photo"\);[\s\S]{0,200}dejaLa\.src = src; return;/.test(srcC));
-}
-
-// ---------------------------------------------------------------------------
-// La continuite du personnage entre le rappel et la relance.
-// ---------------------------------------------------------------------------
-{
-  const srcC = fs.readFileSync(path.join(RACINE, "content.js"), "utf8");
-  // L'ancienne sequence sortait le koala, attendait 600 ms puis faisait entrer la
-  // relance. A l'ecran le personnage apparaissait, disparaissait et revenait.
-  verifie("plus aucune attente de 600 ms avant la relance",
-    srcC.indexOf("await sleep(600)") === -1);
-  // Le controle porte sur le SEUL chemin du report. Les deux autres sorties sont
-  // voulues, le koala qui s'en va puis revient avec la citation apres validation,
-  // et la fermeture du rappel.
-  const apresLater = srcC.slice(srcC.indexOf("async function afterLater"),
-                                srcC.indexOf("async function afterDone"));
-  verifie("le chemin du report ne fait plus sortir le koala",
-    apresLater.indexOf("playExit") === -1, apresLater.slice(0, 200));
-  verifie("le chemin du report ne retire plus le koala",
-    apresLater.indexOf("k1.remove()") === -1);
-  verifie("l'ancien personnage est passe a la relance",
-    /runSnark\(shadow, \{[^}]*\}, k1\)/.test(srcC));
-  verifie("la relance accepte un personnage a retirer",
-    /async function runSnark\(shadow, ctx, aRetirer\)/.test(srcC));
-  verifie("le visage change sur place, sans sortie", srcC.indexOf("playExit(aRetirer)") === -1);
-
-  // Le finally effacait l'ecran sans laisser de trace en cas d'exception.
-  verifie("la sequence capture ses exceptions", /\} catch \(e\) \{[\s\S]{0,400}console\.warn\("Koala Zen, sequence interrompue/.test(srcC));
-  verifie("la capture n'empeche pas le nettoyage",
-    /console\.warn\("Koala Zen, sequence interrompue[\s\S]{0,200}\} finally \{\s*\n\s*clearKoalas\(garder\);/.test(srcC));
-  // Une exception laisse garder a faux, donc le nettoyage de secours reprend
-  // bien le personnage. Seuls les chemins qui aboutissent normalement, report
-  // et rappel manque, le mettent a vrai avant de sortir.
-  verifie("garder reste a faux par defaut, le secours nettoie tout",
-    /let garder = false;/.test(srcC));
-}
 
   console.log("\n=== content.js : %d reussis, %d echecs ===", ok, ko);
   if (echecs.length) { console.log("\nECHECS:"); echecs.forEach((e) => console.log("  - " + e)); }

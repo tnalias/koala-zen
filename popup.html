@@ -46,9 +46,77 @@
       /* Rouge, la zone destructive */
       --rd: #A82722;
       --rd-soft: #F2C9C7;
+      /* Bleu, l'agenda */
+      --bl-bg: #EDF4FC;
+      --bl-bd: #CFE0F3;
+      --bl-ink: #1B4A7A;
+      --bl-mid: #1F63A8;
+      --bl-bar: #4CB7FF;
+      /* Couleurs des graphes, 2026-09-26, validees (dataviz, daltonisme,
+         contraste). Une couleur par mesure, la meme que sa tuile. */
+      --ch-done: #1F7A36;
+      --ch-rep: #E4923F;
+      --ch-scr: #8B959D;
+      --ch-meet: #1F63A8;
+      --ch-in: #8C7AE6;
+      --ch-out: #4B3BA8;
+      --ch-zero: #E0E0E0;
+      --vi-bg: #F1EEFC;
+      --vi-bd: #DCD5F8;
+      --vi-ink: #4B3BA8;
       /* Ombres */
       --sh-card: 0 1px 2px rgba(16,24,40,0.04);
       --sh-tab: 0 1px 2px rgba(16,24,40,0.06);
+    }
+    /* Mode sombre, 2026-09-22. Pose par popup.js sur html[data-theme], suit le
+       systeme en Automatique ou le choix Clair / Sombre. Memes variables, valeurs
+       de la palette sombre (tests/ref_maquette.json, _palette_sombre). */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --w: #1E2327;
+      --g50: #15181B;
+      --g100: #1A1E22;
+      --g200: #15181B;
+      --g300: #343A40;
+      --g400: #7E868D;
+      --g500: #A9B2B9;
+      --g600: #E6EAEE;
+      --gr-dark: #63C177;
+      --gr-ink: #BFE3C8;
+      --gr-mid: #9BD4A8;
+      --gr-050: #1D2A21;
+      --gr-100: #203026;
+      --gr-150: #24382B;
+      --gr-200: #274030;
+      --gr-250: #2F5A3B;
+      --gr-300: #2C4A35;
+      --gr-soft: #4F8F5E;
+      --am-bg: #2E2718;
+      --am-bd: #5A4A2A;
+      --am-bd2: #4E4228;
+      --am-ink: #F0D9A8;
+      --am-mid: #D9B77A;
+      --gr-025: #1B2420;
+      --gt: #0F1214;
+      --gt-bd: #2A3036;
+      --seg: #2A3036;
+      --rd: #E07570;
+      --rd-soft: #4A2523;
+      --bl-bg: #1A2634;
+      --bl-bd: #2B4360;
+      --bl-ink: #CFE0F3;
+      --bl-mid: #7FB6EA;
+      --ch-done: #4FA862;
+      --ch-rep: #A85A18;
+      --ch-meet: #3D8FD6;
+      --ch-in: #9483EA;
+      --ch-out: #6450C8;
+      --ch-zero: #343A40;
+      --vi-bg: #221F33;
+      --vi-bd: #3E3666;
+      --vi-ink: #C9C0F6;
+      --sh-card: 0 1px 2px rgba(0,0,0,0.40);
+      --sh-tab: 0 1px 2px rgba(0,0,0,0.50);
     }
 
     /* Module F, l'ajout en lot */
@@ -113,11 +181,78 @@
     .bar-lg { display: flex; gap: 12px; padding-top: 2px; }
     .bar-lgi { display: flex; align-items: center; gap: 5px; font-size: 11px; line-height: 15px; color: var(--g500); }
     .bar-d { width: 8px; height: 8px; border-radius: 9999px; }
-    /* Module N, la premiere installation */
-    .fr { text-align: center; }
-    .fr-k { display: flex; justify-content: center; padding-top: 6px; }
-    .fr-t { font-size: 17px; line-height: 24px; font-weight: 600; color: var(--gr-ink); }
-    .fr-s { font-size: 12px; line-height: 17px; color: var(--g500); }
+    /* Module N, la premiere installation. Refonte du 2026-09-28 facon app
+       mobile : hauteur fixe pour que le popup ne saute pas d'une etape a
+       l'autre, barre du haut (retour, progression, passer), une illustration
+       par etape, et le bouton principal toujours au meme endroit, en bas. */
+    .fr { min-height: 554px; box-sizing: border-box; padding: 10px 16px 16px; gap: 0; }
+    .fr-top { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; height: 32px; }
+    .fr-icb { width: 32px; height: 32px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: var(--g500); }
+    .fr-icb:hover { background: var(--g300); color: var(--g600); }
+    .fr-skip { grid-column: 3; justify-self: end; font-size: 12px; line-height: 17px; font-weight: 500; color: var(--gr-dark); padding: 6px 0; }
+    .fr-skip:hover { text-decoration: underline; }
+    .fr-dots { grid-column: 2; display: flex; justify-content: center; gap: 6px; }
+    .fr-dots i { width: 6px; height: 6px; border-radius: 9999px; background: var(--g300); transition: width .25s cubic-bezier(0.2,0,0,1), background .25s ease; }
+    .fr-dots i.on { width: 18px; background: var(--gr-dark); }
+    .fr-dots i.fait { background: var(--gr-soft); }
+    .fr-main { flex: 1 1 auto; display: flex; flex-direction: column; padding-top: 12px; }
+    .fr-step { display: flex; flex-direction: column; gap: 16px; text-align: center; }
+    .anim-on .fr-step { animation: kzUp .3s ease both; }
+    .fr-hero { align-self: center; display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 9999px; }
+    .fr-hero svg { width: 34px; height: 34px; }
+    .fr-hero--gr { background: var(--gr-150); color: var(--gr-dark); }
+    .fr-hero--bl { background: var(--bl-bg); color: var(--bl-mid); }
+    .fr-hero--k { width: 148px; height: 148px; background: var(--gr-150); }
+    .fr-hero--k img { width: 132px; height: auto; margin-top: 10px; }
+    .fr-head { display: flex; flex-direction: column; gap: 6px; }
+    .fr-t { margin: 0; font-size: 20px; line-height: 26px; font-weight: 600; color: var(--g600); }
+    .fr-s { margin: 0; font-size: 13px; line-height: 18px; color: var(--g500); }
+    .fr-card { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+    .fr-lab { font-size: 12px; line-height: 17px; font-weight: 500; color: var(--g600); }
+    .fr-card .add-in { height: 40px; font-size: 13px; }
+    .fr-feats { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    .fr-feat { display: flex; gap: 12px; align-items: center; }
+    .fr-ico { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .fr-ico svg { width: 18px; height: 18px; }
+    .fr-ico--gr { background: var(--gr-150); color: var(--gr-dark); }
+    .fr-ico--bl { background: var(--bl-bg); color: var(--bl-mid); }
+    .fr-ico--vi { background: var(--vi-bg); color: var(--vi-ink); }
+    .fr-ico--am { background: var(--am-bg); color: var(--am-ink); }
+    .fr-ico--gy { background: var(--g200); color: var(--g500); }
+    .fr-ft { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--g600); }
+    .fr-fs { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .fr-ol { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .fr-li { display: flex; gap: 10px; align-items: flex-start; }
+    .fr-n { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 9999px; background: var(--gr-150); color: var(--gr-dark); font-size: 11px; line-height: 20px; font-weight: 600; text-align: center; }
+    .fr-li-b { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-top: 1px; }
+    .fr-li-t { font-size: 13px; line-height: 18px; color: var(--g600); }
+    .fr-ext { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 17px; font-weight: 500; color: var(--gr-dark); text-decoration: none; }
+    .fr-ext:hover { text-decoration: underline; }
+    .fr-ext svg { width: 12px; height: 12px; }
+    .fr-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .fr-chip { padding: 1px 7px; border-radius: 5px; background: var(--g200); border: 1px solid var(--g300); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 16px; color: var(--g600); }
+    .fr-field { position: relative; display: flex; }
+    .fr-field .add-in { padding-right: 70px; }
+    .fr-eye { position: absolute; right: 4px; top: 4px; bottom: 4px; padding: 0 8px; border-radius: 7px; font-size: 11px; font-weight: 500; color: var(--gr-dark); }
+    .fr-eye:hover { background: var(--g200); }
+    .fr-card .btn-main { height: 40px; }
+    /* Le bouton d'action se detache de ce qu'il valide : 16 px, l'ecart des blocs de l'onboarding. */
+    .fr-card > .fr-card > .btn-main { margin-top: 8px; }
+    .fr-done { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    .fr-done-t { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--g600); }
+    .fr-res { display: flex; gap: 10px; align-items: center; font-size: 13px; line-height: 18px; color: var(--g600); }
+    .fr-res-i { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background: var(--gr-150); color: var(--gr-dark); }
+    .fr-res-i svg { width: 12px; height: 12px; }
+    .fr-res--later { color: var(--g500); }
+    .fr-res--later .fr-res-i { background: var(--g200); color: var(--g500); }
+    .fr-note { display: flex; gap: 10px; align-items: flex-start; text-align: left; font-size: 12px; line-height: 17px; color: var(--g500); }
+    .fr-note svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--g400); margin-top: 1px; }
+    .fr-nav { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; }
+    .fr-nav .btn-main { height: 44px; font-size: 14px; }
+    .fr .card .row, .fr .card .row-txt { text-align: left; }
+    .verline-a { display: block; margin: 2px auto 0; font-size: 11px; }
+    .ag-head { display: flex; flex-direction: column; gap: 4px; }
+    #agendaConnected .surt { margin-top: 6px; }
     .tiny { align-self: flex-start; padding: 0; border: none; background: none; color: var(--gr-dark);
       font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
     .tiny:hover { color: var(--gr-ink); }
@@ -160,6 +295,8 @@
     .card { background: var(--w); border: 1px solid var(--g300); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--sh-card); }
     .card--tight { gap: 8px; }
     .card-h { display: flex; align-items: baseline; gap: 8px; }
+    .card-h > .card-t { flex: 0 0 auto; white-space: nowrap; }
+    /* Le jour le plus charge, sous son graphe, 2026-09-26 */
     .card-t { flex: 1 1 auto; font-size: 14px; line-height: 19px; font-weight: 500; color: var(--g600); }
     .card-m { font-size: 12px; color: var(--g500); text-align: right; }
     .hint { font-size: 12px; line-height: 17px; color: var(--g500); }
@@ -175,7 +312,8 @@
     .grow { flex: 1 1 auto; }
     .fixed { flex: 0 0 auto; }
     #passagesFreqWrap { display: flex; flex-direction: column; gap: 6px; }
-    #kdriveSetup, #kdrivePicker, #kdriveConnected { display: flex; flex-direction: column; gap: 10px; }
+    #agendaBox, #agendaSetup, #agendaPicker, #agendaConnected { display: flex; flex-direction: column; gap: 10px; }
+    #agendaPickList { max-height: 240px; overflow-y: auto; }
 
     /* Interrupteur */
     .sw { position: relative; flex: 0 0 auto; width: 40px; height: 24px; }
@@ -325,6 +463,46 @@
     .tile--scr { background: var(--w); border: 1px solid var(--g300); }
     .tile--scr .tile-l, .tile--scr .tile-s { color: var(--g500); }
     .tile--scr .tile-v { color: var(--g600); }
+    /* Prevenir les participants, volet du popup, 2026-09-22 */
+    .nf { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+    .nf-to { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .nf-lab { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .nf-chip { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 4px 0 9px; border-radius: 9999px; background: var(--bl-bg); border: 1px solid var(--bl-bd); color: var(--bl-ink); font-size: 12px; line-height: 17px; max-width: 100%; }
+    .nf-chip-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+    .nf-chip-x { width: 18px; height: 18px; border-radius: 9999px; color: var(--bl-mid); font-size: 14px; line-height: 17px; display: flex; align-items: center; justify-content: center; }
+    .nf-chip-x:hover { background: var(--bl-bd); }
+    .nf-subj { font-size: 12px; line-height: 17px; color: var(--g500); overflow-wrap: anywhere; }
+    .nf-subj b { font-weight: 500; color: var(--g600); }
+    .nf-ta { width: 100%; height: 118px; box-sizing: border-box; resize: vertical; padding: 8px 10px; border: 1px solid var(--g300); border-radius: 8px; background: var(--w); color: var(--g600); font-family: inherit; font-size: 12px; line-height: 17px; }
+    .nf-ta:focus { outline: none; border-color: var(--bl-mid); box-shadow: 0 0 0 3px rgba(31,99,168,.25); }
+    .nf-msg { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .nf-msg--err { color: var(--rd); }
+    .nf-msg--ok { color: var(--gr-ink); font-weight: 500; }
+    .nf-acts { display: flex; align-items: center; gap: 12px; }
+    .nf-send { flex: 1 1 0; height: 38px; border-radius: 9999px; background: var(--bl-mid); color: #FFFFFF; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+    .nf-send[disabled] { background: var(--g300); color: var(--g500); cursor: default; }
+    .nf-rocket { position: relative; height: 96px; overflow: hidden; display: flex; justify-content: center; align-items: flex-end; }
+    .nf-rocket svg { display: block; width: 40px; height: 64px; }
+    .anim-on .nf-rocket svg { animation: nfRocket 1.5s cubic-bezier(0.4,0,1,1) both; }
+    .anim-on .nf-rocket-flame { transform-box: fill-box; transform-origin: 50% 0; animation: nfFlame .18s ease-in-out infinite alternate; }
+    .nf-rocket-trail { position: absolute; left: 50%; bottom: 0; width: 6px; height: 0; margin-left: -3px; border-radius: 9999px; background: var(--bl-bd); }
+    .anim-on .nf-rocket-trail { animation: nfTrail 1.5s cubic-bezier(0.4,0,1,1) both; }
+    @keyframes nfRocket { 0% { transform: translateY(0) scale(1); opacity: 1; } 55% { transform: translateY(-40px) scale(.92); opacity: 1; } 100% { transform: translateY(-140px) scale(.6); opacity: 0; } }
+    @keyframes nfTrail { 0% { height: 0; opacity: .9; } 60% { height: 70px; opacity: .5; } 100% { height: 96px; opacity: 0; } }
+    @keyframes nfFlame { from { transform: scaleY(.7); } to { transform: scaleY(1.15); } }
+    .seg-b--off { color: var(--g400); cursor: default; }
+    /* Lignes a cocher du choix des agendas */
+    .bq-ck { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--g300); background: var(--w); color: #FFFFFF; font-size: 12px; line-height: 16px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .bq--on .bq-ck { background: var(--gr); border-color: var(--gr); }
+    .bq--pick { cursor: pointer; }
+    .tile--meet { background: var(--bl-bg); border: 1px solid var(--bl-bd); }
+    /* 2026-09-26 : grille 2 x 3 equilibree. Sans reunions, l'ecran prend la
+       ligne entiere au lieu de laisser une case vide. */
+    .tile--wide { grid-column: 1 / -1; }
+    .tile--mail { background: var(--vi-bg); border: 1px solid var(--vi-bd); }
+    .tile--mail .tile-l, .tile--mail .tile-s, .tile--mail .tile-v { color: var(--vi-ink); }
+    .tile--meet .tile-l, .tile--meet .tile-s { color: var(--bl-mid); }
+    .tile--meet .tile-v { color: var(--bl-ink); }
 
     .legend { display: flex; flex-wrap: wrap; gap: 10px; }
     .lg { display: flex; align-items: center; gap: 5px; }
@@ -332,18 +510,32 @@
     .lg-l { width: 12px; border-top: 1px dashed var(--g400); }
     .lg-t { font-size: 11px; color: var(--g500); }
 
-    .plot { position: relative; height: 72px; border-bottom: 1px solid var(--g300); }
+    .plot { position: relative; height: 64px; border-bottom: 1px solid var(--g300); }
     .goalline { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--g400); }
-    .cols { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 72px; }
-    .col { flex: 1 1 0; display: flex; align-items: flex-end; gap: 2px; height: 72px; }
-    .col-b { flex: 1 1 0; border-radius: 3px 3px 0 0; transform-origin: bottom; transition: transform .5s cubic-bezier(0.2,0,0,1); }
-    .col-b--done { background: var(--gr); }
-    .col-b--rep { background: var(--am-bar); }
-    .col-b--none { background: var(--g200); }
+    .cols { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; height: 64px; }
+    .col { flex: 1 1 0; min-width: 0; display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 64px; }
+    .col-b { flex: 0 1 12px; max-width: 12px; border-radius: 3px 3px 0 0; transform-origin: bottom; transition: transform .5s cubic-bezier(0.2,0,0,1); }
+    .col-b--done { background: var(--ch-done); }
+    .col-b--rep { background: var(--ch-rep); }
+    .col-b--scr { background: var(--ch-scr); }
+    .col-b--meet { background: var(--ch-meet); }
+    .col-b--in { background: var(--ch-in); }
+    .col-b--out { background: var(--ch-out); }
+    /* Un jour a zero : une marque de 2 px sur la ligne de base, jamais un vide */
+    .col-b--zero { background: var(--ch-zero); border-radius: 2px; }
+    .ch { display: flex; flex-direction: column; gap: 8px; }
+    .ch + .ch { border-top: 1px solid var(--g200); margin: 2px -12px 0; padding: 12px 12px 0; }
+    .ch-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .ch-t { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--g600); white-space: nowrap; }
+    .ch-note { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .ch-note:empty { display: none; }
+    .ch-note b { font-weight: 500; color: var(--g600); }
+    .lg-d--done { background: var(--ch-done); }
+    .lg-d--rep { background: var(--ch-rep); }
+    .lg-d--in { background: var(--ch-in); }
+    .lg-d--out { background: var(--ch-out); }
     .axis { display: flex; justify-content: space-between; gap: 6px; }
     .ax { flex: 1 1 0; text-align: center; font-size: 10px; color: var(--g500); overflow: hidden; }
-    .scr { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 34px; }
-    .scr-b { flex: 1 1 0; border-radius: 4px; background: var(--g300); transform-origin: bottom; transition: transform .5s cubic-bezier(0.2,0,0,1); }
 
     .streak-v { display: flex; align-items: baseline; gap: 5px; }
     .streak-n { font-size: 26px; line-height: 28px; font-weight: 600; color: var(--g600); font-variant-numeric: tabular-nums; }
@@ -352,15 +544,6 @@
     .prog { height: 8px; border-radius: 9999px; background: var(--g200); overflow: hidden; }
     .prog-f { width: 0; height: 8px; border-radius: 9999px; background: var(--gr); transition: width .7s cubic-bezier(0.2,0,0,1); }
 
-    .ben { display: flex; flex-direction: column; gap: 10px; background: var(--gr-050); border: 1px solid var(--gr-200); border-radius: 12px; padding: 12px; }
-    .ben-t { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--gr-ink); }
-    .ben-s { font-size: 12px; line-height: 16px; color: var(--gr-mid); }
-    .ben-rows { display: flex; flex-direction: column; gap: 8px; }
-    .ben-r { display: flex; align-items: center; gap: 8px; }
-    .ben-l { flex: 0 0 auto; width: 58px; font-size: 12px; color: var(--gr-mid); }
-    .ben-tr { flex: 1 1 auto; height: 9px; border-radius: 9999px; background: var(--gr-150); overflow: hidden; }
-    .ben-f { width: 0; height: 9px; border-radius: 9999px; transition: width .55s cubic-bezier(0.2,0,0,1); }
-    .ben-v { flex: 0 0 auto; width: 26px; text-align: right; font-size: 12px; font-weight: 500; color: var(--gr-ink); font-variant-numeric: tabular-nums; }
     .note { font-size: 12px; line-height: 17px; color: var(--g500); background: var(--g50); border-radius: 10px; padding: 10px 11px; }
     .note a { display: block; margin-top: 4px; color: var(--gr-dark); font-weight: 500; }
     .note a:hover { color: var(--gr-ink); }
@@ -417,19 +600,6 @@
     .more { text-align: center; font-size: 11px; line-height: 15px; color: var(--g500); }
 
     /* ---------- Echelle d'energie ---------- */
-    .nrj { display: flex; flex-direction: column; gap: 10px; }
-    .nrj-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-    .nrj-b { height: 34px; border-radius: 9px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-    .nrj-b:hover { box-shadow: 0 0 0 2px rgba(47,174,74,.35); }
-    .nrj-1 { background: #F7DAD8; color: #8F2723; }
-    .nrj-2 { background: #FBE6CE; color: #8A5108; }
-    .nrj-3 { background: #FAF0C9; color: #7A5E06; }
-    .nrj-4 { background: #E2F2E5; color: var(--gr-mid); }
-    .nrj-5 { background: #CFE9D5; color: var(--gr-ink); }
-    .nrj-ends { display: flex; justify-content: space-between; }
-    .nrj-lo { font-size: 11px; color: #8F2723; }
-    .nrj-hi { font-size: 11px; color: var(--gr-ink); }
-    .nrj-skip { align-self: center; font-size: 11px; color: var(--g500); text-decoration: underline; }
 
     /* ---------- Le koala ---------- */
     @keyframes kzEar { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(-7deg); } 70% { transform: rotate(4deg); } }
@@ -474,7 +644,7 @@
     .anim-on .pane-in .tile:nth-child(2) { animation-delay: .05s; }
     .anim-on .pane-in .tile:nth-child(3) { animation-delay: .1s; }
     .anim-on .pane-in .tile:nth-child(4) { animation-delay: .15s; }
-    .anim-off .col-b, .anim-off .scr-b, .anim-off .prog-f, .anim-off .ben-f { transition: none !important; }
+    .anim-off .col-b, .anim-off .prog-f { transition: none !important; }
   </style>
 </head>
 <body>
@@ -513,20 +683,6 @@
         <div class="hint" data-i18n="pauseHint">Ta série reste intacte pendant la pause.</div>
       </section>
 
-      <section class="amber" id="catchupCard" hidden>
-        <div class="row-txt">
-          <div class="amber-t" id="catchupTitle"></div>
-          <div class="amber-s" data-i18n="catchupSub">Quand tu veux, sans pression</div>
-        </div>
-        <button type="button" class="amber-b" id="catchupBtn" data-i18n="catchupAction">Rattraper</button>
-      </section>
-
-      <section class="card" id="catchupBox" hidden>
-        <div class="card-t" id="catchupPrompt"></div>
-        <button type="button" class="btn-main" id="catchupDone" data-i18n="btnDone">Fait</button>
-        <div id="catchupEnergy"></div>
-      </section>
-
       <section class="card">
         <div class="card-h">
           <div class="card-t" data-i18n="grpRhythm">Rythme des rappels</div>
@@ -560,7 +716,7 @@
             <button type="button" class="rnd" id="intPlus" aria-label="+">+</button>
           </div>
         </div>
-        <div class="hint" data-i18n="rhythmHint">Perso accepte de 1 à 240 minutes.</div>
+        <div class="hint" data-i18n="rhythmHint">Perso accepte de 5 à 240 minutes, par pas de cinq.</div>
       </section>
 
       <section class="card">
@@ -585,7 +741,7 @@
         <div class="row row--top">
           <div class="row-txt">
             <div class="row-lab row-lab--big" data-i18n="passagesLabel">Les animaux de passage</div>
-            <div class="hint" data-i18n="passagesHint">Ils passent dire bonjour, sans rien demander.</div>
+            <div class="hint" data-i18n="passagesHint">Ils passent dire bonjour, sans rien demander. De 17 h à 21 h, un chat te rappelle chaque heure, avec humour, qu'il est temps d'arrêter.</div>
           </div>
           <label class="sw"><input type="checkbox" id="passagesTgl" data-i18n-aria="passagesLabel"><span class="sw-t"></span></label>
         </div>
@@ -611,10 +767,110 @@
         <div class="sep"></div>
         <div class="row">
           <div class="row-txt">
+            <div class="row-lab" data-i18n="agendaLabel">Pendant un rendez-vous de mon agenda</div>
+            <div class="row-sub" id="agendaDndSub" data-i18n="agendaDndNeeds">Connecte d'abord ton agenda, plus bas.</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="agendaTgl" data-i18n-aria="agendaLabel"><span class="sw-t"></span></label>
+        </div>
+        <div class="sep"></div>
+        <div class="row">
+          <div class="row-txt">
             <div class="row-lab" data-i18n="idleLabel">Quand tu quittes le clavier</div>
             <div class="row-sub" data-i18n="idleHint">Après 60 secondes</div>
           </div>
           <label class="sw"><input type="checkbox" id="pauseIdle" checked data-i18n-aria="idleLabel"><span class="sw-t"></span></label>
+        </div>
+      </section>
+
+      <section class="card" id="agendaCard">
+        <div class="card-t" data-i18n="agendaCardTitle">Agenda Infomaniak</div>
+        <div class="hint" data-i18n="agendaCardHint">Ne rate plus une réunion, finis à l'heure, préviens en un clic.</div>
+        <div id="agendaBox">
+          <div id="agendaSetup" hidden>
+            <div class="hint" id="agendaSetupHint" data-i18n="agendaTokenHint">Un jeton limité au seul périmètre workspace:calendar.</div>
+            <div class="addrow" id="agendaTokenRow">
+              <input type="password" class="add-in" id="agendaTokenInput" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
+              <button type="button" class="tiny fixed" id="agendaTokenShow" data-i18n="tokenShow">Afficher</button>
+            </div>
+            <div class="note">
+              <a href="https://manager.infomaniak.com/v3/ng/accounts/token/list" target="_blank" rel="noopener noreferrer" data-i18n="tokenCreate">Créer le jeton dans le Manager</a>
+            </div>
+            <div class="pills">
+              <button type="button" class="pill pill--tall pill--main" id="agendaConnect" data-i18n="tokenConnect">Se connecter</button>
+            </div>
+          </div>
+          <div id="agendaPicker" hidden>
+            <div class="row-lab" data-i18n="agendaPickTitle">Agendas à surveiller</div>
+            <div class="hint" data-i18n="agendaPickHint">Coche un ou plusieurs agendas.</div>
+            <div id="agendaPickList"></div>
+            <div class="pills">
+              <button type="button" class="pill pill--tall pill--main" id="agendaPickOk" data-i18n="agendaPickOk">Surveiller</button>
+            </div>
+          </div>
+          <div id="agendaConnected" hidden>
+            <!-- Passe UX du 2026-09-26 : trois blocs. L'agenda et le prochain
+                 rendez-vous en tete, avec l'action Prevenir quand elle sert ;
+                 puis les rappels ; puis le mail, l'adresse une seule fois. -->
+            <div class="ag-head">
+              <div class="row-lab row-lab--big" id="agendaConnectedLabel"></div>
+              <div class="row-sub" id="agendaNextLine"></div>
+              <button type="button" class="tiny" id="notifyNow" data-i18n="notifyButton" hidden>Prévenir les participants</button>
+              <div id="notifyPanel" class="nf" hidden></div>
+            </div>
+            <div class="surt" data-i18n="agendaGrpRemind">Rappels</div>
+            <div class="row">
+              <div class="row-txt">
+                <div class="row-lab" data-i18n="agendaWarnLabel">3 min avant le début</div>
+                <div class="row-sub" data-i18n="agendaWarnHint">Pour ne plus rater le début. Bulle bleue, à fermer toi-même.</div>
+              </div>
+              <label class="sw"><input type="checkbox" id="agendaWarnTgl" checked data-i18n-aria="agendaWarnLabel"><span class="sw-t"></span></label>
+            </div>
+            <div class="row">
+              <div class="row-txt">
+                <div class="row-lab" data-i18n="agendaEndWarnLabel">5 min avant la fin</div>
+                <div class="row-sub" data-i18n="agendaEndWarnHint">Pour finir à l'heure, même seul. Bulle ambre.</div>
+              </div>
+              <label class="sw"><input type="checkbox" id="agendaEndWarnTgl" checked data-i18n-aria="agendaEndWarnLabel"><span class="sw-t"></span></label>
+            </div>
+            <div class="surt" data-i18n="agendaGrpMail">Mail</div>
+            <div class="row-sub" id="mailBoxLine" hidden></div>
+            <div class="row">
+              <div class="row-txt">
+                <div class="row-lab" data-i18n="notifyLabel">Prévenir les participants</div>
+                <div class="row-sub" id="notifySub" data-i18n="notifyHint">Mail déjà écrit pour un retard ou une absence. Tu relis, tu envoies.</div>
+              </div>
+              <label class="sw"><input type="checkbox" id="notifyTgl" data-i18n-aria="notifyLabel"><span class="sw-t"></span></label>
+            </div>
+            <div class="row">
+              <div class="row-txt">
+                <div class="row-lab" data-i18n="mailStatsLabel">Compter mes mails</div>
+                <div class="row-sub" id="mailStatsSub" data-i18n="mailStatsHint">Traités, supprimés et envoyés par jour. Les nombres seulement.</div>
+              </div>
+              <label class="sw"><input type="checkbox" id="mailStatsTgl" data-i18n-aria="mailStatsLabel"><span class="sw-t"></span></label>
+            </div>
+            <div id="notifyTokenBox" hidden>
+              <div class="hint" id="notifyTokenHint" data-i18n="notifyTokenHint">Un second jeton, limité au seul périmètre workspace:mail.</div>
+              <div class="addrow" id="notifyTokenRow">
+                <input type="password" class="add-in" id="notifyTokenInput" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
+                <button type="button" class="tiny fixed" id="notifyTokenShow" data-i18n="tokenShow">Afficher</button>
+              </div>
+              <div class="pills">
+                <button type="button" class="pill pill--tall pill--main" id="notifyConnect" data-i18n="tokenConnect">Se connecter</button>
+              </div>
+              <div class="note">
+                <a href="https://manager.infomaniak.com/v3/ng/accounts/token/list" target="_blank" rel="noopener noreferrer" data-i18n="tokenCreate">Créer le jeton dans le Manager</a>
+              </div>
+            </div>
+            <div id="notifyPick" hidden>
+              <div class="row-lab" data-i18n="notifyPickTitle">Envoyer depuis</div>
+              <div id="notifyPickList"></div>
+            </div>
+            <div class="pills">
+              <button type="button" class="tiny" id="agendaChange" data-i18n="agendaChange">Changer d'agenda</button>
+              <button type="button" class="tiny" id="agendaDisconnect" data-i18n="agendaDisconnect">Déconnecter l'agenda</button>
+            </div>
+          </div>
+          <div class="saved" id="agendaMsg"></div>
         </div>
       </section>
 
@@ -669,6 +925,7 @@
       <button type="button" class="btn-sub" id="now" data-i18n="bringNow">Faire venir le koala</button>
       <div class="saved" id="saved" data-i18n="saved">Enregistré</div>
       <div class="verline" id="versionLine"></div>
+      <button type="button" class="tiny verline-a" id="replayTour" data-i18n="frReplay">Revoir la présentation</button>
     </div>
   </div>
 
@@ -737,7 +994,17 @@
           <span class="cbx-b">✓</span>
           <span class="cbx-t" data-i18n="keepDefaultKoalas">Garder les koalas d'origine</span>
         </button>
-        <div class="hint" data-i18n="koalasHint">Tes images restent sur ton appareil, sauf si tu les inclus toi-même dans une sauvegarde kDrive.</div>
+        <div class="hint" data-i18n="koalasHint">Tes images restent sur ton appareil, sauf si tu les inclus dans un fichier de sauvegarde.</div>
+      </section>
+
+      <section class="card card--tight">
+        <div class="card-t" data-i18n="grpTheme">Thème</div>
+        <div class="seg" id="themeSeg">
+          <button type="button" class="seg-b seg-b--on" data-th="auto" data-i18n="themeAuto">Automatique</button>
+          <button type="button" class="seg-b" data-th="light" data-i18n="themeLight">Clair</button>
+          <button type="button" class="seg-b" data-th="dark" data-i18n="themeDark">Sombre</button>
+        </div>
+        <div class="hint" data-i18n="themeHint">Automatique suit ton système.</div>
       </section>
 
       <section class="card card--tight">
@@ -853,18 +1120,93 @@
     </div>
   </div>
 
-  <!-- Module N. Premiere installation, un seul ecran, une phrase, une habitude
-       preremplie et un bouton. Aucun autre etat, aucune option. -->
+  <!-- Module N. Premiere installation, refaite le 2026-09-28 facon app
+       mobile. Quatre etapes, une idee par ecran : la premiere habitude, ce
+       que fait l'extension, la connexion Infomaniak (facultative), la
+       sauvegarde automatique (facultative). Retour et Passer vivent dans la
+       barre du haut, le bouton principal ne bouge jamais. -->
   <div id="firstRun" hidden>
-    <div class="pane-in fr">
-      <div class="fr-k" id="frKoala"></div>
-      <div class="fr-t" data-i18n="frTitle">Un koala va passer te voir</div>
-      <div class="fr-s" data-i18n="frSub">Il t'invitera à faire une petite chose, de temps en temps. Rien ne sort de ton appareil.</div>
-      <div class="card">
-        <div class="hint" data-i18n="frHabitLabel">Ta première habitude</div>
-        <input type="text" class="add-in" id="frHabit" data-i18n-ph="frHabitPh" placeholder="Se lever et bouger deux minutes">
+    <div class="body pane-in fr">
+      <div class="fr-top">
+        <button type="button" class="fr-icb" id="frBack" data-i18n-aria="notifyBack" aria-label="Retour" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="fr-dots" id="frDots" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"><i></i><i></i><i></i><i></i></div>
+        <button type="button" class="fr-skip" id="frSkip" data-i18n="frSkip" hidden>Passer</button>
       </div>
-      <button type="button" class="btn-main" id="frStart" data-i18n="frStart">Commencer</button>
+
+      <div class="fr-main">
+        <section class="fr-step" data-step="0">
+          <div class="fr-hero fr-hero--k"><img id="frKoala" src="images/koala-hello.svg" alt="" width="132" height="114"></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frTitle">Un koala va passer te voir</h1>
+            <p class="fr-s" data-i18n="frSub">De temps en temps, il te propose une petite pause pour bouger.</p>
+          </div>
+          <div class="card fr-card">
+            <label class="fr-lab" for="frHabit" data-i18n="frHabitLabel">Ta première habitude</label>
+            <input type="text" class="add-in" id="frHabit" data-i18n-ph="frHabitPh" placeholder="Se lever et bouger deux minutes">
+            <div class="hint" data-i18n="frHabitHint">Tu pourras en ajouter d'autres dans Perso.</div>
+          </div>
+        </section>
+
+        <section class="fr-step" data-step="1" hidden>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frFeatTitle">Ce que tu y gagnes</h1>
+          </div>
+          <div class="card fr-feats">
+            <div class="fr-feat"><span class="fr-ico fr-ico--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span><div><div class="fr-ft" data-i18n="frFeat1">Bouger sans y penser</div><div class="fr-fs" data-i18n="frFeat1s">Une pause active à ton rythme, jamais pendant une visio.</div></div></div>
+            <div class="fr-feat"><span class="fr-ico fr-ico--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><div><div class="fr-ft" data-i18n="frFeat2">Ne plus rater une réunion</div><div class="fr-fs" data-i18n="frFeat2s">Une bulle 3 min avant, avec le lien de la visio.</div></div></div>
+            <div class="fr-feat"><span class="fr-ico fr-ico--am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg></span><div><div class="fr-ft" data-i18n="frFeat5">Finir tes réunions à l'heure</div><div class="fr-fs" data-i18n="frFeat5s">Une bulle 5 min avant la fin, et le silence pendant.</div></div></div>
+            <div class="fr-feat"><span class="fr-ico fr-ico--vi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg></span><div><div class="fr-ft" data-i18n="frFeat6">Prévenir d'un retard en un clic</div><div class="fr-fs" data-i18n="frFeat6s">Le mail aux participants est déjà écrit. Tu relis, tu envoies.</div></div></div>
+            <div class="fr-feat"><span class="fr-ico fr-ico--gy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg></span><div><div class="fr-ft" data-i18n="frFeat3">Voir où passe ton temps</div><div class="fr-fs" data-i18n="frFeat3s">Habitudes, écran, réunions et mails, jour par jour.</div></div></div>
+          </div>
+        </section>
+
+        <section class="fr-step" data-step="2" hidden>
+          <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frIkTitle">Connecte ton agenda Infomaniak</h1>
+            <p class="fr-s" data-i18n="frIkSub">Facultatif. Infomaniak uniquement, pas Google ni Outlook.</p>
+          </div>
+          <div class="card fr-card">
+            <div id="frIkForm" class="fr-card">
+              <ol class="fr-ol">
+                <li class="fr-li"><span class="fr-n">1</span><div class="fr-li-b"><span class="fr-li-t" data-i18n="frIkStep1">Crée un jeton dans le Manager.</span><a class="fr-ext" href="https://manager.infomaniak.com/v3/ng/accounts/token/list" target="_blank" rel="noopener noreferrer"><span data-i18n="frIkLink">Ouvrir le Manager</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></a></div></li>
+                <li class="fr-li"><span class="fr-n">2</span><div class="fr-li-b"><span class="fr-li-t" data-i18n="frIkStep2">Coche ce seul périmètre et fixe une échéance.</span><div class="fr-chips" id="frScopes"><code class="fr-chip">workspace:calendar</code></div></div></li>
+                <li class="fr-li"><span class="fr-n">3</span><div class="fr-li-b"><label class="fr-li-t" for="frToken" data-i18n="frIkStep3">Colle-le ici.</label>
+                  <div class="fr-field">
+                    <input type="password" class="add-in" id="frToken" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
+                    <button type="button" class="fr-eye" id="frTokenShow" data-i18n="tokenShow">Afficher</button>
+                  </div></div></li>
+              </ol>
+              <button type="button" class="btn-main" id="frConnect" data-i18n="tokenConnect">Se connecter</button>
+            </div>
+            <div id="frCals" class="fr-card" hidden>
+              <div class="fr-lab" data-i18n="agendaPickTitle">Agendas à surveiller</div>
+              <div id="frCalList"></div>
+              <button type="button" class="btn-main" id="frCalOk" data-i18n="agendaPickOk">Surveiller</button>
+            </div>
+            <div class="fr-done" id="frIkDone" hidden></div>
+            <div class="nf-msg nf-msg--err" id="frIkErr" role="alert" hidden></div>
+          </div>
+        </section>
+
+        <section class="fr-step" data-step="3" hidden>
+          <div class="fr-hero fr-hero--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frBkTitle">Tes données restent chez toi</h1>
+            <p class="fr-s" data-i18n="frBkSub">Pas de compte, pas de serveur Koala Zen.</p>
+          </div>
+          <div class="card fr-done">
+            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk1">Tout reste sur cet appareil.</span></div>
+            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk2">Tes jetons sont chiffrés, chacun limité à un usage.</span></div>
+            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk3">Une sauvegarde ? Exporte un fichier depuis Données.</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="fr-nav">
+        <button type="button" class="btn-main" id="frNext" data-i18n="frNext">Continuer</button>
+        <button type="button" class="btn-main" id="frStart" data-i18n="frStart" hidden>Commencer</button>
+      </div>
     </div>
   </div>
 
@@ -917,8 +1259,8 @@
           <div class="step">
             <div class="step-n step-n--3">3</div>
             <div class="row-txt">
-              <div class="step-t" data-i18n="soon3">Le lien entre habitudes et énergie</div>
-              <div class="step-w" data-i18n="soon3w">Après une semaine</div>
+              <div class="step-t" data-i18n="soon3">Ton temps d'écran, jour par jour</div>
+              <div class="step-w" data-i18n="soon3w">Dès aujourd'hui</div>
             </div>
           </div>
         </div>
@@ -965,37 +1307,70 @@
           <div class="tile-v" id="statRep">0</div>
           <div class="tile-s" id="statRepSub"></div>
         </div>
-        <div class="tile tile--nrj">
-          <div class="tile-l" data-i18n="statsEnergyLabel">Énergie</div>
-          <div class="tile-row"><div class="tile-v" id="statEnergy">—</div><div class="tile-u" id="statEnergyUnit"></div></div>
-          <div class="tile-s" id="statEnergySub"></div>
-        </div>
         <div class="tile tile--scr">
           <div class="tile-l" data-i18n="statsScreenLabel">Temps d'écran</div>
           <div class="tile-v" id="statScreen">—</div>
           <div class="tile-s" id="statScreenSub"></div>
         </div>
+        <div class="tile tile--meet" id="meetTile" hidden>
+          <div class="tile-l" data-i18n="statsMeetingLabel">Temps en réunion</div>
+          <div class="tile-v" id="statMeet">—</div>
+          <div class="tile-s" id="statMeetSub"></div>
+        </div>
+        <div class="tile tile--mail" id="mailInTile" hidden>
+          <div class="tile-l" data-i18n="statsMailDone">Mails traités</div>
+          <div class="tile-v" id="statMailIn">—</div>
+          <div class="tile-s" id="statMailInSub"></div>
+        </div>
+        <div class="tile tile--mail" id="mailOutTile" hidden>
+          <div class="tile-l" data-i18n="statsMailOut">Mails envoyés</div>
+          <div class="tile-v" id="statMailOut">—</div>
+          <div class="tile-s" id="statMailOutSub"></div>
+        </div>
       </div>
 
       <section class="card" id="chartsCard">
+        <!-- 2026-09-26 : quatre graphes sur un seul modele. Titre, total a
+             droite pour une serie seule, legende dessous pour deux series,
+             graphe de meme hauteur, axe, phrase d'analyse eventuelle. Couleurs
+             par mesure, les memes que les tuiles, validees clair et sombre
+             (daltonisme et contraste) avec la skill dataviz. -->
         <div class="card-t" data-i18n="statsPerDay">Par jour</div>
-        <div class="legend">
-          <span class="lg"><span class="lg-d" style="background:#2FAE4A"></span><span class="lg-t" data-i18n="statsDoneWord">Faites</span></span>
-          <span class="lg"><span class="lg-d" style="background:#F5C877"></span><span class="lg-t" data-i18n="statsReportsWord">Reportées</span></span>
-          <span class="lg" id="goalLegend" hidden><span class="lg-l"></span><span class="lg-t" id="goalLegendText"></span></span>
+        <div class="ch" id="chHabits">
+          <div class="ch-h"><div class="ch-t" data-i18n="statsHabitsChart">Habitudes</div></div>
+          <div class="legend">
+            <span class="lg"><span class="lg-d lg-d--done"></span><span class="lg-t" data-i18n="statsDoneWord">Faites</span></span>
+            <span class="lg"><span class="lg-d lg-d--rep"></span><span class="lg-t" data-i18n="statsReportsWord">Reportées</span></span>
+            <span class="lg" id="goalLegend" hidden><span class="lg-l"></span><span class="lg-t" id="goalLegendText"></span></span>
+          </div>
+          <div class="plot">
+            <div class="goalline" id="goalLine" hidden></div>
+            <div class="cols" id="trendChart"></div>
+          </div>
+          <div class="axis" id="trendAxis"></div>
         </div>
-        <div class="plot">
-          <div class="goalline" id="goalLine" hidden></div>
-          <div class="cols" id="trendChart"></div>
+        <div class="ch" id="chScreen">
+          <div class="ch-h"><div class="ch-t" data-i18n="statsScreenLabel">Temps d'écran</div></div>
+          <div class="plot"><div class="cols" id="screenChart"></div></div>
+          <div class="axis" id="screenAxis"></div>
+          <div class="ch-note" id="cadenceText"></div>
         </div>
-        <div class="axis" id="trendAxis"></div>
-        <div class="sep"></div>
-        <div class="card-h">
-          <div class="card-t" style="font-size:13px;line-height:18px;" data-i18n="statsScreenLabel">Temps d'écran</div>
-          <div class="card-m" id="cadenceText"></div>
+        <div class="ch" id="meetChartWrap" hidden>
+          <div class="ch-h"><div class="ch-t" data-i18n="statsMeetingLabel">Temps en réunion</div></div>
+          <div class="plot"><div class="cols" id="meetChart"></div></div>
+          <div class="axis" id="meetAxis"></div>
+          <div class="ch-note" id="meetBusy" hidden></div>
         </div>
-        <div class="scr" id="screenChart"></div>
-        <div class="axis" id="screenAxis"></div>
+        <div class="ch" id="mailChartWrap" hidden>
+          <div class="ch-h"><div class="ch-t" data-i18n="statsMailLabel">Mails</div></div>
+          <div class="legend">
+            <span class="lg"><span class="lg-d lg-d--in"></span><span class="lg-t" data-i18n="statsMailDoneWord">Traités</span></span>
+            <span class="lg"><span class="lg-d lg-d--out"></span><span class="lg-t" data-i18n="statsMailOutWord">Envoyés</span></span>
+          </div>
+          <div class="plot"><div class="cols" id="mailChart"></div></div>
+          <div class="axis" id="mailAxis"></div>
+          <div class="ch-note" id="mailBusy" hidden></div>
+        </div>
       </section>
 
       <div class="note" id="trendNote" hidden data-i18n="statsSingleDayNote">Choisis une semaine ou un mois pour voir l'évolution.</div>
@@ -1004,7 +1379,7 @@
         <div class="row row--top">
           <div class="row-txt">
             <div class="card-t" data-i18n="statsStreak">Ta série</div>
-            <div class="streak-v"><div class="streak-n" id="statStreak">0</div><div class="streak-u" data-i18n="statsStreakDays">jours de suite</div></div>
+            <div class="streak-v"><div class="streak-n" id="statStreak">0</div><div class="streak-u" id="statStreakUnit" data-i18n="statsStreakDays">jours de suite</div></div>
           </div>
           <div class="streak-r" id="statRecordPill"></div>
         </div>
@@ -1012,15 +1387,6 @@
         <div class="hint" id="streakGoal"></div>
       </section>
 
-      <section class="ben" id="benefitCard">
-        <div>
-          <div class="ben-t" id="benefitTitle" data-i18n="statsBenefitUp">Tes habitudes te donnent de l'énergie</div>
-          <div class="ben-s" data-i18n="statsBenefitHint">Énergie moyenne selon le nombre d'habitudes du jour</div>
-        </div>
-        <div class="ben-rows" id="benefitRows"></div>
-        <div class="ben-s" id="benefitVerdict"></div>
-        <div class="ben-s" id="benefitNote" hidden data-i18n="statsCorrNote">Note ton énergie sur quelques jours pour voir le lien apparaître.</div>
-      </section>
     </div>
   </div>
 
@@ -1031,15 +1397,12 @@
       <section class="card">
         <div>
           <div class="card-t" data-i18n="backupTitle">Sauvegarde et restauration</div>
-          <div class="hint" data-i18n="backupHint">Choisis ce qui est inclus, ça s'applique au fichier local et à kDrive ci-dessous.</div>
+          <div class="hint" data-i18n="backupHint">Choisis ce que contient le fichier. Il reste sur ton ordinateur.</div>
         </div>
         <div class="parts" id="partList">
         <!-- Module H. Trois blocs nommes, sans repeter les valeurs qui sont
-             deja en bout de chaque ligne de case. Ces cases et le choix
-             fusionner/remplacer sont PARTAGES par les deux destinations plus
-             bas, fichier local et kDrive, jamais propres a l'une ou l'autre :
-             d'ou une seule carte, jamais deux, planche revue le 2026-08-02
-             pour lever l'ambiguite signalee par un premier essai utilisateur. -->
+             deja en bout de chaque ligne de case. Depuis le 2026-09-29 le
+             fichier local est la seule destination : kDrive est retire. -->
         <div class="bar" id="storeBar">
           <div class="bar-seg bar-seg--k" id="segKoalas"></div>
           <div class="bar-seg bar-seg--h" id="segStats"></div>
@@ -1062,9 +1425,20 @@
           <button type="button" class="cbx cbx--on" data-part="koalas">
             <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partKoalas">Personnages importés</span><span class="cbx-m" id="szKoalas"></span>
           </button>
+          <button type="button" class="cbx" data-part="connexions">
+            <span class="cbx-b">✓</span><span class="cbx-t" data-i18n="partConnexions">Connexions Infomaniak</span><span class="cbx-m" id="szConnexions"></span>
+          </button>
+        </div>
+        <div id="backupPassRow" hidden>
+          <div class="hint" data-i18n="partConnexionsHint">Jetons agenda et mail, chiffrés. Retiens ta phrase secrète : elle n'est gardée nulle part.</div>
+          <div class="addrow">
+            <input type="password" class="add-in" id="backupPass" data-i18n-ph="backupPassPh" placeholder="Phrase secrète" autocomplete="off">
+            <button type="button" class="tiny fixed" id="backupPassShow" data-i18n="tokenShow">Afficher</button>
+          </div>
+          <div class="hint" id="backupPassCount" aria-live="polite"></div>
         </div>
         <div class="sep"></div>
-        <div class="row-lab row-lab--big" data-i18n="importModeLabel">À l'import (fichier ou kDrive)</div>
+        <div class="row-lab row-lab--big" data-i18n="importModeLabel">À l'import</div>
         <div class="seg" id="importSeg">
           <button type="button" class="seg-b seg-b--on" data-mode="merge" data-i18n="importMerge">Fusionner</button>
           <button type="button" class="seg-b" data-mode="replace" data-i18n="importReplace">Remplacer</button>
@@ -1080,54 +1454,6 @@
         <input type="file" id="importFile" accept="application/json,.json" hidden>
         <div class="saved" id="dataMsg"></div>
 
-        <div class="sep"></div>
-        <div class="row-lab row-lab--big" data-i18n="kdriveSectionLabel">kDrive (optionnel)</div>
-        <div class="hint" data-i18n="kdriveHint">Une copie automatique dans ton propre kDrive, dossier Apps/Koala Zen.</div>
-
-        <div id="kdriveSetup">
-          <div class="row-lab" data-i18n="kdriveTokenLabel">Jeton d'accès kDrive</div>
-          <div class="addrow">
-            <input type="password" class="add-in" id="kdriveTokenInput" data-i18n-ph="kdriveTokenPh" placeholder="Coller le jeton ici" autocomplete="off">
-            <button type="button" class="tiny fixed" id="kdriveTokenShow" data-i18n="kdriveShow">Afficher</button>
-          </div>
-          <div class="note">
-            <span data-i18n="kdriveTokenHint">Un jeton avec le périmètre kDrive, généré dans le Manager Infomaniak.</span>
-            <a href="https://faq.infomaniak.com/2582" target="_blank" rel="noopener noreferrer" data-i18n="kdriveHowTo">Comment obtenir un jeton</a>
-          </div>
-          <div class="pills">
-            <button type="button" class="pill pill--tall pill--main" id="kdriveConnect" data-i18n="kdriveConnect">Se connecter</button>
-          </div>
-          <div class="saved" id="kdriveSetupMsg"></div>
-        </div>
-
-        <div id="kdrivePicker" hidden>
-          <div class="row-lab" data-i18n="kdrivePickTitle">Choisis ton kDrive</div>
-          <div class="hint" data-i18n="kdrivePickHint">Ce compte a plusieurs kDrive, choisis celui qui recevra les sauvegardes.</div>
-          <div id="kdrivePickList"></div>
-          <div class="saved" id="kdrivePickMsg"></div>
-        </div>
-
-        <div id="kdriveConnected" hidden>
-          <div class="row">
-            <div class="row-txt">
-              <div class="row-lab row-lab--big" id="kdriveConnectedLabel"></div>
-              <div class="row-sub" id="kdriveLastSync"></div>
-            </div>
-          </div>
-          <div class="pills">
-            <button type="button" class="pill pill--tall pill--main" id="kdriveBackupNow" data-i18n="kdriveBackupNow">Sauvegarder</button>
-            <button type="button" class="pill pill--tall" id="kdriveRestoreOpen" data-i18n="kdriveRestoreOpen">Restaurer</button>
-          </div>
-          <div id="kdriveRestoreList" hidden>
-            <div class="row-lab" data-i18n="kdriveRestorePick">Choisis une sauvegarde</div>
-            <div id="kdriveFiles"></div>
-          </div>
-          <div class="saved" id="kdriveMsg"></div>
-          <div class="pills">
-            <button type="button" class="tiny" id="kdriveChangeDrive" data-i18n="kdriveChangeDrive">Changer de kDrive</button>
-            <button type="button" class="tiny" id="kdriveDisconnect" data-i18n="kdriveDisconnect">Déconnecter kDrive</button>
-          </div>
-        </div>
       </section>
 
       <section class="card">
@@ -1151,7 +1477,7 @@
         <div class="privacy-i">✓</div>
         <div>
           <div class="privacy-t" data-i18n="privacyTitle">Tout reste chez toi</div>
-          <div class="privacy-s" data-i18n="privacySub">Rien ne sort de ton appareil, sauf si tu actives toi-même la sauvegarde kDrive ci-dessus.</div>
+          <div class="privacy-s" data-i18n="privacySub">Aucun serveur Koala Zen. Tes données restent sur cet appareil, et la sauvegarde est un fichier que tu gardes.</div>
         </div>
       </section>
       <section class="danger">

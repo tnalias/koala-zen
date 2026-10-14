@@ -2,6 +2,7 @@
 const fs = require("fs");
 const vm = require("vm");
 const path = require("path");
+const { fakeIndexedDB, coffreTest } = require("./fake_idb");
 
 const RACINE = process.argv[2] || "build/koala-zen";
 let ok = 0, ko = 0;
@@ -15,7 +16,12 @@ function verifie(nom, condition, detail) {
 /* ---------- bac a sable ---------- */
 function charge(etatInitial, etatInactivite) {
   etatInactivite = etatInactivite || "active";
-  const store = Object.assign({}, etatInitial);
+  // 2026-10-06 : `brut` est storage.local tel que le voit un script de page ;
+  // `store` y ajoute le coffre IndexedDB du fond (VAULT_KEYS).
+  const idb = fakeIndexedDB();
+  const brut = {};
+  const store = coffreTest(brut, idb, RACINE);
+  Object.assign(store, etatInitial || {});
   const journal = { alarmes: {}, messages: [], injections: 0, badge: [] };
   const ecouteurs = {};
 
@@ -24,6 +30,7 @@ function charge(etatInitial, etatInactivite) {
       onInstalled: { addListener: (f) => { ecouteurs.installed = f; } },
       onStartup: { addListener: (f) => { ecouteurs.startup = f; } },
       onMessage: { addListener: (f) => { ecouteurs.message = f; } },
+      getURL: (p) => "chrome-extension://kz/" + p,
       getManifest: () => ({ version: "1.2.0" }),
       lastError: null
     },
@@ -38,11 +45,11 @@ function charge(etatInitial, etatInactivite) {
         get: async (cles) => {
           if (cles == null) return JSON.parse(JSON.stringify(store));
           const out = {};
-          [].concat(cles).forEach((k) => { if (store[k] !== undefined) out[k] = store[k]; });
+          [].concat(cles).forEach((k) => { if (brut[k] !== undefined) out[k] = brut[k]; });
           return out;
         },
-        set: async (o) => { Object.assign(store, JSON.parse(JSON.stringify(o))); },
-        clear: async () => { Object.keys(store).forEach((k) => delete store[k]); }
+        set: async (o) => { Object.assign(brut, JSON.parse(JSON.stringify(o))); },
+        clear: async () => { Object.keys(store).forEach((k) => delete brut[k]); }
       }
     },
     // Firefox rend une promesse, Chrome passe par un rappel. On sert les deux.
@@ -57,25 +64,29 @@ function charge(etatInitial, etatInactivite) {
       sendMessage: async (id, msg) => { journal.messages.push(msg); }
     },
     scripting: { executeScript: async () => { journal.injections++; } },
-    action: { setBadgeText: () => {}, setBadgeBackgroundColor: () => {} }
+    action: {
+      setBadgeText: (o) => { journal.badge.push({ text: (o && o.text) || "" }); },
+      setBadgeBackgroundColor: (o) => { journal.badge.push({ color: o && o.color }); }
+    }
   };
 
-  const contexte = { globalThis: null, browser: (etatInitial && etatInitial.__chromeSeul) ? undefined : api, chrome: api, console, URL, Date, Math, JSON, setTimeout, clearTimeout, Intl };
+  const contexte = { indexedDB: idb, globalThis: null, browser: (etatInitial && etatInitial.__chromeSeul) ? undefined : api, chrome: api, console, URL, Date, Math, JSON, setTimeout, clearTimeout, Intl };
   contexte.globalThis = contexte;
   vm.createContext(contexte);
   vm.runInContext(fs.readFileSync(path.join(RACINE, "background.js"), "utf8"), contexte);
-  return { contexte, store, journal, ecouteurs };
+  return { contexte, store, brut, journal, ecouteurs };
 }
 
 const attends = () => new Promise((r) => setTimeout(r, 30));
 
 async function envoie(env, msg) {
   return new Promise((resolve) => {
-    const retour = env.ecouteurs.message(msg, {}, resolve);
+    const retour = env.ecouteurs.message(msg, { url: "chrome-extension://kz/popup.html" }, resolve);
     if (retour !== true) resolve(undefined);
     setTimeout(() => resolve(undefined), 120);
   });
 }
+
 
 // ATTENTION, le produit a DEUX notions de jour, et les donnees d'exemple doivent
 // suivre la meme que la cle qu'elles alimentent.
@@ -126,46 +137,65 @@ async function testSerie() {
 }
 
 /* ================= 3. Enregistrement des issues ================= */
+// Decision du 2026-09-16 : un report est un report. Il compte dans rep et dans
+// sa tranche horaire, et c'est tout. Plus de compteur a rattraper, plus de
+// badge, plus de retour anticipe apres Plus tard, plus de relance.
 async function testIssues() {
-  const env = charge({ intervalMinutes: 30, statsDaily: {}, pending: 0 });
+  const env = charge({ intervalMinutes: 30, statsDaily: {} });
   const k = jour(0);
 
-  await envoie(env, { type: "kz-outcome", result: "done", energy: 8 });
+  await envoie(env, { type: "kz-outcome", result: "done" });
   await attends();
   let d = env.store.statsDaily[k];
   verifie("fait, une occasion due", d && d.due === 1, JSON.stringify(d));
   verifie("fait, une reussie", d && d.done === 1);
-  verifie("fait, energie cumulee", d && d.eSum === 8 && d.eCount === 1);
-  verifie("fait, aucun retard", (env.store.pending || 0) === 0);
+  // 2026-09-25 : plus aucune energie notee, l'issue seule compte.
+  verifie("fait, aucune energie n'est ecrite", d && d.eSum === undefined && d.eCount === undefined, JSON.stringify(d));
+  verifie("fait, aucun compteur a rattraper n'existe plus", env.store.pending === undefined);
+  verifie("fait, aucun badge n'est pose", env.journal.badge.length === 0);
 
-  await envoie(env, { type: "kz-outcome", result: "later", energy: 4 });
+  await envoie(env, { type: "kz-outcome", result: "later" });
   await attends();
   d = env.store.statsDaily[k];
   verifie("plus tard, deux occasions dues", d && d.due === 2);
   verifie("plus tard, un report", d && d.rep === 1);
-  verifie("plus tard, energie prise en compte", d && d.eCount === 2 && d.eSum === 12);
-  verifie("plus tard, un retard a rattraper", env.store.pending === 1);
+  verifie("plus tard, aucun compteur a rattraper", env.store.pending === undefined);
+  verifie("plus tard, l'alarme du rappel n'est PAS avancee a 15 minutes",
+    !env.journal.alarmes["kz-move"] || !env.journal.alarmes["kz-move"].delayInMinutes || env.journal.alarmes["kz-move"].delayInMinutes !== 15,
+    JSON.stringify(env.journal.alarmes["kz-move"]));
   verifie("plus tard, tranche horaire comptee",
     d && Array.isArray(d.repH) && d.repH.reduce((a, b) => a + b, 0) === 1, JSON.stringify(d && d.repH));
 
-  await envoie(env, { type: "kz-outcome", result: "missed", energy: null });
+  await envoie(env, { type: "kz-outcome", result: "missed" });
   await attends();
   d = env.store.statsDaily[k];
   verifie("manque, un report de plus", d && d.rep === 2);
-  verifie("manque, sans energie", d && d.eCount === 2);
-  verifie("manque, retard a deux", env.store.pending === 2);
+  verifie("manque, la tranche horaire compte aussi",
+    d && d.repH.reduce((a, b) => a + b, 0) === 2, JSON.stringify(d && d.repH));
+  verifie("manque, aucun badge", env.journal.badge.length === 0);
 
-  await envoie(env, { type: "kz-catchup", energy: 6 });
+  // L'ancien message de rattrapage n'existe plus : il ne fait rien et ne casse rien.
+  await envoie(env, { type: "kz-catchup" });
   await attends();
   d = env.store.statsDaily[k];
-  verifie("rattrapage, une reussie de plus", d && d.done === 2);
-  verifie("rattrapage, retard redescendu", env.store.pending === 1);
-  verifie("rattrapage, energie prise", d && d.eCount === 3);
+  verifie("kz-catchup n'a plus aucun effet sur les statistiques", d && d.done === 1 && d.rep === 2);
 
-  // Le plafond de retard
-  const env2 = charge({ statsDaily: {}, pending: 0 });
+  // Dix rappels manques : les stats les comptent tous, sans plafond ni compteur.
+  const env2 = charge({ statsDaily: {} });
   for (let i = 0; i < 10; i++) { await envoie(env2, { type: "kz-outcome", result: "missed" }); await attends(); }
-  verifie("le retard est plafonne a 6", env2.store.pending === 6, "vaut " + env2.store.pending);
+  verifie("dix reports comptent dix fois dans les statistiques", env2.store.statsDaily[k].rep === 10, JSON.stringify(env2.store.statsDaily[k]));
+  verifie("et aucun compteur a rattraper n'apparait", env2.store.pending === undefined);
+
+  // Une installation qui gardait un badge d'avant : l'installation le vide.
+  const env3 = charge({ statsDaily: {}, pending: 3 });
+  await env3.ecouteurs.installed({ reason: "update" });
+  await attends();
+  verifie("a la mise a jour, le badge d'avant est efface",
+    env3.journal.badge.some((b) => b.text === ""), JSON.stringify(env3.journal.badge));
+
+  // kz-passage-now etait le seul message a ne jamais repondre.
+  const r = await envoie(env3, { type: "kz-passage-now" });
+  verifie("kz-passage-now repond comme les autres messages", !!r && typeof r.ok === "boolean", JSON.stringify(r));
 }
 
 /* ================= 4. Pause, reprise, planification ================= */
@@ -252,7 +282,6 @@ async function testEffacements() {
     Object.keys(env.store.statsDaily || {}).length === 0);
   verifie("effacer l'historique vide le temps d'ecran",
     Object.keys(env.store.screenDaily || {}).length === 0);
-  verifie("effacer l'historique remet le retard a zero", (env.store.pending || 0) === 0);
   verifie("effacer l'historique GARDE les reglages", env.store.intervalMinutes === 52);
   verifie("effacer l'historique GARDE les objectifs",
     Array.isArray(env.store.customSport) && env.store.customSport.length === 2);
@@ -336,9 +365,9 @@ async function testChargeUtile() {
   verifie("le mode focus est transmis", m && m.focus === true);
   verifie("la duree de focus est transmise", m && m.focusSeconds === 45);
   verifie("l'intervalle est transmis", m && m.intervalMinutes === 45);
-  verifie("le report de 15 minutes est transmis", m && m.snoozeMinutes === 15);
+  verifie("aucun report de 15 minutes n'est plus transmis", m && m.snoozeMinutes === undefined);
   verifie("les habitudes faites du jour sont transmises", m && m.doneToday === 2, JSON.stringify(m));
-  verifie("les reports du jour sont transmis", m && m.repToday === 3);
+  verifie("les reports du jour ne sont plus transmis, la page n'en a plus l'usage", m && m.repToday === undefined);
   verifie("l'objectif quotidien est transmis", m && m.habitGoal === 4);
   verifie("la serie est transmise", m && m.streak === 2, "vaut " + (m && m.streak));
   verifie("le temps d'ecran du jour est transmis", m && m.screenToday >= 8900);
@@ -401,14 +430,12 @@ async function testStockageAbime() {
     customSport: 7, screenTimezone: 999
   };
   const env = charge(JSON.parse(JSON.stringify(abime)));
-  await envoie(env, { type: "kz-outcome", result: "done", energy: 5 });
+  await envoie(env, { type: "kz-outcome", result: "done" });
   await attends();
   verifie("un historique abime est reconstruit",
     env.store.statsDaily && typeof env.store.statsDaily === "object" &&
     env.store.statsDaily[jour(0)] && env.store.statsDaily[jour(0)].done === 1,
     JSON.stringify(env.store.statsDaily).slice(0, 90));
-  verifie("un retard abime repart de zero", typeof env.store.pending === "number",
-    JSON.stringify(env.store.pending));
 
   const env2 = charge(JSON.parse(JSON.stringify(abime)));
   await env2.contexte.trigger({ force: true });
@@ -422,7 +449,7 @@ async function testStockageAbime() {
     m && typeof m.habitGoal === "number" && m.habitGoal >= 0, JSON.stringify(m && m.habitGoal));
   verifie("la serie transmise reste un nombre", m && typeof m.streak === "number");
   verifie("le compteur du jour transmis reste un nombre",
-    m && typeof m.doneToday === "number" && typeof m.repToday === "number");
+    m && typeof m.doneToday === "number");
 
   const env3 = charge(JSON.parse(JSON.stringify(abime)));
   await env3.contexte.accrueScreen();

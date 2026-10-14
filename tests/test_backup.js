@@ -137,10 +137,16 @@ async function testExportParties() {
   // On verifie la LISTE et non un simple compte, pour attraper aussi bien un oubli
   // qu'un ajout involontaire. passageState, snarkIndex, statsRange, statsOffset et
   // firstRun ne doivent JAMAIS apparaitre ici.
+  // 2026-09-16, agendaEnabled et agendaWarn rejoignent les reglages exportes,
+  // 2026-09-21 agendaEndWarn (rappel cinq minutes avant la fin) les suit,
+  // 2026-09-22 theme (Automatique, Clair, Sombre) et notifyEnabled (prevenir
+  // par mail, jamais la boite choisie) aussi :
+  // les deux interrupteurs de l'agenda Infomaniak, jamais l'agenda choisi, le
+  // cache ni le jeton, qui restent sur l'appareil comme ceux de kDrive.
   const REGLAGES_ATTENDUS = ["intervalMinutes", "preset", "customInterval", "passages",
     "passageFrequency", "muteInCalls", "mutedPatterns", "pauseWhenIdle", "focusMode", "focusSeconds",
-    "screenTimezone", "animMode"];
-  verifie("reglages seuls, les douze cles attendues y sont, ni plus ni moins",
+    "screenTimezone", "animMode", "agendaEnabled", "agendaWarn", "agendaEndWarn", "theme", "notifyEnabled", "mailStatsEnabled"];
+  verifie("reglages seuls, les dix-huit cles attendues y sont, ni plus ni moins",
     d && JSON.stringify(Object.keys(d.settings).sort()) === JSON.stringify(REGLAGES_ATTENDUS.slice().sort()),
     JSON.stringify(Object.keys(d.settings || {})));
   verifie("reglages seuls, aucune cle d'ordonnancement des passages n'est exportee",
@@ -160,7 +166,7 @@ async function testExportParties() {
     d && Object.keys(d.stats.statsDaily).length === 2);
   verifie("statistiques seules, le temps d'ecran suit",
     d && Object.keys(d.stats.screenDaily).length === 2);
-  verifie("statistiques seules, le retard suit", d && d.stats.pending === 2);
+  verifie("statistiques seules, plus aucun compteur a rattraper n'est exporte", d && d.stats.pending === undefined);
   verifie("les tranches horaires des reports survivent a l'export",
     d && Array.isArray(d.stats.statsDaily[jour(0)].repH), JSON.stringify(d && d.stats.statsDaily[jour(0)]));
 
@@ -260,6 +266,32 @@ async function testAllerRetour() {
 }
 
 /* ================= 4. Fusion, cas par cas ================= */
+// 2026-09-16. Fusionner remplacait les images au lieu de les cumuler, et rien
+// n'empechait un fichier de glisser une adresse http, que content.js aurait
+// ensuite chargee sur chaque page visitee.
+async function testFusionImages() {
+  const base = etat();
+  base.customKoalas = ["data:image/png;base64,AAAA"];
+  const env = monte(base);
+  await ouvreDonnees(env);
+  const entrant = {
+    app: "koala-zen", format: 1, build: "2.2.0", exportedAt: new Date().toISOString(),
+    koalas: { customKoalas: ["data:image/png;base64,BBBB", "https://evil.example/x.png", "data:image/png;base64,AAAA", 42], includeDefaultKoalas: true }
+  };
+  await importe(env, entrant, "merge");
+  verifie("fusion, les images sont cumulees sans doublon",
+    JSON.stringify(env.donnees.customKoalas) === JSON.stringify(["data:image/png;base64,AAAA", "data:image/png;base64,BBBB"]),
+    JSON.stringify(env.donnees.customKoalas));
+  verifie("fusion, une adresse http ou une valeur non texte est ecartee",
+    !env.donnees.customKoalas.some((x) => typeof x !== "string" || x.indexOf("data:image/") !== 0));
+  const env2 = monte(Object.assign(etat(), { customKoalas: ["data:image/png;base64,AAAA"] }));
+  await ouvreDonnees(env2);
+  await importe(env2, entrant, "replace");
+  verifie("remplacement, seules les images integrees du fichier restent",
+    JSON.stringify(env2.donnees.customKoalas) === JSON.stringify(["data:image/png;base64,BBBB", "data:image/png;base64,AAAA"]),
+    JSON.stringify(env2.donnees.customKoalas));
+}
+
 async function testFusion() {
   const env = monte(etat());
   await ouvreDonnees(env);
@@ -295,7 +327,7 @@ async function testFusion() {
     env.donnees.screenDaily[jour(0)] === 7200, "vaut " + env.donnees.screenDaily[jour(0)]);
   verifie("fusion, le temps d'ecran manquant est ajoute",
     env.donnees.screenDaily[jour(-5)] === 1234);
-  verifie("fusion, le retard prend le plus grand", env.donnees.pending === 5,
+  verifie("fusion, l'ancien compteur a rattraper d'un vieux fichier est ignore", env.donnees.pending === 2,
     "vaut " + env.donnees.pending);
   verifie("fusion, un reglage simple est bien ecrase", env.donnees.intervalMinutes === 90);
   verifie("fusion, l'objectif quotidien est ecrase", env.donnees.habitGoal === 9,
@@ -329,7 +361,8 @@ async function testRemplacement() {
     JSON.stringify(Object.keys(env.donnees.statsDaily)));
   verifie("remplacement, le temps d'ecran est vide",
     Object.keys(env.donnees.screenDaily).length === 0);
-  verifie("remplacement, le retard est remis a zero", env.donnees.pending === 0);
+  verifie("remplacement, l'ancien compteur a rattraper d'un vieux fichier n'est jamais reecrit",
+    !((env.journal && env.journal.ecrit) || []).some((o) => o && Object.prototype.hasOwnProperty.call(o, "pending")));
   verifie("remplacement, une section ABSENTE du fichier est preservee",
     env.donnees.intervalMinutes === 45, "vaut " + env.donnees.intervalMinutes);
   verifie("remplacement, les images sont preservees si absentes du fichier",
@@ -505,12 +538,83 @@ async function testPlafondImport() {
     Array.isArray(k) && k.length === 0, JSON.stringify(k));
 }
 
+/* ================= Les connexions, une partie a part, 2026-09-25 ================= */
+// Decochee par defaut. Cochee, une phrase secrete est exigee, et c'est le fond
+// qui chiffre : le popup ne manipule jamais un jeton en clair.
+async function testConnexions() {
+  const env = monte(etat());
+  const messages = env.journal.messages;
+  env.w.chrome.runtime.sendMessage = (m) => {
+    messages.push(m);
+    if (m && m.type === "kz-save" && m.payload) Object.assign(env.donnees, JSON.parse(JSON.stringify(m.payload)));
+    if (m && m.type === "kz-connexions-export") return Promise.resolve(m.passphrase === "ma phrase assez longue" ? { ok: true, blob: { v: 2, kdf: "PBKDF2-SHA256", iter: 600000, salt: [1], iv: [2], data: [3] }, parts: { agenda: true, notify: false } } : { ok: false, error: "pass_short" });
+    if (m && m.type === "kz-connexions-import") return Promise.resolve(m.passphrase === "ma phrase assez longue" ? { ok: true, parts: { agenda: true } } : m.passphrase === "vieille phrase" ? { ok: true, tokensSkipped: true, parts: {} } : { ok: false, error: "bad_passphrase" });
+    return Promise.resolve();
+  };
+  await ouvreDonnees(env);
+  const caseC = env.w.document.querySelector('[data-part="connexions"]');
+  verifie("la partie Connexions existe et est decochee par defaut", !!caseC && !caseC.classList.contains("cbx--on") && txt(caseC.querySelector(".cbx-t")) === t("partConnexions"));
+  verifie("la phrase secrete est cachee tant que la partie est decochee", env.$("backupPassRow").hidden);
+  let d = await exporte(env, { settings: true, content: false, stats: false, koalas: false });
+  verifie("par defaut, aucune connexion dans le fichier", d && d.connexions === undefined);
+
+  clic(caseC);
+  await pause(20);
+  verifie("cocher montre le champ de la phrase, en mode mot de passe", !env.$("backupPassRow").hidden && env.$("backupPass").type === "password");
+  const avantBlobs = env.journal.blobs.length;
+  clic(env.$("exportBtn"));
+  await pause(90);
+  verifie("sans phrase, aucun fichier ne part et on le dit", env.journal.blobs.length === avantBlobs && txt(env.$("dataMsg")) === t("backupPassMissing"), txt(env.$("dataMsg")));
+  verifie("sans phrase, le fond n'est meme pas sollicite", !messages.some((m) => m.type === "kz-connexions-export"));
+  env.$("backupPass").value = "abc";
+  clic(env.$("exportBtn"));
+  await pause(90);
+  verifie("une phrase de trois caracteres est refusee avant tout envoi", env.journal.blobs.length === avantBlobs && !messages.some((m) => m.type === "kz-connexions-export"));
+  env.$("backupPass").value = "onze-carac!";
+  env.$("backupPass").dispatchEvent(new env.w.Event("input"));
+  clic(env.$("exportBtn"));
+  await pause(90);
+  verifie("11 caracteres ne suffisent pas, et le compteur dit combien il en manque",
+    env.journal.blobs.length === avantBlobs && !messages.some((m) => m.type === "kz-connexions-export") && txt(env.$("backupPassCount")) === t("backupPassLeft").replace("{n}", "1"), txt(env.$("backupPassCount")));
+  env.$("backupPass").value = "ma phrase assez longue";
+  env.$("backupPass").dispatchEvent(new env.w.Event("input"));
+  verifie("a 12 caracteres ou plus, le compteur le confirme", txt(env.$("backupPassCount")) === t("backupPassOk"));
+  d = await exporte(env);
+  verifie("avec la phrase, le fond chiffre et le fichier porte le paquet, jamais un jeton",
+    !!d && d.connexions && d.connexions.v === 2 && Array.isArray(d.connexions.data) && JSON.stringify(d).indexOf("jeton") < 0, JSON.stringify(d && d.connexions));
+  verifie("la phrase est passee au fond telle quelle et jamais ecrite dans le stockage",
+    messages.some((m) => m.type === "kz-connexions-export" && m.passphrase === "ma phrase assez longue") && JSON.stringify(env.donnees).indexOf("ma phrase") < 0);
+  clic(env.$("backupPassShow"));
+  verifie("Afficher revele la phrase, comme pour un jeton", env.$("backupPass").type === "text");
+
+  // Import : avec la phrase, le fond restaure ; sans, le reste est importe et on le dit.
+  const paquet = { app: "koala-zen", format: 1, settings: { intervalMinutes: 25 }, connexions: { v: 1, salt: [1], iv: [2], data: [3] } };
+  env.$("backupPass").value = "";
+  await importe(env, paquet);
+  verifie("sans phrase, les reglages passent mais pas les connexions, et le message le dit",
+    env.donnees.intervalMinutes === 25 && !messages.some((m) => m.type === "kz-connexions-import") && txt(env.$("dataMsg")).indexOf(t("connexionsSkipped")) >= 0, txt(env.$("dataMsg")));
+  env.$("backupPass").value = "pas la bonne";
+  await importe(env, paquet);
+  verifie("une mauvaise phrase est signalee", txt(env.$("dataMsg")).indexOf(t("connexionsBadPass")) >= 0, txt(env.$("dataMsg")));
+  env.$("backupPass").value = "ma phrase assez longue";
+  await importe(env, paquet);
+  const im = messages.filter((m) => m.type === "kz-connexions-import").pop();
+  verifie("avec la phrase, le paquet et la phrase partent au fond", !!im && im.blob && im.blob.v === 1 && im.passphrase === "ma phrase assez longue");
+  verifie("et la restauration est confirmee", txt(env.$("dataMsg")).indexOf(t("connexionsRestored")) >= 0, txt(env.$("dataMsg")));
+  env.$("backupPass").value = "vieille phrase";
+  await importe(env, paquet);
+  verifie("un ancien fichier dit que ses jetons, trop larges, ne sont pas restaures", txt(env.$("dataMsg")).indexOf(t("connexionsOldTokens")) >= 0, txt(env.$("dataMsg")));
+  verifie("un fichier sans connexions n'appelle jamais le fond", (messages.length = 0, await importe(env, { app: "koala-zen", format: 1, settings: { intervalMinutes: 30 } }), !messages.some((m) => m.type === "kz-connexions-import")));
+}
+
 (async () => {
   const suites = [
     ["Export, combinaisons de parties", testExportParties],
+    ["Les connexions, une partie a part", testConnexions],
     ["Export, source des donnees", testExportSource],
     ["Aller retour complet", testAllerRetour],
     ["Import en fusion", testFusion],
+    ["Import des images, fusion et filtre", testFusionImages],
     ["Import en remplacement", testRemplacement],
     ["Fichiers abimes ou hostiles", testFichiersAbimes],
     ["Fichier d'une version future", testVersionFuture],

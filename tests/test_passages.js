@@ -3,6 +3,7 @@
 const fs = require("fs");
 const vm = require("vm");
 const path = require("path");
+const { fakeIndexedDB, coffreTest } = require("./fake_idb");
 
 const RACINE = process.argv[2] || "build/koala-zen";
 let ok = 0, ko = 0;
@@ -16,7 +17,12 @@ function verifie(nom, condition, detail) {
 /* ---------- bac a sable ---------- */
 function charge(etatInitial, opts) {
   opts = opts || {};
-  const store = Object.assign({}, etatInitial);
+  // 2026-10-06 : `brut` est storage.local tel que le voit un script de page ;
+  // `store` y ajoute le coffre IndexedDB du fond (VAULT_KEYS).
+  const idb = fakeIndexedDB();
+  const brut = {};
+  const store = coffreTest(brut, idb, RACINE);
+  Object.assign(store, etatInitial || {});
   const journal = { alarmes: {}, messages: [], injections: 0, ecrits: [] };
   const ecouteurs = {};
   const urlOnglet = opts.url || "https://example.com/page";
@@ -26,6 +32,7 @@ function charge(etatInitial, opts) {
       onInstalled: { addListener: (f) => { ecouteurs.installed = f; } },
       onStartup: { addListener: (f) => { ecouteurs.startup = f; } },
       onMessage: { addListener: (f) => { ecouteurs.message = f; } },
+      getURL: (p) => "chrome-extension://kz/" + p,
       getManifest: () => ({ version: "2.0.0" }),
       lastError: null
     },
@@ -40,11 +47,11 @@ function charge(etatInitial, opts) {
         get: async (cles) => {
           if (cles == null) return JSON.parse(JSON.stringify(store));
           const out = {};
-          [].concat(cles).forEach((k) => { if (store[k] !== undefined) out[k] = store[k]; });
+          [].concat(cles).forEach((k) => { if (brut[k] !== undefined) out[k] = brut[k]; });
           return out;
         },
-        set: async (o) => { journal.ecrits.push(Object.keys(o)); Object.assign(store, JSON.parse(JSON.stringify(o))); },
-        clear: async () => { Object.keys(store).forEach((k) => delete store[k]); }
+        set: async (o) => { journal.ecrits.push(Object.keys(o)); Object.assign(brut, JSON.parse(JSON.stringify(o))); },
+        clear: async () => { Object.keys(store).forEach((k) => delete brut[k]); }
       }
     },
     idle: {
@@ -82,11 +89,11 @@ function charge(etatInitial, opts) {
       static now() { return fixe; }
     };
   }
-  const contexte = { globalThis: null, browser: api, chrome: api, console, URL, Date: DateInjecte, Math, JSON, setTimeout, clearTimeout, Intl };
+  const contexte = { indexedDB: idb, globalThis: null, browser: api, chrome: api, console, URL, Date: DateInjecte, Math, JSON, setTimeout, clearTimeout, Intl };
   contexte.globalThis = contexte;
   vm.createContext(contexte);
   vm.runInContext(fs.readFileSync(path.join(RACINE, "background.js"), "utf8"), contexte);
-  return { contexte, store, journal, ecouteurs };
+  return { contexte, store, brut, journal, ecouteurs };
 }
 
 // Les declarations const du script ne deviennent pas des proprietes du contexte,
@@ -625,7 +632,10 @@ async function testPlanification() {
     !!env3.journal.alarmes["kz-passage"]);
 
   // L'alarme du rappel ne doit pas declencher un passage, et l'inverse non plus.
-  const env4 = charge({ screenTimezone: "Europe/Zurich" });
+  // Horloge figee a midi : depuis les rondes du soir (2026-09-18), un tic entre
+  // 17 h et 21 h 20 a Zurich declenche legitimement un passage, et ce test
+  // echouait le soir pour cette seule raison.
+  const env4 = charge({ screenTimezone: "Europe/Zurich" }, { instant: MIDI_ZURICH });
   env4.ecouteurs.alarme({ name: "kz-tick" });
   await attends();
   verifie("l'alarme du tic ne declenche aucun passage",
@@ -731,6 +741,200 @@ async function testReinjection() {
     JSON.stringify(env.journal.ecrits));
 }
 
+/* ============ 12. Les rondes du soir, 2026-09-18 ============ */
+// A chaque heure pleine de 17 h a 21 h, un chat passe suggerer d'arreter,
+// de plus en plus franchement. Declenche par le tic de la minute, une fois
+// par heure et par jour, dans une fenetre de vingt minutes. Ignore la plage
+// 8 h 20 h, l'ecart et le plafond des passages libres, respecte tout le reste.
+async function testRondesDuSoir() {
+  const TZ = "Europe/Zurich";
+  // Heure de Zurich en ete, UTC plus deux.
+  const a = (h, m) => Date.UTC(2026, 6, 29, h - 2, m || 0, 0);
+  const vide = { day: "", count: 0, last: 0, lastVariant: "", lastPhrase: -1, lastCoat: -1, lastFox: 0, lastMeet: 0, lastReminder: 0, eveningDay: "", eveningHour: -1, eveningPhrase: -1 };
+  const base = {
+    passages: true, animMode: "always", pausedUntil: 0, pauseWhenIdle: true, muteInCalls: true,
+    mutedPatterns: ["kmeet.infomaniak.com"], screenTimezone: TZ, focusMode: false, focusSeconds: 30,
+    passageState: vide
+  };
+  const jour = cle(TZ, a(17, 5));
+  const passages = (env) => env.journal.messages.filter((m) => m.type === "kz-passage");
+
+  let env = charge(base, { instant: a(17, 5) });
+  verifie("cinq heures, de 17 h a 21 h", JSON.stringify(lit(env, "PASSAGE_EVENING_HOURS")) === "[17,18,19,20,21]");
+  verifie("fenetre de rattrapage de vingt minutes", lit(env, "PASSAGE_EVENING_WINDOW_MIN") === 20);
+  verifie("quatre phrases par heure", lit(env, "PASSAGE_EVENING_PHRASES") === 4);
+  const V = lit(env, "PASSAGE_EVENING_VARIANT");
+  verifie("la scene suit l'heure : traverse, baille, s'assoit, baille, s'assoit",
+    V[17] === "cross" && V[18] === "yawn" && V[19] === "sit" && V[20] === "yawn" && V[21] === "sit", JSON.stringify(V));
+
+  // eveningSlot, fonction pure.
+  const slot = env.contexte.eveningSlot;
+  verifie("16 h 59, aucune ronde", slot(vide, a(16, 59), TZ) === -1);
+  verifie("17 h 00, la ronde de 17 h", slot(vide, a(17, 0), TZ) === 17);
+  verifie("17 h 19, encore dans la fenetre", slot(vide, a(17, 19), TZ) === 17);
+  verifie("17 h 20, fenetre fermee, la ronde est abandonnee", slot(vide, a(17, 20), TZ) === -1);
+  verifie("21 h 03, la ronde de 21 h est due malgre la plage 8 h 20 h", slot(vide, a(21, 3), TZ) === 21);
+  verifie("22 h 05, plus aucune ronde", slot(vide, a(22, 5), TZ) === -1);
+  verifie("12 h 05, aucune ronde a midi", slot(vide, a(12, 5), TZ) === -1);
+  verifie("deja jouee ce jour a 17 h, jamais deux fois", slot({ ...vide, eveningDay: jour, eveningHour: 17 }, a(17, 10), TZ) === -1);
+  verifie("jouee a 17 h, celle de 18 h reste due", slot({ ...vide, eveningDay: jour, eveningHour: 17 }, a(18, 2), TZ) === 18);
+  verifie("jouee hier a 21 h, celle de 17 h d'aujourd'hui est due", slot({ ...vide, eveningDay: "2026-07-28", eveningHour: 21 }, a(17, 2), TZ) === 17);
+  verifie("la fenetre suit le fuseau, 17 h 05 a Zurich vaut 8 h 05 a Los Angeles", slot(vide, a(17, 5), "America/Los_Angeles") === -1);
+  verifie("un etat nul est absorbe", slot(null, a(19, 1), TZ) === 19);
+
+  // Le tic de 17 h 05 envoie la ronde.
+  env = charge(base, { instant: a(17, 5) });
+  env.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  let msgs = passages(env);
+  verifie("le tic de 17 h 05 envoie un passage", msgs.length === 1, String(msgs.length));
+  const m = msgs[0] || {};
+  verifie("il porte le lot du soir", m.pool === "evening", JSON.stringify(m));
+  verifie("il porte le creneau 0 et l'heure 17", m.slot === 0 && m.hour === 17);
+  verifie("a 17 h le chat traverse", m.variant === "cross" && m.ms === 15000 && m.who === "cat");
+  verifie("la phrase reste entre 0 et 3", m.phrase >= 0 && m.phrase <= 3);
+  verifie("le pelage reste entre 0 et 6", m.coat >= 0 && m.coat <= 6);
+  verifie("le mode d'animation est transmis", m.animMode === "always");
+  let st = env.store.passageState;
+  verifie("l'etat note le jour et l'heure de la ronde", st && st.eveningDay === jour && st.eveningHour === 17, JSON.stringify(st));
+  verifie("le quota du jour n'est pas consomme", st && st.count === 0);
+  verifie("last est pose, un passage libre ne suivra pas de pres", st && st.last === a(17, 5));
+  verifie("la phrase du soir est memorisee a part", st && st.eveningPhrase === m.phrase && st.lastPhrase === -1);
+  verifie("la ronde ne touche ni le renard ni la rencontre", st && st.lastFox === 0 && st.lastMeet === 0);
+
+  env.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  verifie("un second tic dans la meme heure n'envoie rien", passages(env).length === 1, String(passages(env).length));
+  await env.contexte.triggerPassage();
+  await attends();
+  verifie("un passage libre juste apres est retenu par l'ecart", passages(env).length === 1);
+  verifie("le bouton de test, lui, passe toujours", (await env.contexte.triggerPassage({ test: true }), await attends(), passages(env).length === 2));
+
+  // Chaque heure a sa scene, et l'heure precedente jouee ne bloque pas la suivante.
+  for (const [h, v] of [[18, "yawn"], [19, "sit"], [20, "yawn"], [21, "sit"]]) {
+    const e = charge({ ...base, passageState: { ...vide, eveningDay: jour, eveningHour: h - 1 } }, { instant: a(h, 7) });
+    e.ecouteurs.alarme({ name: "kz-tick" });
+    await attends();
+    const mm = passages(e);
+    verifie("a " + h + " h la ronde joue et le chat " + (v === "sit" ? "s'assoit" : "baille"),
+      mm.length === 1 && mm[0].variant === v && mm[0].hour === h && mm[0].slot === h - 17 && mm[0].pool === "evening",
+      JSON.stringify(mm));
+  }
+
+  // Les interdits que la ronde ne contourne jamais.
+  const bloque = async (nom, patch, opts) => {
+    const e = charge({ ...base, ...patch }, { instant: a(18, 3), ...(opts || {}) });
+    e.ecouteurs.alarme({ name: "kz-tick" });
+    await attends();
+    verifie(nom, passages(e).length === 0, JSON.stringify(passages(e)));
+    verifie(nom + ", la ronde reste due", !e.store.passageState || e.store.passageState.eveningHour !== 18);
+  };
+  await bloque("reglage eteint, aucune ronde", { passages: false });
+  await bloque("animations sur Jamais, aucune ronde", { animMode: "never" });
+  await bloque("pause en cours, aucune ronde", { pausedUntil: a(19, 0) });
+  await bloque("visio en cours, aucune ronde", {}, { url: "https://kmeet.infomaniak.com/salle" });
+  await bloque("clavier quitte, aucune ronde", {}, { inactif: true });
+  await bloque("rappel il y a 30 s, aucune ronde", { passageState: { ...vide, lastReminder: a(18, 3) - 30000 } });
+  await bloque("rendez-vous de l'agenda en cours, aucune ronde", {
+    agendaEnabled: true, agendaCache: { events: [{ id: 1, start: a(17, 30), end: a(18, 30), title: "Point", people: 3, url: "" }], at: a(18, 0) }
+  });
+  await bloque("aucun onglet cible, aucune ronde", {}, { aucunOnglet: true });
+  await bloque("page incompatible, aucune ronde et rien de consomme", {}, { pageIncompatible: true });
+
+  // Rattrapage dans la fenetre : le clavier etait quitte a 18 h 00, il revient
+  // a 18 h 12, la ronde joue. A 18 h 25, elle est abandonnee.
+  let e = charge(base, { instant: a(18, 12) });
+  e.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  verifie("18 h 12, la ronde manquee a l'heure pile est rattrapee", passages(e).length === 1 && passages(e)[0].hour === 18);
+  e = charge(base, { instant: a(18, 25) });
+  e.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  verifie("18 h 25, la ronde n'est plus rattrapee", passages(e).length === 0);
+  e = charge({ ...base, passageState: { ...vide, day: jour, count: 4, last: a(17, 50) } }, { instant: a(18, 1) });
+  e.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  verifie("plafond du jour atteint et ecart en cours, la ronde joue quand meme", passages(e).length === 1);
+  verifie("et le plafond reste a 4, la ronde ne compte pas", e.store.passageState.count === 4);
+
+  // Le tirage du soir.
+  const pe = env.contexte.pickEvening;
+  let rep = 0;
+  for (let i = 0; i < 200; i++) { if (pe({ ...vide, eveningPhrase: 2 }, 19, graine(i)).phrase === 2) rep++; }
+  verifie("jamais la meme phrase que la ronde precedente", rep === 0, String(rep));
+  rep = 0;
+  for (let i = 0; i < 200; i++) { if (pe({ ...vide, lastCoat: 4 }, 19, graine(i)).coat === 4) rep++; }
+  verifie("jamais le meme pelage que le passage precedent", rep === 0, String(rep));
+  const vus = new Set();
+  for (let i = 0; i < 400; i++) vus.add(pe(vide, 20, graine(i)).phrase);
+  verifie("les quatre phrases de l'heure sortent toutes", vus.size === 4, [...vus].join(","));
+  verifie("la ronde de 21 h s'assoit vingt secondes", pe(vide, 21, graine(3)).variant === "sit" && pe(vide, 21, graine(3)).ms === 20000);
+  verifie("une heure inconnue retombe sur la traversee", pe(vide, 12, graine(3)).variant === "cross");
+  verifie("le tirage porte le creneau et l'heure", pe(vide, 20, graine(3)).slot === 3 && pe(vide, 20, graine(3)).hour === 20);
+
+  // Le tic de midi ne declenche rien du soir, et la ronde n'ecrit que passageState
+  // (le tic lui-meme ecrit le temps d'ecran, hors sujet ici).
+  e = charge(base, { instant: a(12, 5) });
+  e.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  verifie("le tic de midi n'envoie aucune ronde", passages(e).length === 0);
+  e = charge(base, { instant: a(20, 4) });
+  await e.contexte.eveningTick();
+  await attends();
+  const ecrits = e.journal.ecrits.flat();
+  verifie("eveningTick n'ecrit que passageState", ecrits.length > 0 && ecrits.every((k) => k === "passageState"), ecrits.join(","));
+  verifie("l'etat par defaut porte les trois champs du soir",
+    /eveningDay: "", eveningHour: -1, eveningPhrase: -1/.test(fs.readFileSync(path.join(RACINE, "background.js"), "utf8")));
+}
+
+/* ============ 13. Le week-end, 2026-09-26 ============ */
+// Samedi et dimanche dans le fuseau du reglage, les passages libres portent le
+// lot du week-end. Les rondes du soir gardent le leur, la semaine aussi.
+async function testWeekend() {
+  const TZ = "Europe/Zurich";
+  const vide = { day: "", count: 0, last: 0, lastVariant: "", lastPhrase: -1, lastCoat: -1, lastFox: 0, lastMeet: 0, lastReminder: 0, eveningDay: "", eveningHour: -1, eveningPhrase: -1 };
+  const base = { passages: true, animMode: "always", pausedUntil: 0, pauseWhenIdle: false, muteInCalls: false, mutedPatterns: [], screenTimezone: TZ, passageState: vide };
+  // Samedi 1er aout 2026, 12 h a Zurich ; dimanche 2 ; lundi 3.
+  const samedi = Date.UTC(2026, 7, 1, 10, 0, 0), dimanche = Date.UTC(2026, 7, 2, 10, 0, 0), lundi = Date.UTC(2026, 7, 3, 10, 0, 0);
+  let env = charge(base, { instant: samedi });
+  verifie("samedi et dimanche sont le week-end, lundi non",
+    lit(env, "tzWeekend('" + TZ + "', new Date(" + samedi + "))") === true && lit(env, "tzWeekend('" + TZ + "', new Date(" + dimanche + "))") === true && lit(env, "tzWeekend('" + TZ + "', new Date(" + lundi + "))") === false);
+  verifie("le week-end suit le fuseau : samedi 1 h a Zurich est encore vendredi a Los Angeles",
+    lit(env, "tzWeekend('" + TZ + "', new Date(" + Date.UTC(2026, 6, 31, 23, 0, 0) + "))") === true && lit(env, "tzWeekend('America/Los_Angeles', new Date(" + Date.UTC(2026, 6, 31, 23, 0, 0) + "))") === false);
+  await env.contexte.triggerPassage();
+  await attends();
+  let m = env.journal.messages.find((x) => x.type === "kz-passage");
+  verifie("samedi, le passage porte le lot du week-end", !!m && m.pool === "weekend" && m.phrase >= 0 && m.phrase <= 7, JSON.stringify(m));
+  env = charge(base, { instant: dimanche });
+  await env.contexte.triggerPassage();
+  await attends();
+  m = env.journal.messages.find((x) => x.type === "kz-passage");
+  verifie("dimanche aussi", !!m && m.pool === "weekend");
+  env = charge(base, { instant: lundi });
+  await env.contexte.triggerPassage();
+  await attends();
+  m = env.journal.messages.find((x) => x.type === "kz-passage");
+  verifie("lundi, aucun lot particulier, les phrases habituelles", !!m && m.pool === undefined, JSON.stringify(m));
+  // La ronde du soir d'un samedi garde son lot.
+  env = charge(base, { instant: Date.UTC(2026, 7, 1, 16, 5, 0) });
+  env.ecouteurs.alarme({ name: "kz-tick" });
+  await attends();
+  m = env.journal.messages.find((x) => x.type === "kz-passage");
+  verifie("la ronde de 18 h d'un samedi garde le lot du soir", !!m && m.pool === "evening" && m.hour === 18, JSON.stringify(m));
+  // Les phrases livrees.
+  const q = fs.readFileSync(path.join(RACINE, "quotes.js"), "utf8");
+  for (const L of ["FR", "EN", "DE"]) {
+    const mm = q.match(new RegExp("const KZ_WEEKEND_" + L + " = (\\[[\\s\\S]*?\\n\\]);"));
+    const lot = mm ? eval(mm[1]) : null;
+    verifie("KZ_WEEKEND_" + L + " a huit phrases, toutes differentes, courtes", !!lot && lot.length === 8 && new Set(lot).size === 8 && lot.every((p) => p.length > 20 && p.length <= 120));
+    verifie("KZ_WEEKEND_" + L + " parle du week-end sans reproche",
+      !!lot && lot.filter((p) => /week-end|weekend|wochenende|samedi|dimanche|saturday|sunday|samstag|sonntag|repos|day off|freien Tag/i.test(p)).length >= 6
+      && !lot.some((p) => /honte|shame|schande|\bbad\b|schlecht/i.test(p)));
+  }
+  verifie("KZ_WEEKEND suit la langue", /const KZ_WEEKEND = KZ_IS_FR \? KZ_WEEKEND_FR/.test(q) && !/ß/.test((q.match(/const KZ_WEEKEND_DE[\s\S]*?\n\];/) || [""])[0]));
+  verifie("passages.js lit le lot du week-end", /sp\.pool === "weekend"/.test(fs.readFileSync(path.join(RACINE, "passages.js"), "utf8")));
+}
+
 (async () => {
   const suites = [
     ["La table des cinq passages", testTable],
@@ -744,7 +948,9 @@ async function testReinjection() {
     ["La planification et l'alarme", testPlanification],
     ["Silence d'une minute apres un rappel", testSilenceApresRappel],
     ["Les phrases fournies", testPhrases],
-    ["Reinjection des scripts de page", testReinjection]
+    ["Reinjection des scripts de page", testReinjection],
+    ["Les rondes du soir", testRondesDuSoir],
+    ["Le week-end", testWeekend]
   ];
   for (const [nom, f] of suites) {
     const avant = ok + ko, avantKo = ko;

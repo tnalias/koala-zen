@@ -256,39 +256,6 @@ const KZ_SPORT_DE = [
   "Dreh 3 stolze Runden durch den Raum. Kopf hoch! 🚶"
 ];
 
-const KZ_SNARK_FR = [
-  "Plus tard, évidemment. Comme hier, et avant-hier. Ton canapé, lui, reste fidèle.",
-  "Bravo, tu as trouvé le seul bouton qui ne brûle aucune calorie. Un vrai talent.",
-  "La motivation reviendra. Un jour. Peut-être. Donne-lui un coup de main la prochaine fois.",
-  "Tu procrastines avec un talent fou. Imagine le résultat si tu t'entraînais autant.",
-  "C'est écrit dans tes statistiques, et elles ne mentent pas. Au prochain rappel, fais-leur mentir.",
-  "Même le chat te trouve gonflé. Et lui ne fait rien de ses journées, c'est dire.",
-  "Un jour, tu diras oui. Visiblement, pas cette fois. La prochaine fois, on parie ?",
-  "Range l'excuse, sors les jambes. Au prochain passage, tu te bouges, promis ?"
-];
-
-const KZ_SNARK_EN = [
-  "Later, of course. Like yesterday, and the day before. Your couch, though, stays loyal.",
-  "Nice, you found the one button that burns zero calories. A real talent.",
-  "Motivation will come back. Someday. Maybe. Give it a hand next time.",
-  "You procrastinate with wild talent. Imagine the results if you trained that hard.",
-  "It's written in your stats, and they don't lie. Next reminder, make them lie.",
-  "Even the cat thinks you've got nerve. And he does nothing all day, so that's saying something.",
-  "One day you'll say yes. Clearly not this time. Next time, want to bet?",
-  "Put the excuse away, get the legs out. Next time round, you move, promise?"
-];
-
-const KZ_SNARK_DE = [
-  "Später, na klar. Wie gestern, und vorgestern. Dein Sofa dagegen bleibt treu.",
-  "Bravo, du hast den einzigen Knopf gefunden, der null Kalorien verbrennt. Echtes Talent.",
-  "Die Motivation kommt wieder. Irgendwann. Vielleicht. Hilf ihr das nächste Mal ein bisschen nach.",
-  "Du prokrastinierst mit Wahnsinnstalent. Stell dir das Ergebnis vor, würdest du so viel trainieren.",
-  "Es steht in deiner Statistik, und die lügt nicht. Beim nächsten Mal straf sie Lügen.",
-  "Sogar die Katze findet dich dreist. Und die tut den ganzen Tag nichts, das will was heissen.",
-  "Eines Tages sagst du Ja. Diesmal offensichtlich nicht. Nächstes Mal, wetten wir?",
-  "Pack die Ausrede weg, raus mit den Beinen. Beim nächsten Mal bewegst du dich, versprochen?"
-];
-
 // Les huit phrases des animaux de passage. Communes aux deux builds.
 // Aucune ne demande quoi que ce soit, aucune ne parle d'habitude ni de
 // temps d'ecran. Aucun texte n'est propre a un animal.
@@ -313,14 +280,149 @@ const KZ_HELLO_EN = [
   "Nothing to ask of you, just saying hello"
 ];
 const KZ_HELLO_DE = [
-  "Hallo, ich hoffe, du hast einen schoenen Tag",
+  "Hallo, ich hoffe, du hast einen schönen Tag",
   "Ich gehe nur vorbei, nichts zu melden",
-  "Du siehst beschaeftigt aus, ich sage nichts weiter",
+  "Du siehst beschäftigt aus, ich sage nichts weiter",
   "Irgendwo scheint die Sonne, ganz sicher",
   "Ein kleiner Besuch, ganz ohne Grund",
   "Einen schoenen Tag noch, ganz ehrlich",
-  "Ich gehe ein Schlaefchen machen, versuch es auch",
+  "Ich gehe ein Schläfchen machen, versuch es auch",
   "Ich will nichts von dir, nur hallo sagen"
+];
+
+// Les passages de fin de journee, 2026-09-18. Cinq lots, un par heure de
+// 17 h a 21 h, quatre phrases chacun. Le ton monte d'heure en heure : a 17 h
+// on suggere a peine, a 21 h on insiste franchement, toujours avec humour,
+// jamais un reproche. Le chat parle, le texte n'est propre a aucun pelage.
+const KZ_EVENING_FR = [
+  [
+    "17 h. Je dis ça, je dis rien, mais le soleil commence à ranger ses affaires.",
+    "Il est 17 h. Le moment idéal pour songer à l'idée de peut-être songer à arrêter.",
+    "Petit sondage de 17 h : ton canapé demande si tu passes ce soir.",
+    "17 h. Tu as officiellement le droit de faire semblant de ranger ton bureau."
+  ],
+  [
+    "18 h. Là, c'est vraiment le moment. Même ton clavier a les yeux qui piquent.",
+    "Il est 18 h. Tu sais ce qui est bien après 18 h ? Tout ce qui n'est pas ce mail.",
+    "18 h. Les gens normaux mangent, moi je fais la sieste. Et toi, tu fais quoi ?",
+    "18 h. Ton souper ne va pas se cuisiner tout seul. Sauf si tu commandes, mais quand même."
+  ],
+  [
+    "19 h. Rien de ce que tu écris maintenant ne sera aussi bon que demain à 9 h.",
+    "Il est 19 h. Ton ordinateur ne te dira jamais bonne soirée. Moi, si. Bonne soirée.",
+    "19 h. La journée est finie depuis un moment. Elle t'a laissé un mot : « rentre ».",
+    "19 h. Même tes mails ont fini leur journée. Ils dorment dans ta boîte, laisse-les."
+  ],
+  [
+    "20 h. Sérieusement. Je suis un chat et même moi je trouve que ça fait beaucoup.",
+    "Il est 20 h. Ton écran a passé plus de temps avec toi que tes proches aujourd'hui.",
+    "20 h. Ferme l'ordinateur. Il ne t'en voudra pas. Personne ne t'en voudra.",
+    "20 h. Ce que tu fais là peut attendre demain. Ta soirée, non."
+  ],
+  [
+    "21 h. Bon. Je ne bouge pas d'ici tant que tu n'as pas fermé cet onglet.",
+    "Il est 21 h. Ce n'est plus du travail, c'est de l'acharnement. Éteins, je te couvre.",
+    "21 h. Dernière ronde. Debout, étire-toi, éteins. Demain existe, promis.",
+    "21 h. Même les chats de gouttière sont rentrés. À toi maintenant."
+  ]
+];
+const KZ_EVENING_EN = [
+  [
+    "5 pm. Just saying, but the sun has started packing up its things.",
+    "It is 5 pm. The perfect moment to consider the idea of maybe considering stopping.",
+    "Quick 5 pm survey: your sofa wants to know if you are coming by tonight.",
+    "5 pm. You are officially allowed to pretend you are tidying your desk."
+  ],
+  [
+    "6 pm. Now it really is time. Even your keyboard has tired eyes.",
+    "It is 6 pm. You know what is great after 6 pm? Everything that is not this email.",
+    "6 pm. Normal people are having dinner, I am having a nap. And you?",
+    "6 pm. Dinner will not cook itself. Unless you order in, but still."
+  ],
+  [
+    "7 pm. Nothing you write now will be as good as what you write tomorrow at 9.",
+    "It is 7 pm. Your computer will never wish you a good evening. I will. Good evening.",
+    "7 pm. The workday ended a while ago. It left you a note: go home.",
+    "7 pm. Even your emails have clocked off. They are asleep in your inbox, let them be."
+  ],
+  [
+    "8 pm. Seriously. I am a cat and even I think this is a lot.",
+    "It is 8 pm. Your screen has spent more time with you today than your people have.",
+    "8 pm. Close the laptop. It will not hold it against you. Nobody will.",
+    "8 pm. Whatever this is can wait until tomorrow. Your evening cannot."
+  ],
+  [
+    "9 pm. Right. I am not moving from here until you close this tab.",
+    "It is 9 pm. This is not work any more, it is stubbornness. Shut down, I have got your back.",
+    "9 pm. Last round. Stand up, stretch, switch off. Tomorrow exists, promise.",
+    "9 pm. Even the alley cats have gone home. Your turn."
+  ]
+];
+const KZ_EVENING_DE = [
+  [
+    "17 Uhr. Ich sag ja nur, aber die Sonne packt langsam ihre Sachen zusammen.",
+    "Es ist 17 Uhr. Der ideale Moment, um über die Idee nachzudenken, vielleicht ans Aufhören zu denken.",
+    "Kleine Umfrage um 17 Uhr: Dein Sofa fragt, ob du heute Abend vorbeikommst.",
+    "17 Uhr. Du darfst jetzt offiziell so tun, als würdest du deinen Schreibtisch aufräumen."
+  ],
+  [
+    "18 Uhr. Jetzt ist es wirklich Zeit. Sogar deine Tastatur hat müde Augen.",
+    "Es ist 18 Uhr. Weisst du, was nach 18 Uhr gut ist? Alles, was nicht diese Mail ist.",
+    "18 Uhr. Normale Leute essen, ich mache ein Schläfchen. Und du?",
+    "18 Uhr. Das Abendessen kocht sich nicht von selbst. Ausser du bestellst, aber trotzdem."
+  ],
+  [
+    "19 Uhr. Nichts, was du jetzt schreibst, wird so gut wie das von morgen um 9.",
+    "Es ist 19 Uhr. Dein Computer wünscht dir nie einen schönen Abend. Ich schon. Schönen Abend.",
+    "19 Uhr. Der Arbeitstag ist längst vorbei. Er hat dir einen Zettel hinterlassen: geh heim.",
+    "19 Uhr. Sogar deine Mails haben Feierabend. Sie schlafen im Postfach, lass sie."
+  ],
+  [
+    "20 Uhr. Im Ernst. Ich bin eine Katze, und selbst ich finde, das ist viel.",
+    "Es ist 20 Uhr. Dein Bildschirm hatte heute mehr Zeit mit dir als deine Leute.",
+    "20 Uhr. Klapp den Laptop zu. Er nimmt es dir nicht übel. Niemand tut das.",
+    "20 Uhr. Was du da machst, kann bis morgen warten. Dein Abend nicht."
+  ],
+  [
+    "21 Uhr. Also gut. Ich rühre mich nicht von hier, bis du diesen Tab schliesst.",
+    "Es ist 21 Uhr. Das ist keine Arbeit mehr, das ist Sturheit. Ausschalten, ich halte dir den Rücken frei.",
+    "21 Uhr. Letzte Runde. Aufstehen, strecken, ausschalten. Morgen gibt es auch noch, versprochen.",
+    "21 Uhr. Sogar die Strassenkatzen sind heim. Jetzt du."
+  ]
+];
+
+// Le week-end, 2026-09-26. Le samedi et le dimanche, le chat de passage
+// s'etonne qu'on travaille, et salue ca comme quelque chose d'original et
+// de different. Meme ton drole que les autres phrases, jamais un reproche.
+const KZ_WEEKEND_FR = [
+  "Un samedi devant l'écran ? Original. Moi je fais la sieste, mais je respecte.",
+  "Travailler le week-end, c'est audacieux. Personne ne t'a dit que c'était fermé ?",
+  "Tu bosses un dimanche. Soit tu adores ton métier, soit tu as perdu le calendrier. Les deux me vont.",
+  "Week-end au bureau, quelle idée. Différente, je te l'accorde. N'oublie pas de sortir.",
+  "Je passais voir s'il y avait quelqu'un. Il y a toi. Un week-end. Je note, c'est rare.",
+  "Le week-end, les autres dorment. Toi, tu avances. Ça mérite au moins une pause café.",
+  "Du travail un jour de repos ? Tu es le chat de gouttière du bureau, j'aime bien.",
+  "Bravo pour l'originalité : week-end et clavier. Pense quand même à regarder par la fenêtre."
+];
+const KZ_WEEKEND_EN = [
+  "A Saturday in front of the screen? Original. I nap, but I respect it.",
+  "Working on the weekend is bold. Did nobody tell you it was closed?",
+  "Working on a Sunday. Either you love your job or you lost the calendar. Both are fine by me.",
+  "Weekend at the office, what an idea. A different one, I will give you that. Do go outside.",
+  "I came to see if anyone was around. There is you. On a weekend. Noted, that is rare.",
+  "On weekends everyone else sleeps. You get ahead. That deserves at least a coffee break.",
+  "Work on a day off? You are the alley cat of the office, I like it.",
+  "Points for originality: weekend and keyboard. Still, look out of the window now and then."
+];
+const KZ_WEEKEND_DE = [
+  "Ein Samstag vor dem Bildschirm? Originell. Ich mache ein Schläfchen, aber ich respektiere es.",
+  "Am Wochenende arbeiten ist mutig. Hat dir niemand gesagt, dass geschlossen ist?",
+  "Du arbeitest an einem Sonntag. Entweder liebst du deinen Job, oder du hast den Kalender verloren. Beides passt.",
+  "Wochenende im Büro, was für eine Idee. Eine andere, das gebe ich zu. Geh trotzdem mal raus.",
+  "Ich wollte sehen, ob jemand da ist. Du bist da. An einem Wochenende. Notiert, das ist selten.",
+  "Am Wochenende schlafen die anderen. Du kommst voran. Das verdient mindestens eine Kaffeepause.",
+  "Arbeit an einem freien Tag? Du bist die Strassenkatze des Büros, gefällt mir.",
+  "Ein Punkt für Originalität: Wochenende und Tastatur. Schau trotzdem mal aus dem Fenster."
 ];
 
 // Vingt phrases pour le coucou du chat au tout debut d'une visioconference. Ton
@@ -394,6 +496,7 @@ const KZ_MEETING_DE = [
 
 const KZ_QUOTES = KZ_IS_FR ? KZ_QUOTES_FR : (KZ_IS_DE ? KZ_QUOTES_DE : KZ_QUOTES_EN);
 const KZ_SPORT = KZ_IS_FR ? KZ_SPORT_FR : (KZ_IS_DE ? KZ_SPORT_DE : KZ_SPORT_EN);
-const KZ_SNARK = KZ_IS_FR ? KZ_SNARK_FR : (KZ_IS_DE ? KZ_SNARK_DE : KZ_SNARK_EN);
 const KZ_MEETING = KZ_IS_FR ? KZ_MEETING_FR : (KZ_IS_DE ? KZ_MEETING_DE : KZ_MEETING_EN);
 const KZ_HELLO = KZ_IS_FR ? KZ_HELLO_FR : (KZ_IS_DE ? KZ_HELLO_DE : KZ_HELLO_EN);
+const KZ_EVENING = KZ_IS_FR ? KZ_EVENING_FR : (KZ_IS_DE ? KZ_EVENING_DE : KZ_EVENING_EN);
+const KZ_WEEKEND = KZ_IS_FR ? KZ_WEEKEND_FR : (KZ_IS_DE ? KZ_WEEKEND_DE : KZ_WEEKEND_EN);

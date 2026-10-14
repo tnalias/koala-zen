@@ -13,7 +13,7 @@ fi
 total=0
 for d in "${cibles[@]}"; do
   echo "################ $d"
-  for f in background kdrive content popup backup lot phrases passages rendu_passages; do
+  for f in background jetons agenda content popup backup lot phrases passages rendu_passages; do
     node "tests/test_$f.js" "$d"
     total=$((total + $?))
   done

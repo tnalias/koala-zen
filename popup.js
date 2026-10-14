@@ -2,9 +2,9 @@ const api = globalThis.browser || globalThis.chrome;
 
 const DEFAULT_MUTED = ["kmeet.infomaniak.com", "teams.microsoft.com", "teams.live.com", "zoom.us", "meet.google.com"];
 
-const SETTINGS_KEYS = ["intervalMinutes", "preset", "customInterval", "passages", "passageFrequency", "muteInCalls", "mutedPatterns", "pauseWhenIdle", "focusMode", "focusSeconds", "screenTimezone", "animMode"];
+const SETTINGS_KEYS = ["intervalMinutes", "preset", "customInterval", "passages", "passageFrequency", "muteInCalls", "mutedPatterns", "pauseWhenIdle", "focusMode", "focusSeconds", "screenTimezone", "animMode", "agendaEnabled", "agendaWarn", "agendaEndWarn", "theme", "notifyEnabled", "mailStatsEnabled"];
 const CONTENT_KEYS = ["customQuotes", "customSport", "includeDefaultQuotes", "hiddenQuotes", "habitGoal"];
-const STATS_KEYS = ["statsDaily", "screenDaily", "pending"];
+const STATS_KEYS = ["statsDaily", "screenDaily", "meetingDaily", "mailDaily"];
 const KOALA_KEYS = ["customKoalas", "includeDefaultKoalas"];
 
 const DEFAULTS = {
@@ -20,6 +20,12 @@ const DEFAULTS = {
   animMode: "always",
   passages: true,
   passageFrequency: "normal",
+  agendaEnabled: false,
+  agendaWarn: true,
+  agendaEndWarn: true,
+  theme: "auto",
+  notifyEnabled: false,
+  mailStatsEnabled: false,
   customKoalas: [],
   includeDefaultKoalas: false,
   customQuotes: [],
@@ -35,16 +41,17 @@ const DEFAULTS = {
   pausedUntil: 0,
   pending: 0,
   statsDaily: {},
-  screenDaily: {}
+  screenDaily: {},
+  meetingDaily: {},
+  mailDaily: {}
 };
 
 const ALARM = "kz-move";
 const MAX_KOALAS = 18;
 const MAX_DIM = 300;
-const CORR_MIN = 7;
 const BROWSE_PAGE = 40;
 // Date de la derniere mise a jour, a actualiser a chaque release en meme temps que la version.
-const KZ_BUILD_DATE = "2026-07-30";
+const KZ_BUILD_DATE = "2026-09-16";
 
 function koalaSvg(size, variant) {
   const eyes = (variant === "sleepy")
@@ -62,6 +69,41 @@ function koalaSvg(size, variant) {
 
 let REDUCE_MOTION = false;
 function systemReducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+// Le theme du popup, 2026-09-22. Automatique suit prefers-color-scheme et
+// reagit a son changement, Clair et Sombre forcent. Applique sur html, le
+// CSS ne connait que data-theme="dark".
+let themeMedia = null;
+function effectiveTheme(mode) {
+  if (mode === "dark" || mode === "light") return mode;
+  try { return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light"; }
+  catch (e) { return "light"; }
+}
+function applyTheme(mode) {
+  const m = (mode === "dark" || mode === "light") ? mode : "auto";
+  document.documentElement.setAttribute("data-theme", effectiveTheme(m));
+  document.documentElement.setAttribute("data-theme-mode", m);
+  if (!themeMedia) {
+    try {
+      themeMedia = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      const suit = () => { if (currentThemeMode() === "auto") applyTheme("auto"); };
+      if (themeMedia && themeMedia.addEventListener) themeMedia.addEventListener("change", suit);
+      else if (themeMedia && themeMedia.addListener) themeMedia.addListener(suit);
+    } catch (e) { /* noop */ }
+    if (!themeMedia) themeMedia = { matches: false };
+  }
+}
+function currentThemeMode() {
+  const on = document.querySelector("#themeSeg .seg-b--on");
+  const v = on ? on.getAttribute("data-th") : "auto";
+  return (v === "dark" || v === "light") ? v : "auto";
+}
+function setThemeSeg(mode) {
+  document.querySelectorAll("#themeSeg .seg-b").forEach((o) => o.classList.toggle("seg-b--on", o.getAttribute("data-th") === mode));
+}
+document.querySelectorAll("#themeSeg .seg-b").forEach((b) => {
+  b.addEventListener("click", () => { setThemeSeg(b.getAttribute("data-th")); applyTheme(b.getAttribute("data-th")); });
+});
+
 function applyAnimMode(mode) {
   const animate = (mode === "always") ? true : (mode === "never") ? false : !systemReducedMotion();
   REDUCE_MOTION = !animate;
@@ -75,7 +117,8 @@ const $ = (id) => document.getElementById(id);
 let CFG = Object.assign({}, DEFAULTS);
 let STATS = {};
 let SCREEN = {};
-let PENDING = 0;
+let MEET = {};
+let MAIL = {};
 let customKoalas = [];
 let customSport = [];
 let customQuotes = [];
@@ -89,7 +132,7 @@ let browseSeg = "all";
 let browseQuery = "";
 let browseLimit = BROWSE_PAGE;
 let editingQuote = null;
-let exportParts = { settings: true, content: true, stats: true, koalas: true };
+let exportParts = { settings: true, content: true, stats: true, koalas: true, connexions: false };
 let importMode = "merge";
 let currentTab = "settings";
 
@@ -132,10 +175,13 @@ function clear(node) { while (node.firstChild) node.removeChild(node.firstChild)
 function rebuildSvgNode(foreign, doc) {
   if (foreign.nodeType === Node.TEXT_NODE) return doc.createTextNode(foreign.nodeValue);
   if (foreign.nodeType !== Node.ELEMENT_NODE) return null;
+  // Filtre (2026-10-06, revue ECC) : jamais de script, d'objet etranger, d'attribut d'evenement ni de lien javascript, meme si nos dessins n'en ont pas.
+  if (/^(script|foreignobject|iframe|object|embed)$/i.test(foreign.localName || foreign.tagName || "")) return null;
   const ns = foreign.namespaceURI || "http://www.w3.org/2000/svg";
   const n = doc.createElementNS(ns, foreign.localName || foreign.tagName);
   for (let i = 0; i < foreign.attributes.length; i++) {
     const a = foreign.attributes[i];
+    if (/^on/i.test(a.name) || (/href$/i.test(a.name) && /^\s*(javascript|data):/i.test(a.value))) continue;
     n.setAttribute(a.name, a.value);
   }
   for (let j = 0; j < foreign.childNodes.length; j++) {
@@ -206,16 +252,22 @@ function getAlarm(name) {
 function clampInt(v, lo, hi, dflt) { const n = parseInt(v, 10); return isNaN(n) ? dflt : Math.min(hi, Math.max(lo, n)); }
 function pad2(n) { return String(n).padStart(2, "0"); }
 function fmtMinutes(n) { return n + " " + msg("unitMin", "min"); }
+// Arrondi a la minute AVANT de separer heures et minutes : arrondir le reste
+// seul donnait "1 h 60" pour 7170 s et "60 min" pour 3590 s.
 function fmtDurShort(sec) {
-  sec = Math.max(0, Math.round(sec));
-  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  const min = Math.max(0, Math.round((Number(sec) || 0) / 60));
+  const h = Math.floor(min / 60), m = min % 60;
   if (h > 0) return h + " " + msg("unitHour", "h") + " " + pad2(m);
   return m + " " + msg("unitMin", "min");
 }
+// Le gros chiffre d'une tuile : les heures seules a partir de dix heures
+// ("23 h"), les minutes en plus en dessous ("1 h 30"), sinon 1 h 30 de
+// reunion s'affichait "1 h".
 function fmtDurTile(sec) {
-  sec = Math.max(0, Math.round(sec));
-  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
-  if (h > 0) return h + " " + msg("unitHour", "h");
+  const min = Math.max(0, Math.round((Number(sec) || 0) / 60));
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h >= 10 || (h > 0 && m === 0)) return h + " " + msg("unitHour", "h");
+  if (h > 0) return h + " " + msg("unitHour", "h") + " " + pad2(m);
   return m + " " + msg("unitMin", "min");
 }
 function fmtBytes(n) {
@@ -227,6 +279,8 @@ function byteSize(value) {
   try { return new TextEncoder().encode(JSON.stringify(value == null ? null : value)).length; }
   catch (e) { return String(JSON.stringify(value || "")).length; }
 }
+// Une decimale au plus, aucune quand le nombre est rond : 4 et pas 4,0.
+function fmtDec(n) { try { return Number(n).toLocaleString(uiLang(), { minimumFractionDigits: 0, maximumFractionDigits: 1 }); } catch (e) { return String(n); } }
 function fmtNum(n, dec) { try { return Number(n).toLocaleString(uiLang(), { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }); } catch (e) { return String(n); } }
 
 /* ---------- dates ---------- */
@@ -263,8 +317,14 @@ async function ongletEnVisio() {
     });
     const url = (tabs && tabs[0] && tabs[0].url) || "";
     if (!url) return false;
-    const host = String(url).replace(/^[a-z]+:\/\//i, "").split("/")[0].toLowerCase();
-    return pats.some((p) => host.indexOf(String(p).toLowerCase()) >= 0);
+    const host = String(url).replace(/^[a-z]+:\/\//i, "").split("/")[0].toLowerCase().replace(/:\d+$/, "");
+    // Meme regle que matchesMuted() dans background.js : l'hote exact ou un
+    // sous-domaine, jamais une simple sous-chaine. Sinon l'en-tete annoncait
+    // une visio sur "notzoom.us" alors que le rappel, lui, tombait.
+    return pats.some((brut) => {
+      const base = String(brut).trim().toLowerCase().replace(/^\*\./, "").replace(/\/.*$/, "");
+      return !!base && (host === base || host.endsWith("." + base));
+    });
   } catch (e) { return false; }
 }
 
@@ -274,6 +334,13 @@ async function refreshNextVisit() {
   // Module B. La visio passe avant tout le reste, y compris la pause.
   if (await ongletEnVisio()) {
     node.textContent = msg("statusCall", "En silence, visio en cours");
+    return;
+  }
+  // Un rendez-vous de l'agenda en cours vaut une visio, avant la pause.
+  // 2026-10-06 : l'etat de l'agenda vit dans le coffre du fond, on le demande.
+  const ag = (await getLocal(["agendaEnabled"])).agendaEnabled ? await sendR("kz-agenda-status") : null;
+  if (ag && ag.enabled && Number(ag.inUntil) > Date.now()) {
+    node.textContent = msg("statusMeeting", "Rendez-vous en cours, rappels en pause");
     return;
   }
   const r = await getLocal(["pausedUntil"]);
@@ -329,7 +396,7 @@ function activeBuiltinQuotes() { return builtinQuotes().filter((q) => hiddenQuot
    ONGLET RÉGLAGES
    ================================================================ */
 
-/* Pause et rattrapage */
+/* Pause */
 function endOfTodayTs() { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); }
 $("snoozeLater").addEventListener("click", async () => { await send("kz-pause", { until: Date.now() + 15 * 60000 }); await refreshStatus(); });
 $("snooze1h").addEventListener("click", async () => { await send("kz-pause", { until: Date.now() + 60 * 60000 }); await refreshStatus(); });
@@ -337,7 +404,7 @@ $("snoozeToday").addEventListener("click", async () => { await send("kz-pause", 
 $("resumeBtn").addEventListener("click", async () => { await send("kz-resume"); await refreshStatus(); });
 
 async function refreshStatus() {
-  const r = await getLocal(["pausedUntil", "pending"]);
+  const r = await getLocal(["pausedUntil"]);
   const until = Number(r.pausedUntil) || 0;
   const paused = until > Date.now();
   $("quickActions").hidden = paused;
@@ -346,11 +413,6 @@ async function refreshStatus() {
     const t = new Date(until);
     $("pausedText").textContent = msg("pausedUntilLabel", "En pause jusqu'à") + " " + pad2(t.getHours()) + ":" + pad2(t.getMinutes());
   }
-  PENDING = Math.max(0, Number(r.pending) || 0);
-  $("catchupCard").hidden = PENDING <= 0;
-  if (PENDING <= 0) $("catchupBox").hidden = true;
-  const key = PENDING > 1 ? "catchupTitlePlural" : "catchupTitleOne";
-  $("catchupTitle").textContent = msg(key, PENDING > 1 ? "{n} habitudes à rattraper" : "{n} habitude à rattraper").replace("{n}", PENDING);
   await refreshNextVisit();
 }
 
@@ -364,54 +426,15 @@ async function nextSport() {
   return list[i];
 }
 
-$("catchupBtn").addEventListener("click", async () => {
-  $("catchupPrompt").textContent = await nextSport();
-  $("catchupDone").hidden = false;
-  clear($("catchupEnergy"));
-  $("catchupBox").hidden = false;
-});
-$("catchupDone").addEventListener("click", () => {
-  $("catchupDone").hidden = true;
-  buildEnergyScale($("catchupEnergy"), async (energy) => {
-    await send("kz-catchup", { energy: energy });
-    await refreshStatus();
-    clear($("catchupEnergy"));
-    $("catchupDone").hidden = false;
-    if (PENDING > 0) { $("catchupPrompt").textContent = await nextSport(); }
-    else { $("catchupBox").hidden = true; }
-  });
-});
 
 /* Echelle d'energie, meme graduation que dans la page */
-const NRJ_TONE = ["nrj-1", "nrj-1", "nrj-1", "nrj-2", "nrj-2", "nrj-3", "nrj-3", "nrj-4", "nrj-5", "nrj-5"];
-function buildEnergyScale(container, onPick) {
-  clear(container);
-  const box = el("div", "nrj");
-  box.appendChild(el("div", "row-lab row-lab--big", msg("energyQ", "Ton énergie, là maintenant")));
-  const grid = el("div", "nrj-grid");
-  let picked = false;
-  for (let i = 1; i <= 10; i++) {
-    const b = el("button", "nrj-b " + NRJ_TONE[i - 1], String(i));
-    b.type = "button";
-    b.addEventListener("click", () => { if (!picked) { picked = true; onPick(i); } });
-    grid.appendChild(b);
-  }
-  const ends = el("div", "nrj-ends");
-  ends.appendChild(el("div", "nrj-lo", msg("energyLow", "À plat")));
-  ends.appendChild(el("div", "nrj-hi", msg("energyHigh", "En pleine forme")));
-  const skip = el("button", "nrj-skip", msg("energySkip", "Passer"));
-  skip.type = "button";
-  skip.addEventListener("click", () => { if (!picked) { picked = true; onPick(null); } });
-  box.appendChild(grid); box.appendChild(ends); box.appendChild(skip);
-  container.appendChild(box);
-}
-
 /* Rythme */
 const CANON = { pomodoro: 25, deepwork: 52, ultradian: 90 };
 function currentInterval() { return clampInt($("interval").value, 1, 240, 30); }
 function paintRange() {
   const v = currentInterval();
-  const pct = ((v - 1) / 239) * 100;
+  // Le curseur va de 5 a 240 (popup.html), le remplissage suit la meme echelle.
+  const pct = Math.max(0, Math.min(100, ((v - 5) / 235) * 100));
   $("interval").style.background = "linear-gradient(90deg, #2FAE4A 0%, #2FAE4A " + pct + "%, #F1F1F1 " + pct + "%, #F1F1F1 100%)";
 }
 function paintRhythm() {
@@ -501,13 +524,20 @@ function renderMuteChips() {
     const inp = el("input", "chip-in");
     inp.type = "text";
     inp.placeholder = "example.com";
+    // Echap annule : retirer le champ declenche un blur, qui validait quand
+    // meme le texte tape. Le drapeau fait ignorer ce blur.
+    let annule = false;
     const commit = () => {
+      if (annule) return;
       const v = String(inp.value || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
       if (v && mutedPatterns.indexOf(v) < 0) mutedPatterns.push(v);
       mutedExpanded = true;
       renderMuteChips();
     };
-    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") renderMuteChips(); });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); commit(); }
+      if (e.key === "Escape") { annule = true; renderMuteChips(); }
+    });
     inp.addEventListener("blur", commit);
     host.replaceChild(inp, add);
     inp.focus();
@@ -668,12 +698,14 @@ function parseLot(texte, dejaLa) {
 
 let bulkAnalyse = null;
 
-function showBulk(on) {
+// garder : on revient de l'ecran de verification, le texte colle reste en
+// place pour etre corrige. Sans ce drapeau, "Revenir au texte" vidait tout.
+function showBulk(on, garder) {
   $("panelBulk").hidden = !on;
   $("panelBulkOk").hidden = true;
   $("mainHead").hidden = on;
   $("panelPerso").hidden = on;
-  if (on) { $("bulkText").value = ""; majBulkCount(); }
+  if (on) { if (!garder) $("bulkText").value = ""; majBulkCount(); }
   window.scrollTo(0, 0);
 }
 function showBulkOk(on) {
@@ -785,8 +817,8 @@ $("bulkCheck").addEventListener("click", () => {
   renderBulkOk();
   showBulkOk(true);
 });
-$("bulkBackText").addEventListener("click", () => { showBulkOk(false); showBulk(true); });
-$("bulkOkBack").addEventListener("click", () => { showBulkOk(false); showBulk(true); });
+$("bulkBackText").addEventListener("click", () => { showBulkOk(false); showBulk(true, true); });
+$("bulkOkBack").addEventListener("click", () => { showBulkOk(false); showBulk(true, true); });
 $("bulkApply").addEventListener("click", () => {
   if (!bulkAnalyse || !bulkAnalyse.pretes.length) return;
   bulkAnalyse.pretes.forEach((q) => customQuotes.push(q));
@@ -980,11 +1012,11 @@ function dayStat(k) {
   // un fichier edite a la main ou produit par un autre outil) reste une
   // chaine "truthy" et addAgg() fait alors une concatenation de texte au
   // lieu d'une addition, faussant les totaux affiches sans jamais planter.
-  return { due: Number(v.due) || 0, done: Number(v.done) || 0, rep: Number(v.rep) || 0, eSum: Number(v.eSum) || 0, eCount: Number(v.eCount) || 0, repH: Array.isArray(v.repH) ? v.repH.map((n) => Number(n) || 0) : [0, 0, 0, 0] };
+  return { due: Number(v.due) || 0, done: Number(v.done) || 0, rep: Number(v.rep) || 0, repH: Array.isArray(v.repH) ? v.repH.map((n) => Number(n) || 0) : [0, 0, 0, 0] };
 }
-function emptyAgg() { return { due: 0, done: 0, rep: 0, eSum: 0, eCount: 0, repH: [0, 0, 0, 0] }; }
+function emptyAgg() { return { due: 0, done: 0, rep: 0, repH: [0, 0, 0, 0] }; }
 function addAgg(a, s) {
-  a.due += s.due; a.done += s.done; a.rep += s.rep; a.eSum += s.eSum; a.eCount += s.eCount;
+  a.due += s.due; a.done += s.done; a.rep += s.rep;
   for (let i = 0; i < 4; i++) a.repH[i] += (s.repH[i] || 0);
   return a;
 }
@@ -993,6 +1025,90 @@ function sumRange(start, end) {
   let d = atMidnight(start); const last = atMidnight(end); let guard = 0;
   while (d.getTime() <= last.getTime() && guard < 4000) { addAgg(agg, dayStat(keyOf(d))); d = addDays(d, 1); guard++; }
   return agg;
+}
+// Le temps en reunion, en secondes, depuis meetingDaily { jour: { cle: minutes } }.
+// meetingDaily { jour: { cle: [debut, fin] } } depuis le 2026-09-26, ou
+// { cle: minutes } pour un historique plus ancien. Le temps du jour est
+// l'UNION des intervalles : deux reunions qui se chevauchent, ou la meme
+// reunion vue dans deux agendas, ne comptent qu'une fois.
+function meetingDayParts(k) {
+  const d = MEET[k];
+  const iv = [], anciens = [];
+  if (d && typeof d === "object") Object.keys(d).forEach((c) => {
+    const v = d[c];
+    if (Array.isArray(v) && v.length === 2 && Number(v[1]) > Number(v[0])) iv.push([Number(v[0]), Number(v[1])]);
+    else if (Number(v) > 0) anciens.push(Number(v));
+  });
+  return { iv: iv, anciens: anciens };
+}
+function meetingSecDay(k) {
+  const p = meetingDayParts(k);
+  const iv = p.iv.slice().sort((a, b) => a[0] - b[0]);
+  let ms = 0, cur = null;
+  iv.forEach((x) => {
+    if (!cur || x[0] > cur[1]) { if (cur) ms += cur[1] - cur[0]; cur = [x[0], x[1]]; }
+    else if (x[1] > cur[1]) cur[1] = x[1];
+  });
+  if (cur) ms += cur[1] - cur[0];
+  return Math.round(ms / 1000) + p.anciens.reduce((a, m) => a + m * 60, 0);
+}
+// Les reunions distinctes du jour : un meme creneau exact vu dans deux
+// agendas ne compte qu'une fois.
+function meetingCountDay(k) {
+  const p = meetingDayParts(k);
+  const vus = {};
+  p.iv.forEach((x) => { vus[x[0] + "-" + x[1]] = true; });
+  return Object.keys(vus).length + p.anciens.length;
+}
+function meetingCountRange(start, end) {
+  let n = 0, d = atMidnight(start); const last = atMidnight(end); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 4000) { n += meetingCountDay(keyOf(d)); d = addDays(d, 1); g++; }
+  return n;
+}
+// Les mails du jour, mailDaily { jour: { in, out } }.
+// mailDaily { jour: { in, out, read, del, done } }. Les jours mesures avant le
+// 2026-09-26 n'ont que in et out : done vaut alors null, jamais un zero invente.
+function mailDay(k) {
+  const v = MAIL[k] || {};
+  const n = (x) => Math.max(0, Number(x) || 0);
+  return { in: n(v.in), out: n(v.out), del: n(v.del), done: v.done === undefined ? null : n(v.done) };
+}
+function mailRange(start, end) {
+  const a = { in: 0, out: 0, del: 0, done: 0, jours: 0, joursDone: 0 }; let d = atMidnight(start); const last = atMidnight(end); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 4000) {
+    const k = keyOf(d);
+    if (MAIL[k]) {
+      const m = mailDay(k); a.in += m.in; a.out += m.out; a.jours++;
+      if (m.done !== null) { a.done += m.done; a.del += m.del; a.joursDone++; }
+    }
+    d = addDays(d, 1); g++;
+  }
+  return a;
+}
+function hasMail() { return Object.keys(MAIL).length > 0; }
+function meetingSecRange(start, end) {
+  let sec = 0, d = atMidnight(start); const last = atMidnight(end); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 4000) { sec += meetingSecDay(keyOf(d)); d = addDays(d, 1); g++; }
+  return sec;
+}
+function hasMeetings() {
+  return Object.keys(MEET).some((k) => meetingSecDay(k) > 0);
+}
+// Sous la tuile : la part du temps d'ecran quand elle a un sens, sinon la
+// moyenne par jour. Jamais un pourcentage au-dela de cent, qui ne voudrait
+// rien dire (une reunion sans ecran devant soi).
+function phraseReunion(meetSec, scrSec, days, count) {
+  if (meetSec <= 0) return "";
+  // Le nombre de reunions d'abord, puis leur rythme par semaine sur une
+  // periode d'au moins deux semaines.
+  const n = Math.max(0, Math.round(Number(count) || 0));
+  if (n > 0) {
+    const nb = (n === 1 ? msg("phMeetingOne", "1 réunion") : msg("phMeetingMany", "{n} réunions").replace("{n}", String(n)));
+    if (days >= 14) return nb + " · " + msg("phMeetingPerWeek", "{n} par semaine").replace("{n}", fmtDec(Math.round((n / days) * 7 * 10) / 10));
+    return nb;
+  }
+  if (scrSec > 0 && meetSec <= scrSec) return msg("phMeetingShare", "{p} % de ton temps d'écran").replace("{p}", String(Math.round((meetSec / scrSec) * 100)));
+  return msg("phScreenAvg", "{d} en moyenne par jour").replace("{d}", fmtDurShort(Math.round(meetSec / Math.max(1, days))));
 }
 function screenSecRange(start, end) {
   let sec = 0, d = atMidnight(start); const last = atMidnight(end); let g = 0;
@@ -1065,10 +1181,8 @@ function prevRangeFor(kind, offset, now) {
    la tuile ne montre PAS de tiret. Jamais de reproche, une baisse se dit sans
    jugement. Le mot cause n'apparait nulle part.                                */
 
-const PHRASE_MIN_JOURS = 4;      // une tendance demande au moins 4 jours renseignes
 const PHRASE_MIN_REPORTS = 5;    // un creneau demande au moins 5 reports
 const PHRASE_SEUIL_STABLE = 0.05; // sous 5 pour cent d'ecart, on ecrit stable
-const PHRASE_SEUIL_PENTE = 0.2;   // 0,2 point par jour pour parler de tendance
 
 // 1. Habitudes faites, ecart avec la periode equivalente precedente.
 function phraseEcart(done, donePrev, kind) {
@@ -1112,32 +1226,48 @@ function phraseCreneau(repH) {
 // 3. Energie, droite de regression sur les valeurs de la periode. En hausse ou
 // en baisse si la pente depasse 0,2 point par jour, sinon stable, et on cite le
 // jour ou le sens a change.
-function penteLineaire(points) {
-  const n = points.length;
-  if (n < 2) return 0;
-  let sx = 0, sy = 0, sxy = 0, sxx = 0;
-  points.forEach((p, i) => { sx += i; sy += p; sxy += i * p; sxx += i * i; });
-  const den = n * sxx - sx * sx;
-  if (!den) return 0;
-  return (n * sxy - sx * sy) / den;
+// 7. Le jour le plus charge de la semaine, 2026-09-26. Fonction PURE : elle
+// recoit des jours { date, v } deja filtres (seulement les jours ou la donnee
+// existe) et rend { wd, date, avg } pour le jour le plus charge, { even:
+// true } si aucun jour ne se detache, ou null si la periode ne permet pas de
+// conclure. Moyenne par jour de la semaine, jamais un total : un mois a cinq
+// jeudis ne fait pas gagner le jeudi.
+const BUSY_MIN_SEMAINES = 3;     // au moins trois semaines de donnees
+const BUSY_MIN_JOURS = 21;       // et au moins 21 jours
+const BUSY_SEUIL_ECART = 0.15;   // le premier doit depasser le second de 15 %
+function jourLePlusCharge(jours) {
+  const liste = (jours || []).filter((j) => j && j.date && typeof j.date.getTime === "function" && Number.isFinite(j.date.getTime()) && Number.isFinite(Number(j.v)));
+  if (liste.length < BUSY_MIN_JOURS) return null;
+  const semaines = {};
+  liste.forEach((j) => { semaines[keyOf(monday(j.date))] = true; });
+  if (Object.keys(semaines).length < BUSY_MIN_SEMAINES) return null;
+  const groupes = [0, 1, 2, 3, 4, 5, 6].map(() => ({ s: 0, n: 0, date: null }));
+  liste.forEach((j) => { const g = groupes[j.date.getDay()]; g.s += Math.max(0, Number(j.v)); g.n++; if (!g.date) g.date = j.date; });
+  const moyennes = groupes.map((g, wd) => ({ wd: wd, date: g.date, avg: g.n ? g.s / g.n : 0 })).filter((m) => m.date);
+  moyennes.sort((a, b) => b.avg - a.avg);
+  const premier = moyennes[0], second = moyennes[1];
+  if (!premier || premier.avg <= 0) return null;
+  if (second && premier.avg < second.avg * (1 + BUSY_SEUIL_ECART)) return { even: true };
+  return premier;
 }
-function phraseTendance(jours) {
-  // jours, tableau ordonne de { date, energie } ou energie vaut null si non note.
-  const notes = (jours || []).filter((j) => j && typeof j.energie === "number");
-  if (notes.length < PHRASE_MIN_JOURS) return "";
-  const pente = penteLineaire(notes.map((j) => j.energie));
-  if (Math.abs(pente) < PHRASE_SEUIL_PENTE) return msg("phEnergyFlat", "stable sur la période");
-  // Le jour ou le sens a change, le dernier point qui va contre la pente finale.
-  let bascule = null;
-  for (let i = notes.length - 1; i > 0; i--) {
-    const d = notes[i].energie - notes[i - 1].energie;
-    if ((pente > 0 && d < 0) || (pente < 0 && d > 0)) { bascule = notes[i]; break; }
-  }
-  const jour = bascule ? nomDeJour(bascule.date) : nomDeJour(notes[0].date);
-  return (pente > 0
-    ? msg("phEnergyUp", "en hausse depuis {j}")
-    : msg("phEnergyDown", "en baisse depuis {j}")
-  ).replace("{j}", jour);
+function phraseJourCharge(res, sorte) {
+  if (!res) return null;
+  if (res.even) return { t: sorte === "mail" ? msg("busyMailEven", "Tes mails sont répartis sur la semaine.") : msg("busyMeetEven", "Tes réunions sont réparties sur la semaine.") };
+  const jour = nomDeJour(res.date);
+  if (sorte === "mail") return { t: msg("busyMail", "Le {j} est ton jour le plus chargé : {n} mails traités en moyenne."), j: jour, n: String(Math.round(res.avg)) };
+  return { t: msg("busyMeet", "Le {j} est ton jour le plus chargé : {n} de réunion en moyenne."), j: jour, n: fmtDurShort(Math.round(res.avg)) };
+}
+// Pose la phrase dans son emplacement, le jour et la valeur en gras.
+function poseJourCharge(host, p) {
+  clear(host);
+  host.hidden = !p;
+  if (!p) return;
+  const morceaux = p.t.split(/(\{j\}|\{n\})/);
+  morceaux.forEach((m) => {
+    if (m === "{j}") host.appendChild(el("b", "", p.j));
+    else if (m === "{n}") host.appendChild(el("b", "", p.n));
+    else if (m) host.appendChild(document.createTextNode(m));
+  });
 }
 function nomDeJour(d) {
   try { return d.toLocaleDateString(uiLang(), { weekday: "long" }); }
@@ -1170,7 +1300,9 @@ function phraseRecord(fin) {
 // Cadence, temps d'ecran divise par le nombre d'habitudes faites.
 function phraseCadence(sec, done) {
   if (!done || !sec) return "";
-  return msg("phPace", "1 habitude / {d}").replace("{d}", fmtDurShort(Math.round(sec / done)));
+  // 2026-09-26 : "1 habitude / 1 h 47" ne se comprenait pas. La phrase dit
+  // maintenant ce qu'elle mesure : une habitude faite pour tant d'ecran.
+  return msg("phPace", "Une habitude toutes les {d} d'écran").replace("{d}", fmtDurShort(Math.round(sec / done)));
 }
 
 // Les bornes de la plus longue serie d'une plage, pour la phrase 5.
@@ -1281,16 +1413,6 @@ $("rangeNext").addEventListener("click", () => {
 });
 
 // L'energie moyenne par jour de la plage, pour la droite de regression.
-function joursEnergie(range) {
-  const out = [];
-  let d = atMidnight(range[0]); const last = atMidnight(range[1]); let g = 0;
-  while (d.getTime() <= last.getTime() && g < 4000) {
-    const st = dayStat(keyOf(d));
-    out.push({ date: new Date(d), energie: st.eCount > 0 ? st.eSum / st.eCount : null });
-    d = addDays(d, 1); g++;
-  }
-  return out;
-}
 // Le record ignore le filtre, il porte sur tout l'historique.
 function recordTousTemps() {
   const keys = Object.keys(STATS).sort();
@@ -1302,17 +1424,123 @@ function recordTousTemps() {
 function showFirstRun(on) {
   $("firstRun").hidden = !on;
   $("mainHead").hidden = on;
-  ["panelSettings", "panelPerso", "panelStats", "panelData"].forEach((id) => {
-    const n = $(id); if (n) n.hidden = on || n.hidden;
-  });
   if (on) {
-    const k = svgNode(koalaSvg(64, "sway"));
-    if (k) { clear($("frKoala")); $("frKoala").appendChild(k); }
+    ["panelSettings", "panelPerso", "panelStats", "panelData"].forEach((id) => { const n = $(id); if (n) n.hidden = true; });
+  } else {
+    // Au retour, l'onglet courant se reaffiche. Avant, les panneaux restaient
+    // tous caches et le popup etait vide sous l'en-tete apres Commencer.
+    showTab(currentTab || "settings");
+  }
+  if (on) {
+    // Le koala du rappel, meme dessin que sur les pages. Il salue et cligne
+    // des yeux ; animations coupees, sa version fixe.
+    const anime = document.documentElement.classList.contains("anim-on");
+    $("frKoala").src = anime ? "images/koala-hello.svg" : "images/koala-hello-still.svg";
     // Une habitude prereplie, jamais un champ vide, planche N. applyI18n()
     // a deja pose le placeholder localise, on le reprend comme valeur.
     if (!$("frHabit").value) $("frHabit").value = $("frHabit").placeholder || "";
+    frStep(0);
   }
 }
+
+/* ---------- Onboarding, 2026-09-26 ----------
+   Quatre etapes : la premiere habitude, ce que tu y gagnes, l'agenda
+   (facultatif), tes donnees chez toi. Continuer avance, Retour recule,
+   Passer saute l'etape en cours. 2026-09-29 : l'etape de connexion ne
+   demande plus qu'un jeton limite a workspace:calendar ; kDrive et sa
+   sauvegarde automatique sont retires, le mail se branche dans Reglages
+   avec son propre jeton. */
+const FR_ETAPES = 4;
+let frEtape = 0;
+let frAgendaOk = false;
+function frStep(n) {
+  frEtape = Math.max(0, Math.min(FR_ETAPES - 1, n));
+  document.querySelectorAll("#firstRun .fr-step").forEach((s) => { s.hidden = Number(s.getAttribute("data-step")) !== frEtape; });
+  document.querySelectorAll("#frDots i").forEach((d, i) => { d.classList.toggle("on", i === frEtape); d.classList.toggle("fait", i < frEtape); });
+  $("frDots").setAttribute("aria-valuenow", String(frEtape + 1));
+  const derniere = frEtape === FR_ETAPES - 1;
+  $("frBack").hidden = frEtape === 0;
+  $("frNext").hidden = derniere;
+  $("frStart").hidden = !derniere;
+  // Passer n'a de sens que sur les etapes facultatives. A l'etape
+  // Infomaniak, avant connexion, Continuer et Passer feraient la meme chose :
+  // seul Passer s'affiche, Continuer vient une fois connecte.
+  const ikEnAttente = frEtape === 2 && $("frIkDone").hidden;
+  $("frSkip").hidden = frEtape < 2 || derniere || !ikEnAttente;
+  $("frNext").hidden = derniere || ikEnAttente;
+  const cible = document.querySelector('#firstRun .fr-step[data-step="' + frEtape + '"] input, #firstRun .fr-step[data-step="' + frEtape + '"] button');
+  try { if (cible && frEtape > 0) cible.focus(); } catch (e) { /* noop */ }
+}
+$("frNext").addEventListener("click", () => frStep(frEtape + 1));
+$("frBack").addEventListener("click", () => frStep(frEtape - 1));
+$("frSkip").addEventListener("click", () => frStep(frEtape + 1));
+$("frTokenShow").addEventListener("click", () => {
+  const c = $("frToken"); const vu = c.type === "text";
+  c.type = vu ? "password" : "text";
+  $("frTokenShow").textContent = vu ? msg("tokenShow", "Afficher") : msg("tokenHide", "Masquer");
+});
+function frErreur(texte) { $("frIkErr").textContent = texte || ""; $("frIkErr").hidden = !texte; }
+// Le resultat de la connexion : un titre, puis une ligne par service, coche
+// verte si c'est fait, gris si c'est pour plus tard.
+const FR_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const FR_LATER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12"/></svg>';
+function frFini(lignes) {
+  $("frIkForm").hidden = true; $("frCals").hidden = true;
+  const host = $("frIkDone"); clear(host);
+  host.appendChild(el("div", "fr-done-t", msg("frIkDoneTitle", "C'est connecté")));
+  lignes.forEach((l) => {
+    const row = el("div", "fr-res" + (l.ok ? "" : " fr-res--later"));
+    const i = el("span", "fr-res-i"); const ic = svgNode(l.ok ? FR_CHECK : FR_LATER); if (ic) i.appendChild(ic);
+    row.appendChild(i); row.appendChild(el("span", "fr-res-t", l.t));
+    host.appendChild(row);
+  });
+  host.hidden = false;
+  frStep(frEtape);
+}
+// Etape agenda : un jeton saisi, verifie par le fond (il doit lire les
+// agendas et n'ouvrir ni le mail ni kDrive), puis les agendas a cocher.
+function frAgendas(calendars) {
+  $("frIkForm").hidden = true;
+  $("frCals").hidden = false;
+  const host = $("frCalList"); clear(host);
+  const coches = {};
+  calendars.forEach((c) => {
+    const row = el("div", "bq bq--pick"); row.setAttribute("role", "checkbox"); row.setAttribute("tabindex", "0");
+    row.appendChild(el("span", "bq-ck", "✓"));
+    const b = el("div", "bq-b"); b.appendChild(el("div", "bq-t", c.name));
+    if (c.isDefault) b.appendChild(el("div", "bq-a", msg("agendaDefaultTag", "Agenda par défaut")));
+    row.appendChild(b);
+    if (c.isDefault) coches[c.id] = c.name;
+    const peint = () => { row.classList.toggle("bq--on", !!coches[c.id]); row.setAttribute("aria-checked", coches[c.id] ? "true" : "false"); $("frCalOk").disabled = !Object.keys(coches).length; };
+    const bascule = () => { if (coches[c.id]) delete coches[c.id]; else coches[c.id] = c.name; peint(); };
+    row.addEventListener("click", bascule);
+    row.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); bascule(); } });
+    peint(); host.appendChild(row);
+  });
+  $("frCalOk").onclick = async () => {
+    const choix = Object.keys(coches).map((id) => ({ id: Number(id), name: coches[id] }));
+    if (!choix.length) return;
+    $("frCalOk").disabled = true;
+    const c = await sendR("kz-agenda-choose", { calendars: choix });
+    if (!c || !c.ok) { $("frCalOk").disabled = false; frErreur(ikErrText(c && c.error, "calendar")); return; }
+    frAgendaOk = true;
+    frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }, { ok: false, t: msg("frIkMailLater", "Mail : plus tard, carte Agenda, avec son propre jeton") }]);
+  };
+}
+$("frConnect").addEventListener("click", async () => {
+  const token = $("frToken").value.trim();
+  frErreur("");
+  if (!token) { frErreur(ikErrText("empty_token", "calendar")); return; }
+  $("frConnect").disabled = true;
+  const r = await sendR("kz-agenda-connect", { token: token });
+  $("frConnect").disabled = false;
+  // 2026-10-06 (revue ECC) : le jeton quitte le champ quoi qu'il arrive.
+  $("frToken").value = "";
+  if (!r || !r.ok) { frErreur(ikErrText(r && r.error, "calendar", r && r.extras)); return; }
+  if (r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return; }
+  frAgendaOk = true;
+  frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }, { ok: false, t: msg("frIkMailLater", "Mail : plus tard, carte Agenda, avec son propre jeton") }]);
+});
 $("frStart").addEventListener("click", async () => {
   const v = String($("frHabit").value || $("frHabit").placeholder || "").trim();
   if (v && customSport.indexOf(v) === -1) customSport.push(v);
@@ -1320,7 +1548,9 @@ $("frStart").addEventListener("click", async () => {
   CFG.firstRun = false;
   renderSport();
   showFirstRun(false);
+  if (frAgendaOk) { try { await agendaRefreshUI(); } catch (e) { /* noop */ } }
 });
+$("replayTour").addEventListener("click", () => { showFirstRun(true); });
 
 function renderStats() {
   const empty = !hasHistory();
@@ -1329,7 +1559,6 @@ function renderStats() {
   $("statsGhost").hidden = !empty;
   $("statsTiles").hidden = empty;
   $("streakCard").hidden = empty;
-  $("benefitCard").hidden = empty;
   // Sans aucune donnee, il n'y a rien a filtrer. On masque le segmente ET la
    // ligne des fleches, sinon deux boutons ronds encadrent une date vide.
   const boiteFiltre = document.querySelector(".segbox--range");
@@ -1353,13 +1582,10 @@ function renderStats() {
   $("periodDates").textContent = libellePeriode(statsKind, range);
   $("totalHead").textContent = (statsKind === "all")
     ? msg("stTotalAll", "Total, tout l'historique")
-    : msg("stTotalOf", "Total des {n} jours").replace("{n}", String(days));
+    : (days === 1 ? msg("stTotalOne", "Total du jour") : msg("stTotalOf", "Total des {n} jours").replace("{n}", String(days)));
 
   countUp($("statDone"), agg.done, 0);
   countUp($("statRep"), agg.rep, 0);
-  const e = agg.eCount > 0 ? Math.round((agg.eSum / agg.eCount) * 10) / 10 : null;
-  if (e == null) { $("statEnergy").textContent = "—"; $("statEnergyUnit").textContent = ""; }
-  else { countUp($("statEnergy"), e, 1); $("statEnergyUnit").textContent = msg("outOfTen", "/ 10"); }
   const scr = screenSecRange(range[0], range[1]);
   $("statScreen").textContent = scr > 0 ? fmtDurTile(scr) : "—";
 
@@ -1368,18 +1594,43 @@ function renderStats() {
   const donePrev = pr ? sumRange(pr[0], pr[1]).done : null;
   $("statDoneSub").textContent = phraseEcart(agg.done, donePrev, statsKind);
   $("statRepSub").textContent = phraseCreneau(agg.repH);
-  $("statEnergySub").textContent = phraseTendance(joursEnergie(range));
   $("statScreenSub").textContent = phraseEcran(scr, days);
+
+  // Le temps en reunion, seulement quand l'agenda en a fourni.
+  const montrerReu = hasMeetings();
+  $("meetTile").hidden = !montrerReu;
+  // Sans reunions, l'ecran prend la ligne entiere : jamais de case vide.
+  document.querySelector("#statsTiles .tile--scr").classList.toggle("tile--wide", !montrerReu);
+  if (montrerReu) {
+    const meet = meetingSecRange(range[0], range[1]);
+    $("statMeet").textContent = meet > 0 ? fmtDurTile(meet) : "—";
+    $("statMeetSub").textContent = phraseReunion(meet, scr, days, meetingCountRange(range[0], range[1]));
+  }
+  const montrerMail = hasMail();
+  $("mailInTile").hidden = !montrerMail;
+  $("mailOutTile").hidden = !montrerMail;
+  if (montrerMail) {
+    const ma = mailRange(range[0], range[1]);
+    // 2026-09-26, a la demande de Thomas : les mails TRAITES (lus ou
+    // supprimes) plutot que les recus, plus parlants. Les recus restent en
+    // sous-titre, avec les supprimes.
+    $("statMailIn").textContent = ma.joursDone ? String(ma.done) : "—";
+    $("statMailOut").textContent = ma.jours ? String(ma.out) : "—";
+    $("statMailInSub").textContent = ma.joursDone
+      ? msg("phMailDone", "dont {d} supprimés, sur {n} reçus").replace("{d}", String(ma.del)).replace("{n}", String(ma.in))
+      : "";
+    $("statMailOutSub").textContent = ma.jours > 1 ? msg("phPerDay", "{n} par jour en moyenne").replace("{n}", fmtDec(Math.round((ma.out / ma.jours) * 10) / 10)) : "";
+  }
 
   // Les deux tuiles de serie. La meilleure porte sur la periode, le record est
   // tous temps confondus, c'est la seule chose qui ignore le filtre.
   const b = serieBornes(range[0], range[1]);
   $("statBest").textContent = String(b ? b.n : 0);
-  $("statBestUnit").textContent = msg("daysWord", "jours");
+  $("statBestUnit").textContent = (b && b.n === 1) ? msg("dayWord", "jour") : msg("daysWord", "jours");
   $("statBestSub").textContent = phraseSerie(b);
   const rec = recordTousTemps();
   $("statRecord").textContent = String(rec ? rec.n : 0);
-  $("statRecordUnit").textContent = msg("daysWord", "jours");
+  $("statRecordUnit").textContent = (rec && rec.n === 1) ? msg("dayWord", "jour") : msg("daysWord", "jours");
   $("statRecordSub").textContent = phraseRecord(rec ? rec.fin : null);
 
   // Cadence
@@ -1387,7 +1638,6 @@ function renderStats() {
 
   renderTrend(period, range);
   renderStreak();
-  renderBenefit();
 }
 function dayBuckets(range) {
   const out = []; const days = rangeDays(range);
@@ -1396,25 +1646,55 @@ function dayBuckets(range) {
     const s = dayStat(keyOf(d));
     const dom = d.getDate();
     const label = (days <= 7) ? weekdayLetter(d) : ((dom === 1 || dom % 5 === 1) ? String(dom) : "");
-    out.push({ done: s.done, rep: s.rep, scr: (Number(SCREEN[keyOf(d)]) || 0), label: label });
+    out.push({ done: s.done, rep: s.rep, scr: (Number(SCREEN[keyOf(d)]) || 0), meet: meetingSecDay(keyOf(d)), mail: mailDay(keyOf(d)), label: label });
     d = addDays(d, 1); g++;
   }
   return out;
 }
+// Le graphe par mois de la vue "Tout" garde les derniers mois qui tiennent a
+// l'ecran, les tuiles au-dessus totalisent quand meme tout l'historique.
+const MAX_MONTH_BARS = 24;
 function monthBuckets(range) {
   const end = atMidnight(range[1]);
   const total = (end.getFullYear() - range[0].getFullYear()) * 12 + (end.getMonth() - range[0].getMonth()) + 1;
-  const n = Math.min(MAX_KOALAS, Math.max(1, total));
+  const n = Math.min(MAX_MONTH_BARS, Math.max(1, total));
   let y = end.getFullYear(), m = end.getMonth() - (n - 1);
   while (m < 0) { m += 12; y -= 1; }
   const out = [];
   for (let i = 0; i < n; i++) {
     const a = sumRange(new Date(y, m, 1), new Date(y, m + 1, 0));
-    out.push({ done: a.done, rep: a.rep, scr: screenSecRange(new Date(y, m, 1), new Date(y, m + 1, 0)), label: monthLabel(y, m) });
+    const mm = mailRange(new Date(y, m, 1), new Date(y, m + 1, 0));
+    out.push({ done: a.done, rep: a.rep, scr: screenSecRange(new Date(y, m, 1), new Date(y, m + 1, 0)), meet: meetingSecRange(new Date(y, m, 1), new Date(y, m + 1, 0)), mail: { in: mm.in, out: mm.out, done: mm.done }, label: monthLabel(y, m) });
     m += 1; if (m > 11) { m = 0; y += 1; }
   }
   return out;
 }
+// La hauteur commune des quatre graphes, 2026-09-26. Une seule valeur, dans
+// le CSS (.plot, .cols, .col) et ici.
+const PLOT_H = 64;
+
+// Dessine un graphe en colonnes : une colonne par periode, une barre par
+// serie, toutes de la meme largeur, grandissant depuis la meme ligne de
+// base. Une valeur nulle pose une marque de 2 px, jamais un vide. L'echelle
+// part de zero et s'arrete au maximum (ou a l'objectif s'il est plus haut).
+function drawColumns(host, buckets, series, maxVal, targets) {
+  clear(host);
+  const max = Math.max(1, maxVal);
+  buckets.forEach((b, i) => {
+    const col = el("div", "col");
+    series.forEach((s, k) => {
+      const v = Math.max(0, Number(s.val(b)) || 0);
+      const bar = el("div", "col-b " + (v > 0 ? s.cls : "col-b--zero"));
+      bar.style.height = (v > 0 ? Math.max(3, Math.round((v / max) * PLOT_H)) : 2) + "px";
+      bar.title = s.label(v);
+      if (v > 0 && !REDUCE_MOTION) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 18 + k * 8) + "ms"; targets.push(bar); }
+      col.appendChild(bar);
+    });
+    host.appendChild(col);
+  });
+}
+function maxDe(buckets, fns) { return Math.max.apply(null, [0].concat(buckets.map((b) => Math.max.apply(null, fns.map((f) => Number(f(b)) || 0))))); }
+
 function renderTrend(period, range) {
   // Une seule journee, un graphe par jour n'aurait qu'une colonne.
   const single = (period === "day");
@@ -1425,51 +1705,59 @@ function renderTrend(period, range) {
   const days = rangeDays(range);
   const monthly = (period === "all" || days > 45);
   const buckets = monthly ? monthBuckets(range) : dayBuckets(range);
-  // Ligne d'objectif quotidien, seulement en granularite jour
+  const targets = [];
+
+  // 1. Habitudes : faites et reportees cote a cote, avec l'objectif du jour
+  // en pointille (seulement en granularite jour, l'objectif est quotidien).
   const showGoal = !monthly && habitGoal > 0;
-  const maxBar = Math.max(1, Math.max.apply(null, buckets.map((b) => Math.max(b.done, b.rep))));
-  const maxVal = showGoal ? Math.max(maxBar, habitGoal) : maxBar;
+  const maxBar = maxDe(buckets, [(b) => b.done, (b) => b.rep]);
+  const maxVal = showGoal ? Math.max(maxBar, habitGoal) : Math.max(1, maxBar);
   $("goalLegend").hidden = !showGoal;
   $("goalLine").hidden = !showGoal;
   if (showGoal) {
-    $("goalLegendText").textContent = msg("statsGoalLegend", "Ton objectif, {n} par jour").replace("{n}", habitGoal);
-    $("goalLine").style.bottom = Math.round((habitGoal / maxVal) * 72) + "px";
+    $("goalLegendText").textContent = msg("statsGoalLegend", "Objectif : {n} par jour").replace("{n}", habitGoal);
+    $("goalLine").style.bottom = Math.round((habitGoal / maxVal) * PLOT_H) + "px";
   }
-
-  const host = $("trendChart");
-  clear(host);
-  const targets = [];
-  buckets.forEach((b, i) => {
-    const col = el("div", "col");
-    if (b.done === 0 && b.rep === 0) {
-      const flat = el("div", "col-b col-b--none");
-      flat.style.height = "3px";
-      col.appendChild(flat);
-    } else {
-      const bd = el("div", "col-b col-b--done");
-      bd.style.height = Math.max(2, Math.round((b.done / maxVal) * 72)) + "px";
-      const br = el("div", "col-b col-b--rep");
-      br.style.height = Math.max(2, Math.round((b.rep / maxVal) * 72)) + "px";
-      bd.title = b.done + " " + msg("statsDoneWord", "faites");
-      br.title = b.rep + " " + msg("statsReportsWord", "reportées");
-      if (!REDUCE_MOTION) { bd.style.transform = "scaleY(0)"; br.style.transform = "scaleY(0)"; bd.style.transitionDelay = (i * 20) + "ms"; br.style.transitionDelay = (i * 20 + 10) + "ms"; targets.push(bd, br); }
-      col.appendChild(bd); col.appendChild(br);
-    }
-    host.appendChild(col);
-  });
+  drawColumns($("trendChart"), buckets, [
+    { val: (b) => b.done, cls: "col-b--done", label: (v) => v + " " + msg("statsDoneWord", "Faites").toLowerCase() },
+    { val: (b) => b.rep, cls: "col-b--rep", label: (v) => v + " " + msg("statsReportsWord", "Reportées").toLowerCase() }
+  ], maxVal, targets);
   fillAxis($("trendAxis"), buckets);
 
-  const maxScr = Math.max(1, Math.max.apply(null, buckets.map((b) => b.scr)));
-  const shost = $("screenChart");
-  clear(shost);
-  buckets.forEach((b, i) => {
-    const bar = el("div", "scr-b");
-    bar.style.height = (b.scr <= 0 ? 3 : Math.max(4, Math.round((b.scr / maxScr) * 34))) + "px";
-    if (b.scr > 0) bar.title = fmtDurShort(b.scr);
-    if (!REDUCE_MOTION) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 18) + "ms"; targets.push(bar); }
-    shost.appendChild(bar);
-  });
+  // 2. Temps d'ecran : une serie, la cadence dessous. Les quatre graphes ont
+  // le meme en-tete (titre, legende des qu'il y a deux series) et aucun total :
+  // les tuiles juste au-dessus le donnent deja (revue du 2026-09-26).
+  drawColumns($("screenChart"), buckets, [{ val: (b) => b.scr, cls: "col-b--scr", label: (v) => (v > 0 ? fmtDurShort(v) : "0") }], maxDe(buckets, [(b) => b.scr]), targets);
   fillAxis($("screenAxis"), buckets);
+
+  // 3. Temps en reunion, seulement si l'agenda en a fourni.
+  const montrerReu = hasMeetings();
+  $("meetChartWrap").hidden = !montrerReu;
+  if (montrerReu) {
+    drawColumns($("meetChart"), buckets, [{ val: (b) => b.meet, cls: "col-b--meet", label: (v) => (v > 0 ? fmtDurShort(v) : "0") }], maxDe(buckets, [(b) => b.meet]), targets);
+    fillAxis($("meetAxis"), buckets);
+    const premier = Object.keys(MEET).sort()[0];
+    const joursReu = [];
+    let dr = atMidnight(range[0]); const finR = atMidnight(range[1]); let gr = 0;
+    while (dr.getTime() <= finR.getTime() && gr < 4000) { if (premier && keyOf(dr) >= premier) joursReu.push({ date: new Date(dr), v: meetingSecDay(keyOf(dr)) }); dr = addDays(dr, 1); gr++; }
+    poseJourCharge($("meetBusy"), phraseJourCharge(jourLePlusCharge(joursReu), "meet"));
+  }
+
+  // 4. Mails, recus et envoyes cote a cote, seulement s'ils sont comptes.
+  const montrerMail = hasMail();
+  $("mailChartWrap").hidden = !montrerMail;
+  if (montrerMail) {
+    const mi = (b) => (b.mail || {}).done || 0, mo = (b) => (b.mail || {}).out || 0;
+    drawColumns($("mailChart"), buckets, [
+      { val: mi, cls: "col-b--in", label: (v) => v + " " + msg("statsMailDoneWord", "Traités").toLowerCase() },
+      { val: mo, cls: "col-b--out", label: (v) => v + " " + msg("statsMailOutWord", "Envoyés").toLowerCase() }
+    ], maxDe(buckets, [mi, mo]), targets);
+    fillAxis($("mailAxis"), buckets);
+    const joursMail = [];
+    let dm = atMidnight(range[0]); const finM = atMidnight(range[1]); let gm = 0;
+    while (dm.getTime() <= finM.getTime() && gm < 4000) { if (MAIL[keyOf(dm)]) joursMail.push({ date: new Date(dm), v: (function (m) { return m.done !== null ? m.done : m.in; })(mailDay(keyOf(dm))) }); dm = addDays(dm, 1); gm++; }
+    poseJourCharge($("mailBusy"), phraseJourCharge(jourLePlusCharge(joursMail), "mail"));
+  }
 
   if (!REDUCE_MOTION && targets.length) {
     requestAnimationFrame(() => requestAnimationFrame(() => targets.forEach((n) => { n.style.transform = "scaleY(1)"; })));
@@ -1484,6 +1772,7 @@ function renderStreak() {
   const cur = currentStreak();
   const rec = longestStreak();
   $("statStreak").textContent = String(cur);
+  $("statStreakUnit").textContent = (Number(cur) === 1) ? msg("statsStreakDay", "jour de suite") : msg("statsStreakDays", "jours de suite");
   $("statRecordPill").textContent = msg("statsRecordWord", "Record") + " " + rec;
   const pct = rec > 0 ? Math.min(1, cur / rec) : 0;
   const fill = $("streakFill");
@@ -1497,67 +1786,6 @@ function renderStreak() {
   $("streakGoal").textContent = goal;
 }
 
-const BEN_FILL = ["#9BD4A8", "#63C177", "#2FAE4A"];
-function renderBenefit() {
-  const buckets = [{ s: 0, n: 0 }, { s: 0, n: 0 }, { s: 0, n: 0 }];
-  let qualifying = 0;
-  Object.keys(STATS).forEach((k) => {
-    const s = dayStat(k);
-    if (s.eCount > 0) {
-      qualifying++;
-      const avg = s.eSum / s.eCount;
-      const bi = s.done <= 1 ? 0 : (s.done <= 3 ? 1 : 2);
-      buckets[bi].s += avg; buckets[bi].n++;
-    }
-  });
-  const rows = $("benefitRows");
-  clear(rows);
-  if (qualifying < CORR_MIN) {
-    $("benefitNote").hidden = false;
-    $("benefitVerdict").textContent = "";
-    $("benefitTitle").textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
-    return;
-  }
-  $("benefitNote").hidden = true;
-  const labels = [msg("statsBenefitB1", "Peu"), msg("statsBenefitB2", "Moyen"), msg("statsBenefitB3", "Beaucoup")];
-  const vals = buckets.map((b) => (b.n > 0 ? (b.s / b.n) : null));
-  const fills = [];
-  vals.forEach((v, i) => {
-    const r = el("div", "ben-r");
-    r.appendChild(el("div", "ben-l", labels[i]));
-    const tr = el("div", "ben-tr");
-    const f = el("div", "ben-f");
-    f.style.background = BEN_FILL[i];
-    tr.appendChild(f);
-    r.appendChild(tr);
-    r.appendChild(el("div", "ben-v", v == null ? "—" : fmtNum(Math.round(v * 10) / 10, 1)));
-    rows.appendChild(r);
-    fills.push({ node: f, pct: v == null ? 0 : Math.round((v / 10) * 100) });
-  });
-  if (REDUCE_MOTION) fills.forEach((f) => { f.node.style.width = f.pct + "%"; });
-  else requestAnimationFrame(() => requestAnimationFrame(() => fills.forEach((f) => { f.node.style.width = f.pct + "%"; })));
-  applyBenefitText(vals);
-}
-function applyBenefitText(vals) {
-  let lo = null, hi = null;
-  for (let i = 0; i < vals.length; i++) { if (vals[i] != null) { if (lo == null) lo = { i: i, v: vals[i] }; hi = { i: i, v: vals[i] }; } }
-  if (lo == null || hi == null || lo.i === hi.i) {
-    $("benefitTitle").textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
-    $("benefitVerdict").textContent = msg("statsBenefitFlat", "Continue à noter pour voir le lien se dessiner.");
-    return;
-  }
-  const diff = Math.round((hi.v - lo.v) * 10) / 10;
-  if (diff >= 0.5) {
-    $("benefitTitle").textContent = msg("statsBenefitUp", "Tes habitudes te donnent de l'énergie");
-    $("benefitVerdict").textContent = msg("statsBenefitUpText", "Les jours où tu t'y tiens le plus, {n} d'énergie en plus").replace("{n}", fmtNum(diff, 1));
-  } else if (diff <= -0.5) {
-    $("benefitTitle").textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
-    $("benefitVerdict").textContent = msg("statsBenefitDownText", "Les jours où tu t'y tiens le plus, ton énergie est plus basse.");
-  } else {
-    $("benefitTitle").textContent = msg("statsBenefitNeutral", "Impact sur ton énergie");
-    $("benefitVerdict").textContent = msg("statsBenefitNone", "Pas de lien net entre ton habitude et ton énergie.");
-  }
-}
 
 /* ================================================================
    ONGLET DONNÉES
@@ -1570,7 +1798,7 @@ function partSizes() {
       focusSeconds: focusSeconds, screenTimezone: CFG.screenTimezone, animMode: currentAnimMode()
     }),
     content: byteSize({ customQuotes: customQuotes, customSport: customSport, hiddenQuotes: hiddenQuotes, includeDefaultQuotes: CFG.includeDefaultQuotes, habitGoal: habitGoal }),
-    stats: byteSize({ statsDaily: STATS, screenDaily: SCREEN, pending: PENDING }),
+    stats: byteSize({ statsDaily: STATS, screenDaily: SCREEN, meetingDaily: MEET, mailDaily: MAIL }),
     koalas: byteSize({ customKoalas: customKoalas, includeDefaultKoalas: CFG.includeDefaultKoalas })
   };
 }
@@ -1595,20 +1823,36 @@ function renderData() {
   $("dlContent").style.width = pc(sz.content + sz.settings);
 
   const nDays = Object.keys(STATS).length;
-  $("historyDays").textContent = nDays > 0
+  $("historyDays").textContent = nDays > 1
     ? msg("historyDays", "{n} jours").replace("{n}", nDays)
-    : msg("historyEmpty", "Rien pour l'instant");
+    : (nDays === 1 ? msg("historyDayOne", "1 jour") : msg("historyEmpty", "Rien pour l'instant"));
 
   document.querySelectorAll("#partList .cbx").forEach((b) => b.classList.toggle("cbx--on", !!exportParts[b.getAttribute("data-part")]));
+  $("backupPassRow").hidden = !exportParts.connexions;
   document.querySelectorAll("#importSeg .seg-b").forEach((b) => b.classList.toggle("seg-b--on", b.getAttribute("data-mode") === importMode));
-  kdriveRefreshStatus();
 }
 document.querySelectorAll("#partList .cbx").forEach((b) => {
   b.addEventListener("click", () => {
     const k = b.getAttribute("data-part");
     exportParts[k] = !exportParts[k];
     b.classList.toggle("cbx--on", exportParts[k]);
+    if (k === "connexions") { $("backupPassRow").hidden = !exportParts.connexions; if (exportParts.connexions) { passCompteur(); try { $("backupPass").focus(); } catch (e) { /* noop */ } } }
   });
+});
+// Le compteur dit ce qui manque, sans jamais afficher la phrase elle-meme.
+function passCompteur() {
+  const n = $("backupPass").value.length;
+  const node = $("backupPassCount");
+  node.textContent = n >= PASS_MIN
+    ? msg("backupPassOk", "Longueur suffisante.")
+    : msg("backupPassLeft", "Encore {n} caractères au minimum.").replace("{n}", String(PASS_MIN - n));
+}
+$("backupPass").addEventListener("input", passCompteur);
+$("backupPassShow").addEventListener("click", () => {
+  const champ = $("backupPass");
+  const affiche = champ.type === "text";
+  champ.type = affiche ? "password" : "text";
+  $("backupPassShow").textContent = affiche ? msg("tokenShow", "Afficher") : msg("tokenHide", "Masquer");
 });
 document.querySelectorAll("#importSeg .seg-b").forEach((b) => {
   b.addEventListener("click", () => {
@@ -1624,9 +1868,7 @@ function dataMsg(text, warn) {
   node.classList.add("on");
   setTimeout(() => node.classList.remove("on"), 2600);
 }
-// Construit exactement le meme paquet que celui du fichier local, reutilise
-// tel quel par la sauvegarde kDrive : une seule regle sur ce qui est inclus,
-// jamais deux logiques d'export qui pourraient diverger.
+// Construit le paquet du fichier local, seule destination depuis le 2026-09-29.
 async function buildExportBundle() {
   const stored = await getLocal(SETTINGS_KEYS.concat(CONTENT_KEYS, STATS_KEYS, KOALA_KEYS));
   const cfg = Object.assign({}, DEFAULTS, stored);
@@ -1635,11 +1877,30 @@ async function buildExportBundle() {
   if (exportParts.content) { out.content = {}; CONTENT_KEYS.forEach((k) => { out.content[k] = cfg[k]; }); }
   if (exportParts.stats) { out.stats = {}; STATS_KEYS.forEach((k) => { out.stats[k] = cfg[k]; }); }
   if (exportParts.koalas) { out.koalas = {}; KOALA_KEYS.forEach((k) => { out.koalas[k] = cfg[k]; }); }
+  // Les connexions : chiffrees par le fond avec la phrase secrete, jamais en
+  // clair ici. Sans phrase, la partie est laissee de cote et on le dit.
+  if (exportParts.connexions) {
+    const pass = $("backupPass").value;
+    const r = pass ? await sendR("kz-connexions-export", { passphrase: pass }) : null;
+    if (r && r.ok) out.connexions = r.blob;
+  }
   return out;
 }
+// Avant un export qui inclut les connexions : la phrase doit etre la.
+// 2026-09-29 : 12 caracteres au moins, comme le fond (CONNEXIONS_MIN_PASS).
+const PASS_MIN = 12;
+function connexionsPretes() {
+  if (!exportParts.connexions) return true;
+  const pass = $("backupPass").value;
+  if (pass.length >= PASS_MIN) return true;
+  dataMsg(msg("backupPassMissing", "Ta phrase secrète doit faire au moins 12 caractères pour inclure les connexions.").replace("{n}", String(PASS_MIN)), true);
+  try { $("backupPass").focus(); } catch (e) { /* noop */ }
+  return false;
+}
+let importConnexionsNote = "";
 
-// Applique un paquet deja analyse (fichier local ou telechargement kDrive),
-// exactement la meme logique de fusion/remplacement dans les deux cas. Rend
+// Applique un paquet deja analyse (fichier local), avec la logique de
+// fusion ou de remplacement choisie. Rend
 // false si le paquet n'est pas reconnu, jamais une exception.
 async function applyImportedBundle(data) {
   if (!data || data.app !== "koala-zen") return false;
@@ -1648,16 +1909,19 @@ async function applyImportedBundle(data) {
   if (data.settings) SETTINGS_KEYS.forEach((k) => { if (data.settings[k] !== undefined) patch[k] = data.settings[k]; });
   if (data.koalas) {
     KOALA_KEYS.forEach((k) => { if (data.koalas[k] !== undefined) patch[k] = data.koalas[k]; });
-    // L'import copiait les images SANS plafonner. Un fichier contenant plus
-    // d'images que la limite les faisait toutes entrer, la tuile d'ajout
-    // disparaissait et le stockage gonflait sans qu'on puisse rien retirer.
-    // On plafonne, et on ne garde que des chaines, jamais un objet ou un nul.
-    if (Array.isArray(patch.customKoalas)) {
-      patch.customKoalas = patch.customKoalas
-        .filter((x) => typeof x === "string" && x.length > 0)
-        .slice(0, MAX_KOALAS);
-    } else if (patch.customKoalas !== undefined) {
-      patch.customKoalas = [];
+    if (patch.customKoalas !== undefined) {
+      // Seules des images integrees (data:image) entrent : une adresse http
+      // glissee dans un fichier ferait sortir une requete a chaque page visitee,
+      // contre la promesse "rien ne sort de ton appareil". Fusionner garde les
+      // images deja en place, comme pour les citations et les objectifs, et le
+      // plafond s'applique au total, sinon la tuile d'ajout disparaissait et le
+      // stockage gonflait sans qu'on puisse rien retirer.
+      const entrants = Array.isArray(patch.customKoalas)
+        ? patch.customKoalas.filter((x) => typeof x === "string" && /^data:image\//i.test(x))
+        : [];
+      const base = replace ? [] : customKoalas.filter((x) => typeof x === "string");
+      entrants.forEach((x) => { if (base.indexOf(x) < 0) base.push(x); });
+      patch.customKoalas = base.slice(0, MAX_KOALAS);
     }
   }
   if (data.content) {
@@ -1675,16 +1939,33 @@ async function applyImportedBundle(data) {
     else {
       patch.statsDaily = Object.assign({}, data.stats.statsDaily || {}, STATS);
       patch.screenDaily = Object.assign({}, data.stats.screenDaily || {}, SCREEN);
-      patch.pending = Math.max(PENDING, Number(data.stats.pending) || 0);
+      patch.meetingDaily = Object.assign({}, data.stats.meetingDaily || {}, MEET);
+      patch.mailDaily = Object.assign({}, data.stats.mailDaily || {}, MAIL);
     }
   }
   await setLocal(patch);
+  // Les connexions chiffrees : seulement avec la phrase secrete, par le fond.
+  importConnexionsNote = "";
+  if (data.connexions) {
+    const pass = $("backupPass").value;
+    if (!pass) importConnexionsNote = msg("connexionsSkipped", "Connexions non restaurées : il manque la phrase secrète.");
+    else {
+      const r = await sendR("kz-connexions-import", { blob: data.connexions, passphrase: pass });
+      importConnexionsNote = (r && r.ok)
+        ? (r.tokensSkipped ? msg("connexionsOldTokens", "Réglages des connexions restaurés. Colle de nouveaux jetons, ceux de ce fichier avaient trop de droits.")
+          : r.tokensUnchecked ? msg("connexionsUnchecked", "Réglages restaurés. Jetons non vérifiés : colle-les à nouveau dans la carte Agenda.")
+          : msg("connexionsRestored", "Connexions restaurées"))
+        : msg("connexionsBadPass", "Phrase secrète incorrecte. Connexions non restaurées.");
+    }
+  }
+  if (data.connexions) { $("backupPass").value = ""; passCompteur(); }
   await send("kz-save", { payload: {} });
   await load();
   renderData();
   return true;
 }
 $("exportBtn").addEventListener("click", async () => {
+  if (!connexionsPretes()) return;
   const out = await buildExportBundle();
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -1695,6 +1976,8 @@ $("exportBtn").addEventListener("click", async () => {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
+  // La phrase secrete ne reste pas dans le champ (revue ECC, 2026-10-06).
+  $("backupPass").value = ""; passCompteur();
   dataMsg(msg("exportDone", "Fichier créé"));
 });
 $("importBtn").addEventListener("click", () => $("importFile").click());
@@ -1707,7 +1990,7 @@ $("importFile").addEventListener("change", async (e) => {
   catch (_) { dataMsg(msg("importBad", "Fichier illisible"), true); return; }
   const appliqué = await applyImportedBundle(data);
   if (!appliqué) { dataMsg(msg("importBad", "Fichier illisible"), true); return; }
-  dataMsg(msg("importDone", "Données restaurées"));
+  dataMsg(importConnexionsNote ? msg("importDone", "Données restaurées") + " · " + importConnexionsNote : msg("importDone", "Données restaurées"), !!importConnexionsNote && importConnexionsNote !== msg("connexionsRestored", "Connexions restaurées"));
 });
 function mergeLists(mine, incoming, isQuote) {
   const out = mine.slice();
@@ -1738,7 +2021,7 @@ function armDanger(node, labelKey, confirmKey, action) {
 }
 armDanger($("resetHistory"), "eraseBtn", "eraseConfirm", async () => {
   await send("kz-reset");
-  STATS = {}; SCREEN = {}; PENDING = 0;
+  STATS = {}; SCREEN = {};
   await refreshStatus();
   renderData();
   dataMsg(msg("eraseHistoryDone", "Historique effacé"));
@@ -1751,11 +2034,11 @@ armDanger($("resetAll"), "eraseAllBtn", "eraseConfirm", async () => {
 });
 
 /* ================================================================
-   SAUVEGARDE KDRIVE. Le jeton et toute la logique reseau vivent dans
+   JETONS INFOMANIAK. Les jetons et toute la logique reseau vivent dans
    background.js, jamais ici : le popup ne fait que demander et afficher.
    ================================================================ */
 // send() ignore toujours la reponse de sendResponse, il ne sert qu'a
-// declencher une action. Les operations kDrive ont besoin de la reponse
+// declencher une action. Les operations sur les jetons ont besoin de la reponse
 // elle-meme (reussite, erreur precise, liste de fichiers...), d'ou ce
 // deuxieme envoi qui la transmet telle quelle plutot que de la jeter.
 function sendR(type, extra) {
@@ -1776,17 +2059,35 @@ function sendR(type, extra) {
 // jamais via une table indirecte, sinon le controle d'integrite qui
 // recherche ces appels par expression reguliere ne les detecte jamais et
 // les signale a tort comme inutilisees.
-function kdriveErrText(code) {
-  if (code === "empty_token") return msg("kdriveErrEmpty", "Colle d'abord un jeton.");
-  if (code === "invalid_token") return msg("kdriveErrInvalid", "Ce jeton ne fonctionne pas. Vérifie qu'il a bien le périmètre kDrive.");
-  if (code === "offline") return msg("kdriveErrOffline", "Impossible de joindre kDrive, vérifie ta connexion.");
-  if (code === "blocked") return msg("kdriveErrBlocked", "La requête a été bloquée de façon inattendue. Réessaie.");
-  if (code === "no_drive") return msg("kdriveErrNoDrive", "Aucun kDrive disponible sur ce compte.");
-  if (code === "not_configured") return msg("kdriveErrNotConfigured", "Aucun kDrive connecté pour l'instant.");
-  if (code === "verify_failed") return msg("kdriveErrVerify", "La sauvegarde envoyée n'a pas pu être vérifiée, réessaie.");
-  return msg("kdriveErrUnknown", "Une erreur inattendue est survenue ({c}).").replace("{c}", code || "?");
+// Ce a quoi sert un jeton, pour les messages : l'agenda ou le mail.
+function ikUsage(nom) {
+  if (nom === "calendar") return msg("scopeCalendar", "l'agenda");
+  if (nom === "mail") return msg("scopeMail", "le mail");
+  if (nom === "kdrive") return msg("scopeKdrive", "kDrive");
+  return String(nom || "");
 }
-function kdriveToast(node, text, warn) {
+// besoin : "calendar" ou "mail", le perimetre attendu dans ce contexte.
+function ikErrText(code, besoin, extras) {
+  const perimetre = besoin === "mail" ? "workspace:mail" : "workspace:calendar";
+  if (code === "empty_token") return msg("tokenErrEmpty", "Colle d'abord un jeton.");
+  if (code === "invalid_token") return msg("tokenErrInvalid", "Ce jeton ne fonctionne pas. Vérifie qu'il est actif et copié en entier.");
+  if (code === "offline") return msg("tokenErrOffline", "Impossible de joindre Infomaniak. Vérifie ta connexion.");
+  if (code === "blocked") return msg("tokenErrBlocked", "La requête a été bloquée de façon inattendue. Réessaie.");
+  if (code === "not_configured") return msg("tokenErrNotConfigured", "Aucun jeton enregistré pour l'instant.");
+  if (code === "missing_scope") return msg("tokenErrScope", "Ce jeton n'a pas le périmètre {s}.").replace("{s}", perimetre);
+  if (code === "probe_failed") return msg("tokenErrProbe", "Impossible de vérifier les droits de ce jeton. Vérifie ta connexion et réessaie.");
+  if (code === "too_broad") return msg("tokenErrBroad", "Ce jeton ouvre aussi {x}. Crée-en un avec le seul périmètre {s}.").replace("{x}", (extras || []).map(ikUsage).join(", ")).replace("{s}", perimetre);
+  if (code === "no_calendar") return msg("agendaErrNoCalendar", "Aucun agenda lisible sur ce compte.");
+  if (code === "no_mailbox") return msg("notifyErrNoMailbox", "Aucune boîte mail sur ce compte.");
+  if (code === "notify_off") return msg("notifyErrOff", "Active « Prévenir les participants » dans Koala Zen.");
+  if (code === "no_recipients") return msg("notifyNoRecipients", "Personne à prévenir.");
+  if (code === "not_allowed") return msg("tokenErrNotAllowed", "Koala Zen a refusé cet appel : il ne fait pas partie de ses usages.");
+  if (code === "rate_limited") return msg("notifyErrRate", "Trop d'envois en peu de temps. Réessaie dans un moment.");
+  if (code === "bad_recipients") return msg("notifyErrRecipients", "Un destinataire ne fait pas partie des invités. Rien n'est parti.");
+  if (code === "already_sent") return msg("notifyAlready", "Déjà envoyé");
+  return msg("tokenErrUnknown", "Une erreur inattendue est survenue ({c}).").replace("{c}", code || "?");
+}
+function ikToast(node, text, warn) {
   node.textContent = text;
   node.classList.toggle("saved--warn", !!warn);
   node.classList.add("on");
@@ -1800,167 +2101,399 @@ function fmtDateTime(ts) {
   } catch (e) { return ""; }
 }
 
-// Trois etats mutuellement exclusifs pour la carte kDrive : pas de jeton
-// (kdriveSetup), jeton valide mais drive pas encore choisi (kdrivePicker, cas
-// rare ou le popup a ete ferme entre la validation du jeton et le choix), et
-// connecte a un drive precis (kdriveConnected). Un seul est visible a la fois.
-async function kdriveRefreshStatus() {
-  const st = await sendR("kz-kdrive-status");
-  const configured = !!(st && st.configured);
-  const needsChoice = !!(st && st.needsChoice);
-  if (needsChoice) {
-    $("kdriveSetup").hidden = true;
-    $("kdriveConnected").hidden = true;
-    $("kdrivePicker").hidden = false;
-    const drives = await sendR("kz-kdrive-list-drives");
-    if (drives && drives.ok) renderKdrivePicker(drives.drives);
-    else kdriveToast($("kdrivePickMsg"), kdriveErrText(drives && drives.error), true);
-    return false;
-  }
-  $("kdrivePicker").hidden = true;
-  $("kdriveSetup").hidden = configured;
-  $("kdriveConnected").hidden = !configured;
-  if (configured) {
-    $("kdriveConnectedLabel").textContent = st.driveName
-      ? msg("kdriveConnectedTo", "Connecté à {n}").replace("{n}", st.driveName)
-      : msg("kdriveConnectedGeneric", "Connecté à kDrive");
-    $("kdriveLastSync").textContent = (st && st.lastSync)
-      ? msg("kdriveLastSyncAt", "Dernière sauvegarde le {d}").replace("{d}", fmtDateTime(st.lastSync))
-      : msg("kdriveNeverSynced", "Pas encore de sauvegarde envoyée.");
-    if (st && st.lastError) kdriveToast($("kdriveMsg"), kdriveErrText(st.lastError), true);
-  }
-  $("kdriveRestoreList").hidden = true;
-  return configured;
+/* ---------- Agenda Infomaniak, carte Ne pas deranger ---------- */
+// Trois vues exclusives sous l'interrupteur : jeton a saisir ou a reutiliser
+// (agendaSetup), choix de l'agenda (agendaPicker), connecte (agendaConnected).
+// La boite entiere reste cachee tant que l'interrupteur est eteint. Meme
+// vocabulaire visuel que les autres cartes de Reglages.
+function agendaHeure(ts) {
+  const d = new Date(ts);
+  const auj = new Date();
+  const meme = d.getFullYear() === auj.getFullYear() && d.getMonth() === auj.getMonth() && d.getDate() === auj.getDate();
+  const h = pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  if (meme) return h;
+  let jour = "";
+  try { jour = d.toLocaleDateString(uiLang() || undefined, { weekday: "short", day: "numeric" }); } catch (e) { jour = pad2(d.getDate()) + "." + pad2(d.getMonth() + 1); }
+  return jour + " " + h;
 }
 
-// Meme rendu pour les deux appels du choix de drive, la premiere connexion
-// (kz-kdrive-set-token a repondu needsChoice) et le changement volontaire
-// depuis l'etat connecte (bouton Changer de kDrive). Chaque ligne agit tout
-// de suite au clic, pas de case a cocher plus bouton Confirmer separe, meme
-// logique que la liste des sauvegardes a restaurer juste en dessous.
-function renderKdrivePicker(drives) {
-  const host = $("kdrivePickList");
+// 2026-09-17 : la connexion a l'agenda vit dans sa propre carte "Agenda
+// Infomaniak". La carte "Ne pas deranger" ne garde que l'interrupteur du
+// silence pendant un rendez-vous, avec un sous-titre qui dit ou en est la
+// connexion. Le rappel trois minutes avant et le silence sont independants,
+// chacun son interrupteur, tous deux nourris par la meme connexion.
+function agendaLibelleSurveille(st) {
+  const n = (st && Array.isArray(st.calendars)) ? st.calendars.length : 1;
+  return (n > 1 ? msg("agendaConnectedToMany", "Agendas surveillés : {n}") : msg("agendaConnectedTo", "Agenda surveillé : {n}")).replace("{n}", (st && st.calendarName) || "");
+}
+async function agendaRefreshUI() {
+  const st = await sendR("kz-agenda-status");
+  // Configure = agendas choisis ET jeton present. Apres la migration du
+  // 2026-09-29, les agendas restent mais le jeton est a recoller.
+  const configured = !!(st && st.configured && st.hasToken);
+  $("agendaTgl").checked = !!(st && st.enabled);
+  $("agendaWarnTgl").checked = !st || st.warn !== false;
+  $("agendaEndWarnTgl").checked = !st || st.endWarn !== false;
+  $("agendaDndSub").textContent = configured
+    ? agendaLibelleSurveille(st)
+    : msg("agendaDndNeeds", "Connecte d'abord ton agenda, plus bas.");
+  $("agendaSetup").hidden = configured;
+  $("agendaPicker").hidden = true;
+  $("agendaConnected").hidden = !configured;
+  if (!configured) {
+    $("agendaSetupHint").textContent = (st && st.tokensReset)
+      ? msg("tokensResetHint", "Pour ta sécurité, Koala Zen demande maintenant un jeton par usage. Colle un jeton limité à workspace:calendar.")
+      : msg("agendaTokenHint", "Un jeton limité au seul périmètre workspace:calendar.");
+    if (st && st.lastError && st.lastError !== "not_configured") ikToast($("agendaMsg"), ikErrText(st.lastError, "calendar"), true);
+    return;
+  }
+  $("agendaConnectedLabel").textContent = agendaLibelleSurveille(st);
+  const now = Date.now();
+  let ligne;
+  if (Number(st.inUntil) > now) {
+    ligne = msg("agendaInProgress", "Rendez-vous en cours jusqu'à {h}").replace("{h}", agendaHeure(st.inUntil));
+  } else if (Number(st.nextStart) > 0) {
+    ligne = msg("agendaNextAt", "Prochain : {t} à {h}")
+      .replace("{t}", st.nextTitle || msg("meetingUntitled", "Sans titre"))
+      .replace("{h}", agendaHeure(st.nextStart));
+  } else {
+    ligne = msg("agendaNone", "Pas de réunion dans les 36 prochaines heures.");
+  }
+  $("agendaNextLine").textContent = ligne;
+  if (st.lastError) ikToast($("agendaMsg"), ikErrText(st.lastError), true);
+
+  // Prevenir par mail : l'interrupteur ne se dit allume que si la boite est
+  // choisie, et le bouton n'apparait que quand un rendez-vous approche (une
+  // heure) ou est en cours.
+  const notifOk = !!(st.notifyEnabled && st.notifyMailboxEmail);
+  $("notifyTgl").checked = notifOk;
+  // L'adresse d'envoi, une seule fois pour tout le bloc Mail.
+  $("mailBoxLine").hidden = !st.notifyMailboxEmail;
+  $("mailBoxLine").textContent = st.notifyMailboxEmail ? msg("notifyFrom", "Depuis {e}").replace("{e}", st.notifyMailboxEmail) : "";
+  $("notifyPick").hidden = true;
+  // Le mail est allume mais son jeton manque (migration du 2026-09-29) : on
+  // le demande tout de suite, avec le perimetre attendu.
+  const mailSansJeton = !!((st.notifyEnabled || st.mailStatsEnabled) && st.notifyMailboxEmail && !st.notifyHasToken);
+  $("notifyTokenBox").hidden = !mailSansJeton;
+  $("notifyTokenHint").textContent = mailSansJeton
+    ? msg("tokensResetMail", "Colle un nouveau jeton, limité au seul périmètre workspace:mail.")
+    : msg("notifyTokenHint", "Un second jeton, limité au seul périmètre workspace:mail.");
+  notifyCible = null;
+  if (notifOk) {
+    if (Number(st.inUntil) > now && st.inId) notifyCible = { id: st.inId, start: Number(st.inStart) || 0, title: st.inTitle || "" };
+    else if (Number(st.nextStart) > now && Number(st.nextStart) - now <= 60 * 60000 && st.nextId) notifyCible = { id: st.nextId, start: Number(st.nextStart), title: st.nextTitle || "" };
+  }
+  $("notifyNow").hidden = !notifyCible;
+  $("mailStatsTgl").checked = !!(st.mailStatsEnabled && st.notifyMailboxEmail);
+
+  if (!notifyCible) $("notifyPanel").hidden = true;
+}
+
+// Le volet Prevenir du popup, meme logique que celui de la bulle : trois
+// messages, destinataires retirables, texte relu, un seul Envoyer.
+let notifyCible = null;
+function renderNotifyPicker(adresses) {
+  const host = $("notifyPickList");
   clear(host);
-  drives.forEach((d) => {
+  (adresses || []).forEach((ad) => {
     const row = el("div", "bq");
-    row.appendChild(el("span", "bq-m", "☁"));
+    row.appendChild(el("span", "bq-m", "✉"));
     const body = el("div", "bq-b");
-    body.appendChild(el("div", "bq-t", d.name));
-    body.appendChild(el("div", "bq-a", msg("kdriveFreeSpace", "{f} libres").replace("{f}", fmtBytes(d.freeBytes))));
+    body.appendChild(el("div", "bq-t", ad.email));
+    if (!ad.principal) body.appendChild(el("div", "bq-a", msg("notifyAliasOf", "Alias de {m}").replace("{m}", ad.name || "")));
     const acts = el("div", "bq-acts");
-    const bouton = el("button", "bq-act", msg("kdrivePickChoose", "Choisir"));
+    const bouton = el("button", "bq-act", msg("pickChoose", "Choisir"));
     bouton.type = "button";
     bouton.addEventListener("click", async () => {
       bouton.disabled = true;
-      const r = await sendR("kz-kdrive-choose-drive", { driveId: d.driveId, driveName: d.name });
-      if (!r || !r.ok) { bouton.disabled = false; kdriveToast($("kdrivePickMsg"), kdriveErrText(r && r.error), true); return; }
-      await kdriveRefreshStatus();
-      kdriveToast($("kdriveMsg"), msg("kdriveLinked", "Connecté à kDrive"));
+      const r = await sendR("kz-notify-choose", { mailbox: ad });
+      if (!r || !r.ok) { bouton.disabled = false; ikToast($("agendaMsg"), ikErrText(r && r.error, "calendar", r && r.extras), true); return; }
+      CFG.notifyEnabled = true;
+      await agendaRefreshUI();
+      ikToast($("agendaMsg"), msg("notifyLinked", "Adresse choisie"));
     });
     acts.appendChild(bouton);
-    row.appendChild(body);
-    row.appendChild(acts);
-    host.appendChild(row);
+    row.appendChild(body); row.appendChild(acts); host.appendChild(row);
   });
 }
-
-$("kdriveTokenShow").addEventListener("click", () => {
-  const champ = $("kdriveTokenInput");
+// Apres la liste des adresses : une seule, elle est prise ; plusieurs, on choisit.
+async function notifyApresListe(r) {
+  if (r.addresses.length === 1) {
+    const c = await sendR("kz-notify-choose", { mailbox: r.addresses[0] });
+    if (!c || !c.ok) { $("notifyTgl").checked = false; ikToast($("agendaMsg"), ikErrText(c && c.error), true); return; }
+    CFG.notifyEnabled = true;
+    await agendaRefreshUI();
+    ikToast($("agendaMsg"), msg("notifyLinked", "Adresse choisie"));
+    return;
+  }
+  $("notifyTokenBox").hidden = true;
+  renderNotifyPicker(r.addresses);
+  $("notifyPick").hidden = false;
+}
+$("notifyTgl").addEventListener("change", async () => {
+  const on = $("notifyTgl").checked;
+  if (!on) {
+    CFG.notifyEnabled = false;
+    await sendR("kz-notify-disconnect");
+    await agendaRefreshUI();
+    return;
+  }
+  const r = await sendR("kz-notify-mailboxes");
+  if (r && r.ok) { await notifyApresListe(r); return; }
+  const code = r && r.error;
+  if (code === "missing_scope" || code === "invalid_token" || code === "not_configured") {
+    // Le jeton partage ne sait pas envoyer de mail : on demande un jeton propre.
+    $("notifyTokenInput").value = "";
+    $("notifyTokenBox").hidden = false;
+    return;
+  }
+  $("notifyTgl").checked = false;
+  ikToast($("agendaMsg"), ikErrText(code, "mail"), true);
+});
+// Compter les mails : il faut une boite, la meme que Prevenir. Sans boite,
+// on passe par le meme parcours (jeton mail, choix de l'adresse).
+$("mailStatsTgl").addEventListener("change", async () => {
+  const on = $("mailStatsTgl").checked;
+  const st = await sendR("kz-agenda-status");
+  if (on && !(st && st.notifyMailboxEmail)) {
+    $("mailStatsTgl").checked = false;
+    ikToast($("agendaMsg"), msg("mailStatsNeedsBox", "Choisis d'abord ta boîte dans « Prévenir les participants »."), true);
+    return;
+  }
+  CFG.mailStatsEnabled = on;
+  await send("kz-save", { payload: { mailStatsEnabled: on } });
+  await agendaRefreshUI();
+});
+$("notifyTokenShow").addEventListener("click", () => {
+  const champ = $("notifyTokenInput");
   const affiche = champ.type === "text";
   champ.type = affiche ? "password" : "text";
-  $("kdriveTokenShow").textContent = affiche ? msg("kdriveShow", "Afficher") : msg("kdriveHideTok", "Masquer");
+  $("notifyTokenShow").textContent = affiche ? msg("tokenShow", "Afficher") : msg("tokenHide", "Masquer");
 });
-
-$("kdriveConnect").addEventListener("click", async () => {
-  const token = $("kdriveTokenInput").value.trim();
-  $("kdriveConnect").disabled = true;
-  const avant = $("kdriveConnect").textContent;
-  $("kdriveConnect").textContent = msg("kdriveConnecting", "Connexion…");
-  const r = await sendR("kz-kdrive-set-token", { token: token });
-  $("kdriveConnect").disabled = false;
-  $("kdriveConnect").textContent = avant;
-  if (!r || !r.ok) { kdriveToast($("kdriveSetupMsg"), kdriveErrText(r && r.error), true); return; }
-  $("kdriveTokenInput").value = "";
-  if (r.needsChoice) {
-    $("kdriveSetup").hidden = true;
-    $("kdrivePicker").hidden = false;
-    renderKdrivePicker(r.drives);
-    return;
-  }
-  await kdriveRefreshStatus();
-  kdriveToast($("kdriveMsg"), msg("kdriveLinked", "Connecté à kDrive"));
+$("notifyConnect").addEventListener("click", async () => {
+  const token = $("notifyTokenInput").value.trim();
+  if (!token) { ikToast($("agendaMsg"), ikErrText("empty_token", "mail"), true); return; }
+  $("notifyConnect").disabled = true;
+  const r = await sendR("kz-notify-connect", { token: token });
+  $("notifyConnect").disabled = false;
+  $("notifyTokenInput").value = "";
+  if (!r || !r.ok) { ikToast($("agendaMsg"), ikErrText(r && r.error, "mail", r && r.extras), true); return; }
+  await notifyApresListe(r);
 });
-
-$("kdriveChangeDrive").addEventListener("click", async () => {
-  $("kdriveChangeDrive").disabled = true;
-  const r = await sendR("kz-kdrive-list-drives");
-  $("kdriveChangeDrive").disabled = false;
-  if (!r || !r.ok) { kdriveToast($("kdriveMsg"), kdriveErrText(r && r.error), true); return; }
-  if (r.drives.length < 2) { kdriveToast($("kdriveMsg"), msg("kdriveOnlyOneDrive", "Un seul kDrive est disponible sur ce compte.")); return; }
-  $("kdriveConnected").hidden = true;
-  $("kdrivePicker").hidden = false;
-  renderKdrivePicker(r.drives);
-});
-
-$("kdriveBackupNow").addEventListener("click", async () => {
-  const bundle = await buildExportBundle();
-  $("kdriveBackupNow").disabled = true;
-  const r = await sendR("kz-kdrive-backup", { bundle: bundle });
-  $("kdriveBackupNow").disabled = false;
-  if (!r || !r.ok) { kdriveToast($("kdriveMsg"), kdriveErrText(r && r.error), true); return; }
-  await kdriveRefreshStatus();
-  kdriveToast($("kdriveMsg"), msg("kdriveBackupDone", "Sauvegarde envoyée"));
-});
-
-function renderKdriveFiles(files) {
-  const host = $("kdriveFiles");
+$("notifyNow").addEventListener("click", async () => {
+  if (!notifyCible) return;
+  const host = $("notifyPanel");
   clear(host);
-  if (!files.length) {
-    host.appendChild(el("div", "note", msg("kdriveNoBackup", "Aucune sauvegarde trouvée sur kDrive.")));
+  host.hidden = false;
+  host.appendChild(el("div", "nf-msg", msg("notifyLoading", "Chargement des participants…")));
+  const data = await sendR("kz-notify-prepare", { id: notifyCible.id, start: notifyCible.start });
+  clear(host);
+  if (!data || !data.ok) {
+    host.appendChild(el("div", "nf-msg nf-msg--err", ikErrText(data && data.error)));
+    const b = el("button", "tiny", msg("notifyBack", "Retour")); b.type = "button";
+    b.addEventListener("click", () => { host.hidden = true; });
+    host.appendChild(b);
     return;
   }
-  files.forEach((f) => {
-    const row = el("div", "bq");
-    row.appendChild(el("span", "bq-m", "☁"));
+  buildNotifyForm(host, data);
+});
+// La fusee du mail parti, meme dessin que dans la bulle, construite noeud par noeud.
+function nfRocket() {
+  const w = el("div", "nf-rocket");
+  w.appendChild(el("div", "nf-rocket-trail"));
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", "0 0 40 64"); svg.setAttribute("aria-hidden", "true");
+  const forme = (nom, attrs) => { const n = document.createElementNS(NS, nom); Object.keys(attrs).forEach((k) => n.setAttribute(k, attrs[k])); svg.appendChild(n); };
+  forme("path", { class: "nf-rocket-flame", d: "M14 50 Q20 64 26 50 Q20 56 14 50 Z", fill: "#F5C877" });
+  forme("path", { d: "M20 2 C30 12 32 30 30 46 L10 46 C8 30 10 12 20 2 Z", fill: "#FFFFFF", stroke: "#1F63A8", "stroke-width": "2" });
+  forme("circle", { cx: "20", cy: "24", r: "5", fill: "#EDF4FC", stroke: "#1F63A8", "stroke-width": "2" });
+  forme("path", { d: "M10 34 L2 46 L10 46 Z M30 34 L38 46 L30 46 Z", fill: "#1F63A8" });
+  w.appendChild(svg);
+  return w;
+}
+function buildNotifyForm(host, data) {
+  const kinds = [["late5", msg("notifyLate5", "5 min de retard")], ["late10", msg("notifyLate10", "10 min de retard")], ["absent", msg("notifyAbsent", "Absence")]];
+  const sent = Array.isArray(data.sent) ? data.sent : [];
+  let kind = (kinds.find((k) => sent.indexOf(k[0]) < 0) || kinds[0])[0];
+  let dest = (data.recipients || []).slice();
+  const seg = el("div", "seg"); seg.id = "notifyKinds";
+  const boutons = {};
+  const subj = el("div", "nf-subj");
+  const ta = el("textarea", "nf-ta"); ta.setAttribute("aria-label", msg("notifyBodyLabel", "Message"));
+  let gabarit = "";
+  const applique = () => {
+    Object.keys(boutons).forEach((k) => boutons[k].classList.toggle("seg-b--on", k === kind));
+    const g = (data.templates && data.templates[kind]) || { subject: "", body: "" };
+    clear(subj);
+    subj.appendChild(document.createTextNode(msg("notifySubject", "Objet") + " : "));
+    const b = el("b", "", g.subject); subj.appendChild(b);
+    if (!ta.value || ta.value === gabarit) ta.value = g.body;
+    gabarit = g.body;
+  };
+  kinds.forEach(([k, lib]) => {
+    const bt = el("button", "seg-b", lib); bt.type = "button"; bt.setAttribute("data-kind", k);
+    if (sent.indexOf(k) >= 0) { bt.disabled = true; bt.classList.add("seg-b--off"); bt.title = msg("notifyAlready", "Déjà envoyé"); bt.textContent = "✓ " + lib; }
+    bt.addEventListener("click", () => { kind = k; applique(); });
+    boutons[k] = bt; seg.appendChild(bt);
+  });
+  const a = el("div", "nf-to");
+  a.appendChild(el("span", "nf-lab", msg("notifyTo", "À") + " :"));
+  const ligne = el("div", "nf-msg");
+  const acts = el("div", "nf-acts");
+  const envoyer = el("button", "nf-send", msg("notifySend", "Envoyer")); envoyer.type = "button";
+  const annuler = el("button", "tiny", msg("notifyCancel", "Annuler")); annuler.type = "button";
+  const puces = () => {
+    Array.from(a.querySelectorAll(".nf-chip")).forEach((n) => n.remove());
+    dest.forEach((d) => {
+      const chip = el("span", "nf-chip");
+      const n = el("span", "nf-chip-n", d.name || d.address); n.title = d.address;
+      const x = el("button", "nf-chip-x", "×"); x.type = "button";
+      x.setAttribute("aria-label", msg("notifyRemove", "Retirer {n}").replace("{n}", d.name || d.address));
+      x.addEventListener("click", () => { dest = dest.filter((z) => z.address !== d.address); puces(); });
+      chip.appendChild(n); chip.appendChild(x); a.appendChild(chip);
+    });
+    envoyer.disabled = dest.length === 0;
+    ligne.textContent = dest.length === 0 ? msg("notifyNoRecipients", "Personne à prévenir.") : "";
+    ligne.className = "nf-msg" + (dest.length === 0 ? " nf-msg--err" : "");
+  };
+  puces();
+  host.appendChild(el("div", "row-lab", data.title || msg("meetingUntitled", "Sans titre")));
+  host.appendChild(seg); host.appendChild(a); host.appendChild(subj); host.appendChild(ta); host.appendChild(ligne);
+  applique();
+  envoyer.addEventListener("click", async () => {
+    if (envoyer.disabled) return;
+    envoyer.disabled = true; annuler.disabled = true; envoyer.textContent = msg("notifySending", "Envoi…");
+    const g = (data.templates && data.templates[kind]) || { subject: "" };
+    const r = await sendR("kz-notify-send", { id: data.id, start: data.start, kind: kind, subject: g.subject, body: ta.value, to: dest.map((d) => d.address) });
+    if (!r || !r.ok) {
+      envoyer.disabled = false; annuler.disabled = false; envoyer.textContent = msg("notifySend", "Envoyer");
+      ligne.textContent = ikErrText(r && r.error, "calendar", r && r.extras); ligne.className = "nf-msg nf-msg--err";
+      return;
+    }
+    clear(host);
+    if (!REDUCE_MOTION) host.appendChild(nfRocket());
+    host.appendChild(el("div", "nf-msg nf-msg--ok", r.count === 1 ? msg("notifySentOne", "Envoyé à 1 personne") : msg("notifySentMany", "Envoyé à {n} personnes").replace("{n}", r.count)));
+    setTimeout(() => { host.hidden = true; }, REDUCE_MOTION ? 1800 : 2600);
+  });
+  annuler.addEventListener("click", () => { host.hidden = true; });
+  acts.appendChild(envoyer); acts.appendChild(annuler); host.appendChild(acts);
+}
+
+// Meme rendu que les autres listes de choix : chaque ligne agit au clic. L'agenda par
+// defaut est marque, les partages aussi, pour que le choix soit eclaire.
+function renderAgendaPicker(calendars, cochesIds) {
+  const host = $("agendaPickList");
+  clear(host);
+  const coches = {};
+  (cochesIds || []).forEach((id) => { coches[id] = true; });
+  (calendars || []).forEach((c) => {
+    const row = el("div", "bq bq--pick");
+    row.setAttribute("role", "checkbox");
+    row.setAttribute("tabindex", "0");
+    row.setAttribute("data-id", String(c.id));
+    row.setAttribute("data-name", c.name);
+    const ck = el("span", "bq-ck", "✓");
+    row.appendChild(ck);
     const body = el("div", "bq-b");
-    body.appendChild(el("div", "bq-t", f.name));
-    body.appendChild(el("div", "bq-a", fmtDateTime(f.date)));
-    const acts = el("div", "bq-acts");
-    const bouton = el("button", "bq-act", msg("kdriveApply", "Restaurer"));
-    bouton.type = "button";
-    bouton.addEventListener("click", () => kdriveApplyRestore(f.id, bouton));
-    acts.appendChild(bouton);
+    body.appendChild(el("div", "bq-t", c.name));
+    const tags = [];
+    if (c.isDefault) tags.push(msg("agendaDefaultTag", "Agenda par défaut"));
+    if (c.permission !== "owner") tags.push(msg("agendaSharedTag", "Partagé"));
+    if (tags.length) body.appendChild(el("div", "bq-a", tags.join(" · ")));
     row.appendChild(body);
-    row.appendChild(acts);
+    const peint = () => { row.classList.toggle("bq--on", !!coches[c.id]); row.setAttribute("aria-checked", coches[c.id] ? "true" : "false"); };
+    const bascule = () => { coches[c.id] = !coches[c.id]; peint(); $("agendaPickOk").disabled = !Object.keys(coches).some((k) => coches[k]); };
+    row.addEventListener("click", bascule);
+    row.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); bascule(); } });
+    peint();
     host.appendChild(row);
   });
+  $("agendaPickOk").disabled = !Object.keys(coches).some((k) => coches[k]);
 }
-
-async function kdriveApplyRestore(fileId, bouton) {
-  bouton.disabled = true;
-  const r = await sendR("kz-kdrive-restore-file", { fileId: fileId });
-  if (!r || !r.ok) { bouton.disabled = false; kdriveToast($("kdriveMsg"), kdriveErrText(r && r.error), true); return; }
-  const appliqué = await applyImportedBundle(r.data);
-  if (!appliqué) { bouton.disabled = false; kdriveToast($("kdriveMsg"), msg("importBad", "Fichier illisible"), true); return; }
-  $("kdriveRestoreList").hidden = true;
-  kdriveToast($("kdriveMsg"), msg("importDone", "Données restaurées"));
+function agendaPickSelection() {
+  return Array.from($("agendaPickList").querySelectorAll(".bq--on")).map((r) => ({ id: Number(r.getAttribute("data-id")), name: r.getAttribute("data-name") || "" }));
 }
-
-$("kdriveRestoreOpen").addEventListener("click", async () => {
-  const doitOuvrir = $("kdriveRestoreList").hidden;
-  if (!doitOuvrir) { $("kdriveRestoreList").hidden = true; return; }
-  $("kdriveRestoreOpen").disabled = true;
-  const r = await sendR("kz-kdrive-restore-list");
-  $("kdriveRestoreOpen").disabled = false;
-  if (!r || !r.ok) { kdriveToast($("kdriveMsg"), kdriveErrText(r && r.error), true); return; }
-  renderKdriveFiles(r.files || []);
-  $("kdriveRestoreList").hidden = false;
+$("agendaPickOk").addEventListener("click", async () => {
+  const choix = agendaPickSelection();
+  if (!choix.length) return;
+  $("agendaPickOk").disabled = true;
+  const r = await sendR("kz-agenda-choose", { calendars: choix });
+  if (!r || !r.ok) { $("agendaPickOk").disabled = false; ikToast($("agendaMsg"), ikErrText(r && r.error, "calendar", r && r.extras), true); return; }
+  await agendaRefreshUI();
+  await refreshNextVisit();
+  ikToast($("agendaMsg"), msg("agendaLinked", "Agenda connecté"));
 });
 
-armDanger($("kdriveDisconnect"), "kdriveDisconnect", "eraseConfirm", async () => {
-  await sendR("kz-kdrive-clear");
-  await kdriveRefreshStatus();
-  kdriveToast($("kdriveSetupMsg"), msg("kdriveUnlinked", "kDrive déconnecté"));
+async function agendaShowPicker(calendars) {
+  const st = await sendR("kz-agenda-status");
+  const deja = (st && Array.isArray(st.calendars)) ? st.calendars.map((c) => c.id) : [];
+  $("agendaSetup").hidden = true;
+  $("agendaConnected").hidden = true;
+  $("agendaPicker").hidden = false;
+  renderAgendaPicker(calendars, deja);
+}
+
+// L'interrupteur s'enregistre tout de suite, sans attendre Enregistrer : il
+// devoile une configuration qui agit au clic, oublier Enregistrer ensuite
+// laisserait tout le bloc inactif en silence.
+$("agendaTgl").addEventListener("change", async () => {
+  const on = $("agendaTgl").checked;
+  CFG.agendaEnabled = on;
+  await send("kz-save", { payload: { agendaEnabled: on } });
+  await agendaRefreshUI();
+  await refreshNextVisit();
+});
+
+$("agendaWarnTgl").addEventListener("change", async () => {
+  const on = $("agendaWarnTgl").checked;
+  CFG.agendaWarn = on;
+  await send("kz-save", { payload: { agendaWarn: on } });
+});
+
+$("agendaEndWarnTgl").addEventListener("change", async () => {
+  const on = $("agendaEndWarnTgl").checked;
+  CFG.agendaEndWarn = on;
+  await send("kz-save", { payload: { agendaEndWarn: on } });
+});
+
+$("agendaTokenShow").addEventListener("click", () => {
+  const champ = $("agendaTokenInput");
+  const affiche = champ.type === "text";
+  champ.type = affiche ? "password" : "text";
+  $("agendaTokenShow").textContent = affiche ? msg("tokenShow", "Afficher") : msg("tokenHide", "Masquer");
+});
+
+$("agendaConnect").addEventListener("click", async () => {
+  const token = $("agendaTokenInput").value.trim();
+  if (!token) { ikToast($("agendaMsg"), ikErrText("empty_token", "calendar"), true); return; }
+  $("agendaConnect").disabled = true;
+  const avant = $("agendaConnect").textContent;
+  $("agendaConnect").textContent = msg("tokenConnecting", "Connexion…");
+  const r = await sendR("kz-agenda-connect", { token: token });
+  $("agendaConnect").disabled = false;
+  $("agendaConnect").textContent = avant;
+  $("agendaTokenInput").value = "";
+  if (!r || !r.ok) { ikToast($("agendaMsg"), ikErrText(r && r.error, "calendar", r && r.extras), true); return; }
+  if (r.needsChoice) { await agendaShowPicker(r.calendars); return; }
+  await agendaRefreshUI();
+  await refreshNextVisit();
+  ikToast($("agendaMsg"), msg("agendaLinked", "Agenda connecté"));
+});
+
+$("agendaChange").addEventListener("click", async () => {
+  $("agendaChange").disabled = true;
+  const r = await sendR("kz-agenda-list-calendars");
+  $("agendaChange").disabled = false;
+  if (!r || !r.ok) { ikToast($("agendaMsg"), ikErrText(r && r.error, "calendar", r && r.extras), true); return; }
+  await agendaShowPicker(r.calendars);
+});
+
+$("agendaDisconnect").addEventListener("click", async () => {
+  const r = await sendR("kz-agenda-disconnect");
+  if (!r || !r.ok) { ikToast($("agendaMsg"), ikErrText(r && r.error, "calendar", r && r.extras), true); return; }
+  CFG.agendaEnabled = false;
+  await agendaRefreshUI();
+  await refreshNextVisit();
 });
 
 /* ================================================================
@@ -2002,6 +2535,11 @@ async function load() {
   mutedExpanded = false;
   renderMuteChips();
   $("pauseIdle").checked = CFG.pauseWhenIdle !== false;
+  $("agendaTgl").checked = !!CFG.agendaEnabled;
+  $("agendaWarnTgl").checked = CFG.agendaWarn !== false;
+  $("agendaEndWarnTgl").checked = CFG.agendaEndWarn !== false;
+  $("mailStatsTgl").checked = !!CFG.mailStatsEnabled;
+  agendaRefreshUI();
 
   // Focus
   $("focusMode").checked = !!CFG.focusMode;
@@ -2040,10 +2578,15 @@ async function load() {
   const am = (CFG.animMode === "always" || CFG.animMode === "never") ? CFG.animMode : "auto";
   setAnimSeg(am);
   applyAnimMode(am);
+  const th = (CFG.theme === "dark" || CFG.theme === "light") ? CFG.theme : "auto";
+  setThemeSeg(th);
+  applyTheme(th);
 
   // Statistiques
   STATS = (CFG.statsDaily && typeof CFG.statsDaily === "object") ? CFG.statsDaily : {};
   SCREEN = (CFG.screenDaily && typeof CFG.screenDaily === "object") ? CFG.screenDaily : {};
+  MEET = (CFG.meetingDaily && typeof CFG.meetingDaily === "object") ? CFG.meetingDaily : {};
+  MAIL = (CFG.mailDaily && typeof CFG.mailDaily === "object") ? CFG.mailDaily : {};
   importMode = CFG.importMode === "replace" ? "replace" : "merge";
 
   await refreshStatus();
@@ -2064,12 +2607,17 @@ async function save() {
     muteInCalls: $("muteCalls").checked,
     mutedPatterns: mutedPatterns,
     pauseWhenIdle: $("pauseIdle").checked,
+    agendaEnabled: $("agendaTgl").checked,
+    agendaWarn: $("agendaWarnTgl").checked,
+    agendaEndWarn: $("agendaEndWarnTgl").checked,
+    mailStatsEnabled: $("mailStatsTgl").checked,
     focusMode: $("focusMode").checked,
     passages: $("passagesTgl").checked,
     passageFrequency: currentPassageFrequency(),
     focusSeconds: focusSeconds,
     screenTimezone: $("screenTz").value || "Europe/Zurich",
     animMode: currentAnimMode(),
+    theme: currentThemeMode(),
     customKoalas: customKoalas,
     includeDefaultKoalas: $("includeDefault").classList.contains("cbx--on"),
     customQuotes: customQuotes,
@@ -2080,6 +2628,7 @@ async function save() {
   };
   CFG = Object.assign(CFG, payload);
   applyAnimMode(payload.animMode);
+  applyTheme(payload.theme);
   await send("kz-save", { payload: payload });
   const node = (currentTab === "perso") ? $("savedPerso") : $("saved");
   node.classList.add("on");

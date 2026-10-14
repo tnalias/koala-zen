@@ -37,19 +37,17 @@ EXCEPTIONS = {
     # La planche ne dessine aucun etat de focus ni de survol, module O les impose.
     "0 0 0 3px rgba(47,174,74,0.25)": "anneau de focus, absent de la planche",
     "0 0 0 3px rgba(47,174,74,0.20)": "anneau de focus d'un champ, absent de la planche",
-    "0 0 0 2px rgba(47,174,74,.35)": "anneau de survol, absent de la planche",
     "inset 0 2px 0 var(--gr)": "soulignement de l'onglet actif, pose par variable",
-    # L'aplat plein de la bande d'energie choisie, exige par les jetons de design.
-    "0 0 0 3px rgba(143,39,35,.30)": "anneau de la bande d'energie 0 a 3",
-    "0 0 0 3px rgba(138,81,8,.30)": "anneau de la bande d'energie 4 a 5",
-    "0 0 0 3px rgba(122,94,6,.30)": "anneau de la bande d'energie 6 a 7",
-    "0 0 0 3px rgba(51,105,63,.30)": "anneau de la bande d'energie 8",
-    "0 0 0 3px rgba(31,92,46,.30)": "anneau de la bande d'energie 9 a 10",
+    # Le champ de message du volet Prevenir, bleu de l'agenda, 2026-09-22.
+    "0 0 0 3px rgba(31,99,168,.25)": "anneau de focus du message Prevenir, bleu agenda",
     # Les larmes sont dessinees par nous et restent identiques partout, planche 09.
-    "50% 50% 50% 50% / 60% 60% 40% 40%": "forme de goutte des larmes du renoncement",
 }
 
-PALETTE = set(ref["_palette"])
+# 2026-09-22 : le popup a un mode sombre. Ses valeurs vivent dans _palette_sombre,
+# une seconde liste fermee, ajoutee a la planche pour ce seul usage.
+# 2026-09-26 : les graphes ont une teinte de plus (violet des mails) et un bleu
+# sombre, validees daltonisme et contraste avec la skill dataviz.
+PALETTE = set(ref["_palette"]) | set(c.upper() for c in ref.get("_palette_sombre", [])) | set(c.upper() for c in ref.get("_palette_graphes", []))
 VOCAB = {
     "font-size": set(ref["font-size"]),
     "line-height": set(ref["line-height"]),

@@ -1,6 +1,6 @@
 {
   "extDesc": {
-    "message": "Un koala apparaît régulièrement pour t'inviter à faire l'habitude que tu veux instaurer, puis te souffle une courte pensée avant de repartir."
+    "message": "Un koala te rappelle de faire de petites pauses, t'aide à ne rater aucune réunion, et tout reste sur ton appareil."
   },
   "tabSettings": {
     "message": "Réglages"
@@ -44,18 +44,6 @@
   "resume": {
     "message": "Reprendre"
   },
-  "catchupTitleOne": {
-    "message": "{n} habitude à rattraper"
-  },
-  "catchupTitlePlural": {
-    "message": "{n} habitudes à rattraper"
-  },
-  "catchupSub": {
-    "message": "Quand tu veux, sans pression"
-  },
-  "catchupAction": {
-    "message": "Rattraper"
-  },
   "grpRhythm": {
     "message": "Rythme des rappels"
   },
@@ -72,7 +60,7 @@
     "message": "Perso"
   },
   "rhythmHint": {
-    "message": "Perso accepte de 1 à 240 minutes."
+    "message": "Perso accepte de 5 à 240 minutes, par pas de cinq."
   },
   "focusLabel": {
     "message": "Pause focus"
@@ -231,7 +219,7 @@
     "message": "Personnages"
   },
   "koalasHint": {
-    "message": "Tes images restent sur ton appareil, sauf si tu les inclus toi-même dans une sauvegarde kDrive."
+    "message": "Tes images restent sur ton appareil, sauf si tu les inclus dans un fichier de sauvegarde."
   },
   "keepDefaultKoalas": {
     "message": "Garder les koalas d'origine"
@@ -260,20 +248,41 @@
   "animationsHint": {
     "message": "Automatique suit ton système."
   },
+  "grpTheme": {
+    "message": "Thème"
+  },
+  "themeAuto": {
+    "message": "Automatique"
+  },
+  "themeLight": {
+    "message": "Clair"
+  },
+  "themeDark": {
+    "message": "Sombre"
+  },
+  "themeHint": {
+    "message": "Automatique suit ton système."
+  },
   "statsDoneLabel": {
     "message": "Habitudes faites"
   },
   "statsReportsLabel": {
     "message": "Reportées"
   },
-  "statsEnergyLabel": {
-    "message": "Énergie"
-  },
   "statsScreenLabel": {
     "message": "Temps d'écran"
   },
-  "outOfTen": {
-    "message": "/ 10"
+  "statsMeetingLabel": {
+    "message": "Temps en réunion"
+  },
+  "statsMailOut": {
+    "message": "Mails envoyés"
+  },
+  "statsMailLabel": {
+    "message": "Mails"
+  },
+  "statsMailOutWord": {
+    "message": "Envoyés"
   },
   "statsPerDay": {
     "message": "Par jour"
@@ -285,7 +294,7 @@
     "message": "Reportées"
   },
   "statsGoalLegend": {
-    "message": "Ton objectif, {n} par jour"
+    "message": "Objectif : {n} par jour"
   },
   "statsSingleDayNote": {
     "message": "Choisis une semaine ou un mois pour voir l'évolution."
@@ -295,6 +304,9 @@
   },
   "statsStreakDays": {
     "message": "jours de suite"
+  },
+  "statsStreakDay": {
+    "message": "jour de suite"
   },
   "statsRecordWord": {
     "message": "Record"
@@ -311,44 +323,11 @@
   "statsStreakGoal": {
     "message": "Encore {n} jours et tu bats ton record."
   },
-  "statsBenefitUp": {
-    "message": "Tes habitudes te donnent de l'énergie"
-  },
-  "statsBenefitHint": {
-    "message": "Énergie moyenne selon le nombre d'habitudes du jour"
-  },
-  "statsBenefitNeutral": {
-    "message": "Impact sur ton énergie"
-  },
-  "statsBenefitFlat": {
-    "message": "Continue à noter pour voir le lien se dessiner."
-  },
-  "statsBenefitUpText": {
-    "message": "Les jours où tu t'y tiens le plus, {n} d'énergie en plus"
-  },
-  "statsBenefitDownText": {
-    "message": "Les jours où tu t'y tiens le plus, ton énergie est plus basse."
-  },
-  "statsBenefitNone": {
-    "message": "Pas de lien net entre ton habitude et ton énergie."
-  },
-  "statsBenefitB1": {
-    "message": "Peu"
-  },
-  "statsBenefitB2": {
-    "message": "Moyen"
-  },
-  "statsBenefitB3": {
-    "message": "Beaucoup"
-  },
-  "statsCorrNote": {
-    "message": "Note ton énergie sur quelques jours pour voir le lien apparaître."
-  },
   "backupTitle": {
     "message": "Sauvegarde et restauration"
   },
   "backupHint": {
-    "message": "Choisis ce qui est inclus, ça s'applique au fichier local et à kDrive ci-dessous."
+    "message": "Choisis ce que contient le fichier. Il reste sur ton ordinateur."
   },
   "partSettings": {
     "message": "Réglages"
@@ -361,6 +340,27 @@
   },
   "partKoalas": {
     "message": "Personnages importés"
+  },
+  "partConnexions": {
+    "message": "Connexions Infomaniak"
+  },
+  "partConnexionsHint": {
+    "message": "Jetons agenda et mail, chiffrés. Retiens ta phrase secrète : elle n'est gardée nulle part."
+  },
+  "backupPassPh": {
+    "message": "Phrase secrète"
+  },
+  "backupPassMissing": {
+    "message": "Ta phrase secrète doit faire au moins 12 caractères pour inclure les connexions."
+  },
+  "connexionsRestored": {
+    "message": "Connexions restaurées"
+  },
+  "connexionsBadPass": {
+    "message": "Phrase secrète incorrecte. Connexions non restaurées."
+  },
+  "connexionsSkipped": {
+    "message": "Connexions non restaurées : il manque la phrase secrète."
   },
   "partKoalasShort": {
     "message": "Personnages"
@@ -387,7 +387,7 @@
     "message": "Fichier illisible"
   },
   "importModeLabel": {
-    "message": "À l'import (fichier ou kDrive)"
+    "message": "À l'import"
   },
   "importMerge": {
     "message": "Fusionner"
@@ -441,7 +441,7 @@
     "message": "Tout reste chez toi"
   },
   "privacySub": {
-    "message": "Rien ne sort de ton appareil, sauf si tu actives toi-même la sauvegarde kDrive ci-dessus."
+    "message": "Aucun serveur Koala Zen. Tes données restent sur cet appareil, et la sauvegarde est un fichier que tu gardes."
   },
   "unitHour": {
     "message": "h"
@@ -467,9 +467,6 @@
   "bubblePillQuote": {
     "message": "Pensée du jour"
   },
-  "bubblePillSnark": {
-    "message": "Le chat a tout vu"
-  },
   "bubblePillFocus": {
     "message": "Pause focus"
   },
@@ -482,53 +479,15 @@
   "btnDoneIn": {
     "message": "Fait dans {n} s"
   },
-  "snarkAuthor": {
-    "message": "Le chat"
-  },
   "screenTodayLine": {
     "message": "Aujourd'hui, {d} d'écran"
-  },
-  "energyQ": {
-    "message": "Ton énergie, là maintenant"
-  },
-  "energyLow": {
-    "message": "À plat"
-  },
-  "energyHigh": {
-    "message": "En pleine forme"
-  },
-  "energySkip": {
-    "message": "Passer"
   },
   "dayProgress": {
     "message": "{d} sur {g} aujourd'hui"
   },
-  "tallyFirst": {
-    "message": "Premier report aujourd'hui, il compte"
-  },
-  "tallyNth": {
-    "message": "{n}e report aujourd'hui, il compte"
-  },
-  "tallyFirstShort": {
-    "message": "Premier report aujourd'hui"
-  },
-  "tallyNthShort": {
-    "message": "{n}e report aujourd'hui"
-  },
-  "snarkGo": {
-    "message": "Bon, j'y vais"
-  },
-  "snarkGoText": {
-    "message": "Parfait. Je te laisse tranquille, on se revoit dans {n} minutes."
-  },
-  "snarkGoTextShort": {
-    "message": "Parfait. Je te laisse tranquille."
-  },
-  "snarkNever": {
-    "message": "Jamais"
-  },
-  "snarkNeverText": {
-    "message": "Jamais, quel joli mot. Je le note dans mon carnet."
+  "dayProgressBonus": {
+    "message": "{d} sur {g} aujourd'hui, +{n} en bonus",
+    "description": "Ligne de progression de la bulle quand l'objectif du jour est depasse"
   },
   "winTitle": {
     "message": "Bien joué"
@@ -564,10 +523,10 @@
     "message": "Après 2 jours"
   },
   "soon3": {
-    "message": "Le lien entre habitudes et énergie"
+    "message": "Ton temps d'écran, jour par jour"
   },
   "soon3w": {
-    "message": "Après une semaine"
+    "message": "Dès aujourd'hui"
   },
   "ghostPreview": {
     "message": "Aperçu"
@@ -686,17 +645,35 @@
   "phSlotEvening": {
     "message": "surtout le soir"
   },
-  "phEnergyFlat": {
-    "message": "stable sur la période"
-  },
-  "phEnergyUp": {
-    "message": "en hausse depuis {j}"
-  },
-  "phEnergyDown": {
-    "message": "en baisse depuis {j}"
-  },
   "phScreenAvg": {
     "message": "{d} en moyenne par jour"
+  },
+  "phMeetingOne": {
+    "message": "1 réunion"
+  },
+  "phMeetingMany": {
+    "message": "{n} réunions"
+  },
+  "phMeetingPerWeek": {
+    "message": "{n} par semaine"
+  },
+  "phPerDay": {
+    "message": "{n} par jour en moyenne"
+  },
+  "busyMeet": {
+    "message": "Le {j} est ton jour le plus chargé : {n} de réunion en moyenne."
+  },
+  "busyMeetEven": {
+    "message": "Tes réunions sont réparties sur la semaine."
+  },
+  "busyMail": {
+    "message": "Le {j} est ton jour le plus chargé : {n} mails traités en moyenne."
+  },
+  "busyMailEven": {
+    "message": "Tes mails sont répartis sur la semaine."
+  },
+  "phMeetingShare": {
+    "message": "{p} % de ton temps d'écran"
   },
   "phStreakSpan": {
     "message": "du {a} au {b}"
@@ -705,7 +682,7 @@
     "message": "en {m}, tous temps confondus"
   },
   "phPace": {
-    "message": "1 habitude / {d}"
+    "message": "Une habitude toutes les {d} d'écran"
   },
   "stRangeDay": {
     "message": "Jour"
@@ -743,6 +720,9 @@
   "daysWord": {
     "message": "jours"
   },
+  "dayWord": {
+    "message": "jour"
+  },
   "statusCall": {
     "message": "En silence, visio en cours"
   },
@@ -750,7 +730,7 @@
     "message": "Les animaux de passage"
   },
   "passagesHint": {
-    "message": "Ils passent dire bonjour, sans rien demander."
+    "message": "Ils passent dire bonjour, sans rien demander. De 17 h à 21 h, un chat te rappelle chaque heure, avec humour, qu'il est temps d'arrêter."
   },
   "customIntervalLabel": {
     "message": "Ton intervalle Perso"
@@ -762,7 +742,7 @@
     "message": "Un koala va passer te voir"
   },
   "frSub": {
-    "message": "Il t'invitera à faire une petite chose, de temps en temps. Rien ne sort de ton appareil."
+    "message": "De temps en temps, il te propose une petite pause pour bouger."
   },
   "frHabitLabel": {
     "message": "Ta première habitude"
@@ -781,9 +761,6 @@
   },
   "passagesTest": {
     "message": "Voir un passage maintenant"
-  },
-  "snarkHaha": {
-    "message": "hahaha"
   },
   "bulkLine": {
     "message": "{n} ligne"
@@ -824,118 +801,427 @@
   "freqHintFrequent": {
     "message": "Max. 1x par heure."
   },
-  "kdriveHint": {
-    "message": "Une copie automatique dans ton propre kDrive, dossier Apps/Koala Zen."
-  },
-  "kdriveTokenLabel": {
-    "message": "Jeton d'accès kDrive"
-  },
-  "kdriveTokenPh": {
-    "message": "Coller le jeton ici"
-  },
-  "kdriveTokenHint": {
-    "message": "Un jeton avec le périmètre kDrive, généré dans le Manager Infomaniak."
-  },
-  "kdriveHowTo": {
-    "message": "Comment obtenir un jeton"
-  },
-  "kdriveShow": {
-    "message": "Afficher"
-  },
-  "kdriveHideTok": {
-    "message": "Masquer"
-  },
-  "kdriveConnect": {
-    "message": "Se connecter"
-  },
-  "kdriveConnecting": {
-    "message": "Connexion…"
-  },
-  "kdriveLastSyncAt": {
-    "message": "Dernière sauvegarde le {d}"
-  },
-  "kdriveNeverSynced": {
-    "message": "Pas encore de sauvegarde envoyée."
-  },
-  "kdriveBackupNow": {
-    "message": "Sauvegarder"
-  },
-  "kdriveRestoreOpen": {
-    "message": "Restaurer"
-  },
-  "kdriveRestorePick": {
-    "message": "Choisis une sauvegarde"
-  },
-  "kdriveNoBackup": {
-    "message": "Aucune sauvegarde trouvée sur kDrive."
-  },
-  "kdriveApply": {
-    "message": "Restaurer"
-  },
-  "kdriveDisconnect": {
-    "message": "Déconnecter kDrive"
-  },
-  "kdriveBackupDone": {
-    "message": "Sauvegarde envoyée"
-  },
-  "kdriveLinked": {
-    "message": "Connecté à kDrive"
-  },
-  "kdriveUnlinked": {
-    "message": "kDrive déconnecté"
-  },
-  "kdriveErrEmpty": {
-    "message": "Colle d'abord un jeton."
-  },
-  "kdriveErrInvalid": {
-    "message": "Ce jeton ne fonctionne pas. Vérifie qu'il a bien le périmètre kDrive."
-  },
-  "kdriveErrOffline": {
-    "message": "Impossible de joindre kDrive, vérifie ta connexion."
-  },
-  "kdriveErrBlocked": {
-    "message": "La requête a été bloquée de façon inattendue. Réessaie."
-  },
-  "kdriveErrNoDrive": {
-    "message": "Aucun kDrive disponible sur ce compte."
-  },
-  "kdriveErrNotConfigured": {
-    "message": "Aucun kDrive connecté pour l'instant."
-  },
-  "kdriveErrVerify": {
-    "message": "La sauvegarde envoyée n'a pas pu être vérifiée, réessaie."
-  },
-  "kdriveErrUnknown": {
-    "message": "Une erreur inattendue est survenue ({c})."
-  },
   "backupLocalLabel": {
     "message": "Fichier local"
   },
-  "kdriveSectionLabel": {
-    "message": "kDrive (optionnel)"
+  "agendaLabel": {
+    "message": "Pendant un rendez-vous de mon agenda"
   },
-  "kdriveConnectedTo": {
-    "message": "Connecté à {n}"
+  "agendaTokenHint": {
+    "message": "Un jeton limité au seul périmètre workspace:calendar."
   },
-  "kdriveConnectedGeneric": {
-    "message": "Connecté à kDrive"
+  "agendaPickTitle": {
+    "message": "Agendas à surveiller"
   },
-  "kdrivePickTitle": {
-    "message": "Choisis ton kDrive"
+  "agendaPickHint": {
+    "message": "Coche un ou plusieurs agendas."
   },
-  "kdrivePickHint": {
-    "message": "Ce compte a plusieurs kDrive, choisis celui qui recevra les sauvegardes."
+  "agendaPickOk": {
+    "message": "Surveiller"
   },
-  "kdriveFreeSpace": {
-    "message": "{f} libres"
+  "agendaConnectedToMany": {
+    "message": "Agendas surveillés : {n}"
   },
-  "kdrivePickChoose": {
+  "agendaDefaultTag": {
+    "message": "Agenda par défaut"
+  },
+  "agendaSharedTag": {
+    "message": "Partagé"
+  },
+  "agendaConnectedTo": {
+    "message": "Agenda surveillé : {n}"
+  },
+  "agendaInProgress": {
+    "message": "Rendez-vous en cours jusqu'à {h}"
+  },
+  "agendaNextAt": {
+    "message": "Prochain : {t} à {h}"
+  },
+  "agendaNone": {
+    "message": "Pas de réunion dans les 36 prochaines heures."
+  },
+  "agendaWarnLabel": {
+    "message": "3 min avant le début"
+  },
+  "agendaWarnHint": {
+    "message": "Pour ne plus rater le début. Bulle bleue, à fermer toi-même."
+  },
+  "agendaEndWarnLabel": {
+    "message": "5 min avant la fin"
+  },
+  "agendaEndWarnHint": {
+    "message": "Pour finir à l'heure, même seul. Bulle ambre."
+  },
+  "notifyLabel": {
+    "message": "Prévenir les participants"
+  },
+  "notifyHint": {
+    "message": "Mail déjà écrit pour un retard ou une absence. Tu relis, tu envoies."
+  },
+  "mailStatsLabel": {
+    "message": "Compter mes mails"
+  },
+  "mailStatsHint": {
+    "message": "Traités, supprimés et envoyés par jour. Les nombres seulement."
+  },
+  "mailStatsNeedsBox": {
+    "message": "Choisis d'abord ta boîte dans « Prévenir les participants »."
+  },
+  "notifyPickTitle": {
+    "message": "Envoyer depuis"
+  },
+  "notifyTokenHint": {
+    "message": "Un second jeton, limité au seul périmètre workspace:mail."
+  },
+  "notifyAliasOf": {
+    "message": "Alias de {m}"
+  },
+  "notifyFrom": {
+    "message": "Depuis {e}"
+  },
+  "notifyLinked": {
+    "message": "Adresse choisie"
+  },
+  "notifyErrNoMailbox": {
+    "message": "Aucune boîte mail sur ce compte."
+  },
+  "notifyButton": {
+    "message": "Prévenir les participants"
+  },
+  "notifyButtonShort": {
+    "message": "Prévenir"
+  },
+  "notifyLate5": {
+    "message": "5 min de retard"
+  },
+  "notifyLate10": {
+    "message": "10 min de retard"
+  },
+  "notifyAbsent": {
+    "message": "Absence"
+  },
+  "notifyTo": {
+    "message": "À"
+  },
+  "notifySubject": {
+    "message": "Objet"
+  },
+  "notifyBodyLabel": {
+    "message": "Message"
+  },
+  "notifySend": {
+    "message": "Envoyer"
+  },
+  "notifySending": {
+    "message": "Envoi…"
+  },
+  "notifyBack": {
+    "message": "Retour"
+  },
+  "notifyCancel": {
+    "message": "Annuler"
+  },
+  "notifyRemove": {
+    "message": "Retirer {n}"
+  },
+  "notifyLoading": {
+    "message": "Chargement des participants…"
+  },
+  "notifyNoRecipients": {
+    "message": "Personne à prévenir."
+  },
+  "notifyAlready": {
+    "message": "Déjà envoyé"
+  },
+  "notifySentOne": {
+    "message": "Envoyé à 1 personne"
+  },
+  "notifySentMany": {
+    "message": "Envoyé à {n} personnes"
+  },
+  "notifyErrOff": {
+    "message": "Active « Prévenir les participants » dans Koala Zen."
+  },
+  "notifyErrScope": {
+    "message": "Le jeton n'a pas le périmètre workspace:mail."
+  },
+  "notifyErrOffline": {
+    "message": "Pas de connexion. Réessaie."
+  },
+  "notifyErrGeneric": {
+    "message": "Envoi impossible. Réessaie, ou écris depuis kMail."
+  },
+  "notifySubjLate": {
+    "message": "Retard de {n} min · {t}"
+  },
+  "notifyBodyLate": {
+    "message": "Bonjour,\n\nJ'aurai {n} min de retard pour « {t} » ({h}). Commencez sans moi.\n\nÀ tout de suite"
+  },
+  "notifySubjAbsent": {
+    "message": "Absence · {t}"
+  },
+  "notifyBodyAbsent": {
+    "message": "Bonjour,\n\nJe ne pourrai pas participer à « {t} » ({h}).\n\nDésolé pour ce contretemps"
+  },
+  "agendaChange": {
+    "message": "Changer d'agenda"
+  },
+  "agendaDisconnect": {
+    "message": "Déconnecter l'agenda"
+  },
+  "agendaLinked": {
+    "message": "Agenda connecté"
+  },
+  "agendaErrNoCalendar": {
+    "message": "Aucun agenda lisible sur ce compte."
+  },
+  "statusMeeting": {
+    "message": "Rendez-vous en cours, rappels en pause"
+  },
+  "meetingSoonPill": {
+    "message": "Rendez-vous dans {n} min"
+  },
+  "meetingSoonAt": {
+    "message": "À {h}"
+  },
+  "meetingSoonPeople": {
+    "message": "{n} participants"
+  },
+  "meetingJoin": {
+    "message": "Rejoindre la visio"
+  },
+  "meetingUntitled": {
+    "message": "Sans titre"
+  },
+  "meetingEndPill": {
+    "message": "Fin dans {n} min"
+  },
+  "meetingCountdown": {
+    "message": "Commence dans {t}"
+  },
+  "meetingStarted": {
+    "message": "A commencé il y a {t}"
+  },
+  "meetingEndCountdown": {
+    "message": "Se termine dans {t}"
+  },
+  "meetingEnded": {
+    "message": "Terminé depuis {t}"
+  },
+  "meetingUntil": {
+    "message": "jusqu'à {h}"
+  },
+  "meetingClose": {
+    "message": "Fermer"
+  },
+  "stTotalOne": {
+    "message": "Total du jour"
+  },
+  "historyDayOne": {
+    "message": "1 jour"
+  },
+  "agendaCardTitle": {
+    "message": "Agenda Infomaniak"
+  },
+  "agendaCardHint": {
+    "message": "Ne rate plus une réunion, finis à l'heure, préviens en un clic."
+  },
+  "agendaDndNeeds": {
+    "message": "Connecte d'abord ton agenda, plus bas."
+  },
+  "agendaGrpRemind": {
+    "message": "Rappels"
+  },
+  "agendaGrpMail": {
+    "message": "Mail"
+  },
+  "frNext": {
+    "message": "Continuer"
+  },
+  "frSkip": {
+    "message": "Passer"
+  },
+  "frReplay": {
+    "message": "Revoir la présentation"
+  },
+  "frFeatTitle": {
+    "message": "Ce que tu y gagnes"
+  },
+  "frFeat1": {
+    "message": "Bouger sans y penser"
+  },
+  "frFeat1s": {
+    "message": "Une pause active à ton rythme, jamais pendant une visio."
+  },
+  "frFeat2": {
+    "message": "Ne plus rater une réunion"
+  },
+  "frFeat2s": {
+    "message": "Une bulle 3 min avant, avec le lien de la visio."
+  },
+  "frFeat3": {
+    "message": "Voir où passe ton temps"
+  },
+  "frFeat3s": {
+    "message": "Habitudes, écran, réunions et mails, jour par jour."
+  },
+  "frIkTitle": {
+    "message": "Connecte ton agenda Infomaniak"
+  },
+  "frIkSub": {
+    "message": "Facultatif. Infomaniak uniquement, pas Google ni Outlook."
+  },
+  "frIkLink": {
+    "message": "Ouvrir le Manager"
+  },
+  "frIkAgenda": {
+    "message": "Agenda connecté"
+  },
+  "frBkTitle": {
+    "message": "Tes données restent chez toi"
+  },
+  "statsMailDone": {
+    "message": "Mails traités"
+  },
+  "statsMailDoneWord": {
+    "message": "Traités"
+  },
+  "phMailDone": {
+    "message": "dont {d} supprimés, sur {n} reçus"
+  },
+  "statsHabitsChart": {
+    "message": "Habitudes"
+  },
+  "frHabitHint": {
+    "message": "Tu pourras en ajouter d'autres dans Perso."
+  },
+  "frIkStep1": {
+    "message": "Crée un jeton dans le Manager."
+  },
+  "frIkStep2": {
+    "message": "Coche ce seul périmètre et fixe une échéance."
+  },
+  "frIkStep3": {
+    "message": "Colle-le ici."
+  },
+  "frIkDoneTitle": {
+    "message": "C'est connecté"
+  },
+  "frBkSub": {
+    "message": "Pas de compte, pas de serveur Koala Zen."
+  },
+  "frFeat5": {
+    "message": "Finir tes réunions à l'heure"
+  },
+  "frFeat5s": {
+    "message": "Une bulle 5 min avant la fin, et le silence pendant."
+  },
+  "frFeat6": {
+    "message": "Prévenir d'un retard en un clic"
+  },
+  "frFeat6s": {
+    "message": "Le mail aux participants est déjà écrit. Tu relis, tu envoies."
+  },
+  "tokenShow": {
+    "message": "Afficher"
+  },
+  "tokenHide": {
+    "message": "Masquer"
+  },
+  "tokenPh": {
+    "message": "Coller le jeton ici"
+  },
+  "tokenConnect": {
+    "message": "Se connecter"
+  },
+  "tokenConnecting": {
+    "message": "Connexion…"
+  },
+  "pickChoose": {
     "message": "Choisir"
   },
-  "kdriveChangeDrive": {
-    "message": "Changer de kDrive"
+  "tokenErrEmpty": {
+    "message": "Colle d'abord un jeton."
   },
-  "kdriveOnlyOneDrive": {
-    "message": "Un seul kDrive est disponible sur ce compte."
+  "tokenErrBlocked": {
+    "message": "La requête a été bloquée de façon inattendue. Réessaie."
+  },
+  "tokenErrUnknown": {
+    "message": "Une erreur inattendue est survenue ({c})."
+  },
+  "tokenCreate": {
+    "message": "Créer le jeton dans le Manager"
+  },
+  "scopeCalendar": {
+    "message": "l'agenda"
+  },
+  "scopeMail": {
+    "message": "le mail"
+  },
+  "scopeKdrive": {
+    "message": "kDrive"
+  },
+  "tokenErrInvalid": {
+    "message": "Ce jeton ne fonctionne pas. Vérifie qu'il est actif et copié en entier."
+  },
+  "tokenErrOffline": {
+    "message": "Impossible de joindre Infomaniak. Vérifie ta connexion."
+  },
+  "tokenErrNotConfigured": {
+    "message": "Aucun jeton enregistré pour l'instant."
+  },
+  "tokenErrScope": {
+    "message": "Ce jeton n'a pas le périmètre {s}."
+  },
+  "tokenErrBroad": {
+    "message": "Ce jeton ouvre aussi {x}. Crée-en un avec le seul périmètre {s}."
+  },
+  "notifyErrRecipients": {
+    "message": "Un destinataire ne fait pas partie des invités. Rien n'est parti."
+  },
+  "notifyErrTokens": {
+    "message": "Il manque un jeton. Colle-le dans Koala Zen, carte Agenda."
+  },
+  "tokensResetHint": {
+    "message": "Pour ta sécurité, Koala Zen demande maintenant un jeton par usage. Colle un jeton limité à workspace:calendar."
+  },
+  "tokensResetMail": {
+    "message": "Colle un nouveau jeton, limité au seul périmètre workspace:mail."
+  },
+  "backupPassOk": {
+    "message": "Longueur suffisante."
+  },
+  "backupPassLeft": {
+    "message": "Encore {n} caractères au minimum."
+  },
+  "connexionsOldTokens": {
+    "message": "Réglages des connexions restaurés. Colle de nouveaux jetons, ceux de ce fichier avaient trop de droits."
+  },
+  "frBk1": {
+    "message": "Tout reste sur cet appareil."
+  },
+  "frBk2": {
+    "message": "Tes jetons sont chiffrés, chacun limité à un usage."
+  },
+  "frBk3": {
+    "message": "Une sauvegarde ? Exporte un fichier depuis Données."
+  },
+  "tokenErrNotAllowed": {
+    "message": "Koala Zen a refusé cet appel : il ne fait pas partie de ses usages."
+  },
+  "frIkMailLater": {
+    "message": "Mail : plus tard, carte Agenda, avec son propre jeton"
+  },
+  "notifyErrRate": {
+    "message": "Trop d'envois en peu de temps. Réessaie dans un moment."
+  },
+  "notifyErrExpired": {
+    "message": "Cette bulle a expiré. Passe par Koala Zen pour prévenir."
+  },
+  "tokenErrProbe": {
+    "message": "Impossible de vérifier les droits de ce jeton. Vérifie ta connexion et réessaie."
+  },
+  "connexionsUnchecked": {
+    "message": "Réglages restaurés. Jetons non vérifiés : colle-les à nouveau dans la carte Agenda."
   }
 }

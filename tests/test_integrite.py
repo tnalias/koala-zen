@@ -31,18 +31,26 @@ verifie("la langue par defaut est l'anglais", man.get("default_locale") == "en")
 attendues = {"storage", "alarms", "idle", "unlimitedStorage"}
 verifie("les permissions attendues sont la", attendues.issubset(set(man.get("permissions", []))),
         man.get("permissions"))
+# notifications, ajoutee le 2026-09-16 pour le rappel de rendez-vous de l'agenda
+# quand aucune page http(s) n'est au premier plan, jamais pour autre chose.
 verifie("aucune permission superflue",
-        set(man.get("permissions", [])) <= attendues | {"scripting", "activeTab", "tabs", "declarativeNetRequest"},
+        set(man.get("permissions", [])) <= attendues | {"scripting", "activeTab", "tabs", "declarativeNetRequest", "notifications"},
         man.get("permissions"))
-# declarativeNetRequest, ajoute pour la sauvegarde kDrive, doit toujours venir
-# avec sa liste de regles statiques, jamais l'un sans l'autre.
+# declarativeNetRequest, ajoute pour la sauvegarde kDrive. Depuis le
+# 2026-09-21 la regle Origin est une regle de SESSION posee par le fond et
+# limitee aux requetes sans onglet (tabIds -1) : une regle statique s'appliquait
+# aux pages Infomaniak elles-memes et cassait l'outil Newsletter. Plus jamais
+# de jeu de regles statiques ni de rules.json.
 if "declarativeNetRequest" in man.get("permissions", []):
-    dnr = man.get("declarative_net_request", {})
-    verifie("declarativeNetRequest est accompagne de ses regles statiques",
-            isinstance(dnr.get("rule_resources"), list) and len(dnr["rule_resources"]) > 0, dnr)
-    for regle in dnr.get("rule_resources", []):
-        verifie("chaque jeu de regles a un fichier qui existe",
-                os.path.isfile(os.path.join(racine, regle.get("path", ""))), regle)
+    verifie("aucun jeu de regles statiques declarativeNetRequest dans le manifeste",
+            "declarative_net_request" not in man, man.get("declarative_net_request"))
+    verifie("aucun fichier rules.json", not os.path.exists(os.path.join(racine, "rules.json")))
+    bg_dnr = lit("background.js")
+    # 2026-10-06 (revue ECC) : la regle ne vise plus que les ecritures vers l'API mail.
+    verifie("le fond pose une regle de session limitee a l'API mail hors onglet",
+            "updateSessionRules" in bg_dnr and "tabIds: [-1]" in bg_dnr and '"||mail.infomaniak.com/api/"' in bg_dnr
+            and 'urlFilter: "||api.infomaniak.com"' not in bg_dnr)
+    verifie("les appels a l'API partent sans cookies", 'credentials: "omit"' in bg_dnr)
 verifie("le service worker est declare",
         "background" in man and ("service_worker" in man["background"] or "scripts" in man["background"]))
 
@@ -57,7 +65,13 @@ for cle in ("icons", "action"):
 # ---------- images citees par le code ----------
 contenu = lit("content.js")
 images = set(re.findall(r'"(images/[^"]+)"', contenu))
-verifie("le code cite au moins une image", len(images) > 0)
+# 2026-09-25 : les personnages par defaut sont dessines en SVG dans content.js,
+# plus aucune image livree n'est necessaire. Ce qui reste dans images/ doit
+# etre cite, et ce qui est cite doit exister.
+verifie("les koalas par defaut sont dessines, plus aucune photo citee", not any("koala-" in i for i in images))
+# 2026-09-28 : le popup cite aussi ses images (le koala d'accueil de
+# l'onboarding, meme dessin que celui du rappel).
+images |= set(re.findall(r'"(images/[^"]+)"', lit("popup.html") + lit("popup.js")))
 manquantes = [i for i in images if not os.path.exists(os.path.join(racine, i))]
 verifie("toutes les images citees existent", not manquantes, manquantes[:6])
 
@@ -70,8 +84,10 @@ war = man.get("web_accessible_resources", [])
 motifs = []
 for entree in war:
     motifs += entree.get("resources", [])
-verifie("les images sont accessibles a la page",
-        any(m.startswith("images/") for m in motifs), motifs)
+# 2026-09-25 : plus aucune image de personnage livree, donc plus rien a
+# exposer aux pages. Une entree qui reviendrait serait un oubli.
+verifie("aucune ressource images/ n'est plus exposee aux pages",
+        not any(m.startswith("images/") for m in motifs), motifs)
 
 # ---------- langues ----------
 langues = ("en", "fr", "de")
@@ -96,12 +112,11 @@ verifie("les jetons de substitution sont coherents", True)
 
 # ---------- couverture i18n ----------
 utilisees = set()
-for f in ("popup.js", "content.js"):
-    utilisees |= set(re.findall(r'(?:kzMsg|msg)\("([^"]+)"', lit(f)))
+for f in ("popup.js", "content.js", "background.js"):
+    # bgMsg : les textes composes par le fond (notification systeme, mails Prevenir).
+    utilisees |= set(re.findall(r'(?:kzMsg|msg|bgMsg)\("([^"]+)"', lit(f)))
 utilisees |= set(re.findall(r'data-i18n(?:-ph|-aria)?="([^"]+)"', lit("popup.html")))
-utilisees |= {"eraseConfirm", "eraseBtn", "eraseAllBtn", "extDesc", "firstVisitIn", "nextVisitIn",
-              "catchupTitleOne", "catchupTitlePlural", "tallyFirst", "tallyNth",
-              "tallyFirstShort", "tallyNthShort"}
+utilisees |= {"eraseConfirm", "eraseBtn", "eraseAllBtn", "extDesc", "firstVisitIn", "nextVisitIn"}
 absentes = sorted(utilisees - base)
 verifie("toutes les cles utilisees existent", not absentes, absentes[:8])
 jamais = sorted(base - utilisees)
@@ -137,23 +152,16 @@ verifie("aucune trace d'assistant dans les fichiers livres", not suspect, suspec
 contenu = lit("content.js")
 
 m_koalas = re.search(r"DEFAULT_KOALAS\s*=\s*\[(.*?)\]", contenu, re.S)
-nb_koalas = len([x for x in re.findall(r'"([^"]+\.(?:png|gif))"', m_koalas.group(1))]) if m_koalas else 0
-verifie("DEFAULT_KOALAS est renseigne", nb_koalas > 0, nb_koalas)
+nb_koalas = len(re.findall(r'"svg:(?:reminder|quote)"', m_koalas.group(1))) if m_koalas else 0
+verifie("DEFAULT_KOALAS nomme les deux koalas dessines", nb_koalas == 2, nb_koalas)
 
-est_perso = nb_koalas > 10
-attendu = "images" if est_perso else "drawn"
-m_relance = re.search(r'RELANCE_MODE\s*=\s*"([a-z]+)"', contenu)
-verifie("RELANCE_MODE est declare", bool(m_relance))
-verifie("RELANCE_MODE correspond au build, %s koalas donc %s" % (nb_koalas, attendu),
-        m_relance and m_relance.group(1) == attendu,
-        m_relance.group(1) if m_relance else "absent")
-
-m_snark = re.search(r"SNARK_KOALAS\s*=\s*\[(.*?)\]", contenu, re.S)
-snark = re.findall(r'"([^"]+\.(?:png|gif))"', m_snark.group(1)) if m_snark else []
-verifie("SNARK_KOALAS est renseigne", len(snark) > 0, snark)
-# Les images de relance doivent exister dans CE build, c'est le bug exact de la 1.0.13.
-manquantes = [i for i in snark if not os.path.exists(os.path.join(racine, i))]
-verifie("toutes les images de relance existent dans ce build", not manquantes, manquantes)
+# 2026-09-16 : la relance a disparu (un report est un report), et avec elle
+# RELANCE_MODE et SNARK_KOALAS. Les images par defaut, elles, doivent toujours
+# exister dans CE build, c'est le bug exact de la 1.0.13.
+verifie("aucune trace du casting de relance", not re.search(r"RELANCE_MODE|SNARK_KOALAS|RELANCE_POOL", contenu))
+koalas = re.findall(r'"([^"]+\.(?:png|gif))"', m_koalas.group(1)) if m_koalas else []
+manquantes = [i for i in koalas if not os.path.exists(os.path.join(racine, i))]
+verifie("toutes les images par defaut existent dans ce build", not manquantes, manquantes)
 
 # ---------------------------------------------------------------------------
 # Module A, valeurs par defaut imposees par la planche.
@@ -168,8 +176,8 @@ for source in ("background.js", "popup.js"):
             re.search(r"customInterval:\s*45", txt), source)
 
 bgtxt = lit("background.js")
-verifie("passageState est declare avec ses neuf champs",
-        all(c in bgtxt for c in ("passageState", "lastVariant", "lastPhrase", "lastCoat", "lastFox", "lastMeet", "lastReminder")))
+verifie("passageState est declare avec ses douze champs, dont les trois des rondes du soir",
+        all(c in bgtxt for c in ("passageState", "lastVariant", "lastPhrase", "lastCoat", "lastFox", "lastMeet", "lastReminder", "eveningDay", "eveningHour", "eveningPhrase")))
 
 # L'ordonnancement des passages ne doit apparaitre dans AUCUNE liste d'export.
 poptxt = lit("popup.js")

@@ -158,34 +158,6 @@ function testCreneau() {
   verifie("un tableau vide ne casse rien", W.phraseCreneau([]) === "");
 }
 
-/* ============ 5. Phrase 3, la tendance d'energie ============ */
-function testTendance() {
-  const j = (n, vals) => vals.map((v, i) => ({ date: new Date(2026, 6, 20 + i), energie: v }));
-  verifie("moins de 4 jours notes, aucune phrase",
-    W.phraseTendance(j(3, [5, 6, 7])) === "", W.phraseTendance(j(3, [5, 6, 7])));
-  verifie("4 jours suffisent", W.phraseTendance(j(4, [4, 5, 6, 7])) !== "");
-  verifie("une pente franche vers le haut se dit en hausse",
-    /hausse|rising|steigend/i.test(W.phraseTendance(j(5, [3, 4, 5, 6, 8]))),
-    W.phraseTendance(j(5, [3, 4, 5, 6, 8])));
-  verifie("une pente franche vers le bas se dit en baisse",
-    /baisse|easing|nachlassend/i.test(W.phraseTendance(j(5, [8, 7, 6, 5, 3]))),
-    W.phraseTendance(j(5, [8, 7, 6, 5, 3])));
-  verifie("sous 0,2 point par jour, on ecrit stable",
-    /stable|steady|stabil/i.test(W.phraseTendance(j(6, [6, 6.1, 6, 6.1, 6, 6.1]))),
-    W.phraseTendance(j(6, [6, 6.1, 6, 6.1, 6, 6.1])));
-  verifie("une baisse ne porte aucun reproche",
-    !/decroch|abandon|mauvais|echec/i.test(W.phraseTendance(j(6, [9, 8, 6, 4, 3, 2]))),
-    W.phraseTendance(j(6, [9, 8, 6, 4, 3, 2])));
-  verifie("les jours non notes sont ignores",
-    W.phraseTendance([{ date: new Date(2026, 6, 20), energie: null },
-                      { date: new Date(2026, 6, 21), energie: 4 },
-                      { date: new Date(2026, 6, 22), energie: 5 },
-                      { date: new Date(2026, 6, 23), energie: 6 }]) === "");
-  verifie("aucune donnee ne casse rien", W.phraseTendance(null) === "");
-  verifie("la pente d'une droite plate vaut zero", W.penteLineaire([5, 5, 5, 5]) === 0);
-  verifie("la pente d'une montee de 1 par jour vaut 1",
-    Math.abs(W.penteLineaire([1, 2, 3, 4]) - 1) < 1e-9, W.penteLineaire([1, 2, 3, 4]));
-}
 
 /* ============ 6. Phrases 4, 5, 6 et la cadence ============ */
 function testAutresPhrases() {
@@ -205,8 +177,8 @@ function testAutresPhrases() {
     W.phraseRecord(new Date(2026, 2, 14)) !== "", W.phraseRecord(new Date(2026, 2, 14)));
 
   verifie("sans habitude faite, aucune cadence", W.phraseCadence(7200, 0) === "");
-  verifie("la cadence est une habitude par duree",
-    /1/.test(W.phraseCadence(2 * 3600, 1)), W.phraseCadence(2 * 3600, 1));
+  verifie("la cadence dit ce qu'elle mesure : une habitude pour tant d'ecran",
+    W.phraseCadence(2 * 3600, 1) === W.msg("phPace", "").replace("{d}", "2 h 00") || /Une habitude toutes les 2 h 00|One habit every 2 h 00|Eine Gewohnheit alle 2 h 00/.test(W.phraseCadence(2 * 3600, 1)), W.phraseCadence(2 * 3600, 1));
 }
 
 /* ============ 7. Les bornes de serie ============ */
@@ -257,19 +229,48 @@ function testTon() {
   verifie("les phrases d'analyse existent bien dans les locales",
     phrases.length > 100, phrases.length);
   verifie("les seuils de la planche sont nommes et pas caches dans le code",
-    /PHRASE_MIN_JOURS = 4/.test(src) && /PHRASE_MIN_REPORTS = 5/.test(src)
-    && /PHRASE_SEUIL_STABLE = 0\.05/.test(src) && /PHRASE_SEUIL_PENTE = 0\.2/.test(src));
+    /PHRASE_MIN_REPORTS = 5/.test(src) && /PHRASE_SEUIL_STABLE = 0\.05/.test(src));
   verifie("une phrase absente rend une chaine vide et jamais un tiret",
     W.phraseCreneau([1, 1]) === "" && W.phraseEcran(0, 0) === "" && W.phraseRecord(null) === "");
 }
 
+/* ============ 7. Le jour le plus charge, 2026-09-26 ============ */
+function testJourCharge() {
+  // Quatre semaines a partir du lundi 6 juillet 2026 ; le jeudi vaut 3 h, les autres 1 h.
+  const sem = (n, fv) => { const out = []; for (let i = 0; i < n * 7; i++) { const d = new Date(2026, 6, 6 + i); out.push({ date: d, v: fv(d) }); } return out; };
+  const jeudiFort = sem(4, (d) => (d.getDay() === 4 ? 10800 : 3600));
+  const r = W.jourLePlusCharge(jeudiFort);
+  verifie("un jour qui domine est designe", !!r && !r.even && r.wd === 4 && r.avg === 10800, JSON.stringify(r));
+  verifie("moins de trois semaines, aucune conclusion", W.jourLePlusCharge(sem(2, (d) => (d.getDay() === 4 ? 10800 : 3600))) === null);
+  verifie("moins de 21 jours, aucune conclusion", W.jourLePlusCharge(jeudiFort.slice(0, 20)) === null);
+  const egal = sem(4, (d) => (d.getDay() === 4 ? 3900 : 3600));
+  verifie("un ecart de moins de 15 %, repartition reguliere", JSON.stringify(W.jourLePlusCharge(egal)) === '{"even":true}');
+  verifie("une periode vide ne designe personne", W.jourLePlusCharge(sem(4, () => 0)) === null);
+  // Moyenne, pas total : cinq jeudis faibles contre quatre mardis forts.
+  const cinq = []; for (let i = 0; i < 35; i++) { const d = new Date(2026, 6, 1 + i); cinq.push({ date: d, v: d.getDay() === 2 ? 7200 : (d.getDay() === 4 ? 5000 : 1000) }); }
+  const rc = W.jourLePlusCharge(cinq);
+  verifie("c'est la moyenne qui compte, jamais le total", !!rc && rc.wd === 2, JSON.stringify(rc));
+  // Des jours sans donnee sont simplement absents : ils ne tirent rien.
+  const trous = sem(5, (d) => (d.getDay() === 4 ? 10800 : 3600)).filter((j) => j.date.getDay() !== 0 && j.date.getDay() !== 6);
+  verifie("un week-end sans releve ne fausse pas le resultat", !!W.jourLePlusCharge(trous) && W.jourLePlusCharge(trous).wd === 4);
+  const p = W.phraseJourCharge(r, "meet");
+  verifie("la phrase des reunions nomme le jour et la duree moyenne", p && p.j && /jeudi|thursday|donnerstag/i.test(p.j) && p.n === "3 h 00" && p.t.indexOf("{j}") >= 0 && p.t.indexOf("{n}") >= 0, JSON.stringify(p));
+  const pm = W.phraseJourCharge({ wd: 1, date: new Date(2026, 6, 6), avg: 51.6 }, "mail");
+  verifie("la phrase des mails arrondit au mail pres", pm && pm.n === "52" && /lundi|monday|montag/i.test(pm.j), JSON.stringify(pm));
+  verifie("une repartition reguliere a sa propre phrase, sans jour", W.phraseJourCharge({ even: true }, "meet").t.indexOf("{j}") < 0 && W.phraseJourCharge({ even: true }, "mail").t.indexOf("{j}") < 0);
+  verifie("rien a dire, aucune phrase", W.phraseJourCharge(null, "meet") === null);
+  const LOC = JSON.parse(fs.readFileSync(path.join(RACINE, "_locales", "fr", "messages.json"), "utf8"));
+  const phrases = ["busyMeet", "busyMeetEven", "busyMail", "busyMailEven"].map((k) => (LOC[k] || {}).message || "").join(" ");
+  verifie("aucun jugement dans les phrases du jour charge", phrases.length > 40 && !/trop|mauvais|attention|il faut|too much|should/i.test(phrases), phrases);
+}
+
 (async () => {
   const suites = [
+    ["Le jour le plus charge", testJourCharge],
     ["Le modele de periode", testPeriodes],
     ["Les fleches de navigation", testFleches],
     ["Phrase 1, l'ecart de periode", testEcart],
     ["Phrase 2, le creneau des reports", testCreneau],
-    ["Phrase 3, la tendance d'energie", testTendance],
     ["Phrases 4, 5, 6 et la cadence", testAutresPhrases],
     ["Les bornes de serie", testSerieBornes],
     ["Les tranches horaires", testTranches],

@@ -6,41 +6,39 @@
 
 > **English** · [Français](README.fr.md)
 
-A small browser extension for **Chrome and Firefox**. Every 30 minutes, an adorable koala pops up on the page. First it nudges you to do the habit you want to build, moving by default, but you choose. Then it comes back to whisper a short piece of wisdom, and leaves in a different, playful way each time. The koala changes on every visit: three photos, or your own.
+**A friendly koala for your workday.** It reminds you to take small breaks and build healthy habits, keeps you on time for your meetings, and shows you where your time goes. For **Chrome and Firefox**, free and open source.
 
-- **Set your habit goals** ("Do 3 push-ups", "Drink a glass of water"), reorder them by dragging, and they come up one at a time, in order. Confirm each as done and rate your energy from 1 to 10.
-- **See where you are in the day**: the reminder shows one mark per goal and how many you have already done.
-- **A cat that just drops by, sometimes with a fox**: it wanders across the page, waves and leaves. Every now and then two passers-by cross paths, two cats, or a cat and a fox, and trade a quick joke before moving on. It asks for nothing, counts for nothing, it is simply there. Five different scenes, between 8am and 8pm, and never during a call or a pause. Choose how often: Rare (every 3h), Normal (every 2h, the default), or Frequent (every hour) — or switch it off in one click if you prefer quiet.
-- **Follow your progress**: pick day, week, month, year or everything, then move back through past periods with the arrows. Habits done, habits postponed, average energy and screen time, each with a line that reads the number rather than repeating it, how it compares with the previous period, the time of day you postpone most, whether your energy is rising or easing and since when. A per-day chart with your daily target as a dashed line, a screen time chart, your best streak and your all-time record.
-- **Back up and restore**: export a `.json` file with the parts you choose, settings, goals and quotes, statistics, imported characters. Re-import it here or on another machine, merging or replacing. A storage bar shows what takes up room, and you can erase the history alone or everything. **Optionally, also back up to your own [kDrive](https://www.infomaniak.com/en/free-cloud)** (Apps/Koala Zen folder) with an Infomaniak access token you provide, restore from there the same way. kDrive is Infomaniak's cloud storage; a free account is available at [infomaniak.com/en/free-cloud](https://www.infomaniak.com/en/free-cloud) if you don't have one yet.
-- **Choose your rhythm**: Pomodoro, Deep work, Ultradian, or your own interval, from 5 to 240 minutes in steps of five. Your custom value is remembered even when you switch to a preset.
-- **Snooze or pause** (later, 1 hour, the whole day) and catch up the breaks you missed.
-- **Automatic pause** during video calls (kMeet, Teams, Zoom, Meet) and when you step away from the keyboard. The header tells you when it is staying quiet.
-- **Optional focus mode**: a break that dims the page until the timer ends. Off by default, and the countdown is announced to screen readers.
-- **See your screen time**: the wisdom bubble tells you how long you have been active on the computer today. It resets at midnight in the time zone you choose (Europe/Zurich by default, or your browser's).
-- Around 60 quotes, from Buddha and Rumi to Marcus Aurelius and Steve Jobs. **Browse them all**, search, hide the ones you do not like, or copy one into your own list. Add your own one by one, or **paste a whole batch at once** with one quote per line, checked on screen before anything is added.
-- **Someone with an opinion**: postpone and one of five characters turns up in a graphite bubble, counting your postponements on a tally. A different one each time, starting over every morning. Give up for good and it bursts into tears, briefly, asking nothing.
-- Bring **your own images or GIFs** too, up to 18. Squares and portraits get the bubble beside them, wide ones get it above.
-- **Interface in French, German, and English**, following your browser's language.
-- Everything stays on your computer by default, no account, no tracking, no analytics — an optional kDrive backup is the only thing that ever leaves it, and only if you turn it on yourself.
+- **A gentle nudge, never a guilt trip.** Every 5 to 240 minutes, a koala suggests one small thing: stand up, drink some water, look into the distance. Done or later, it's your call. Then it leaves you a short thought from about 60 hand-picked quotes. Never during a video call.
+- **Never miss a meeting.** A bubble 3 minutes before, with the video link one click away, and a heads-up 5 minutes before the end. Quiet while you are in a meeting.
+- **Running late? Let them know in one click.** A ready-made email to the attendees, from your own mailbox. You reread it, you send it.
+- **See where your time goes.** Habits, screen time, meetings and emails, day by day, with streaks and records.
+- **Make the koala yours.** Swap it for your own images or animated GIFs (up to 18), and write your own habits and quotes.
+- **And sometimes, the cats chat.** For no reason at all. From 5 pm, it reminds you, a little more firmly each hour, that it's time to stop.
+
+> **A free Infomaniak *my kSuite* account is all you need** for the advanced features: its Calendar and Mail unlock meeting reminders, attendee emails and meeting and email stats. **Calendar and email work with Infomaniak only.** They are not compatible with Google Calendar, Gmail or Microsoft Outlook. Everything else, breaks, quotes, statistics and passing animals, works for everyone.
+
+**Your data stays yours.** No account, no Koala Zen server, no tracking. Everything stays in your browser, and a backup is a file you export yourself. The optional Infomaniak features use your own tokens, each limited to a single use and encrypted on your device.
+
+**New in 2.2:** meeting reminders and attendee emails with Infomaniak, time in meetings and emails in the stats, a dark mode, a short guided tour, redrawn koalas and cats, evening and weekend rounds, and a full security review. See the [changelog](CHANGELOG.md).
 
 ---
 
 ## Overview
 
-The koala nudges you to do your habit, then whispers a thought. Everything is tuned from one panel, and you follow your progress.
+The koala nudges you to do your habit, keeps you on time for your meetings, and shows you where your time goes. Everything is tuned from one panel.
 
 <table>
   <tr>
-    <td width="50%" align="center"><img src="store-assets/screenshot-1-move-en.png" alt="A gentle nudge, never a guilt trip" width="410"><br><sub><b>A gentle nudge, never a guilt trip</b></sub></td>
-    <td width="50%" align="center"><img src="store-assets/screenshot-2-passages-en.png" alt="Sometimes two passers-by cross paths and chat" width="410"><br><sub><b>Sometimes two passers-by cross paths and chat</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-1-nudge-en.png" alt="Move a little. No guilt." width="410"><br><sub><b>Move a little. No guilt.</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-2-meetings-en.png" alt="Never miss a meeting again" width="410"><br><sub><b>Never miss a meeting again</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><img src="store-assets/screenshot-3-settings-en.png" alt="Your rhythm, your way" width="410"><br><sub><b>Your rhythm, your way</b></sub></td>
-    <td width="50%" align="center"><img src="store-assets/screenshot-4-stats-en.png" alt="Your streak, your numbers, your pace" width="410"><br><sub><b>Your streak, your numbers, your pace</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-3-warn-en.png" alt="Running late? Let them know." width="410"><br><sub><b>Running late? Let them know.</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-4-stats-en.png" alt="See where your time goes" width="410"><br><sub><b>See where your time goes</b></sub></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="store-assets/screenshot-5-fun-en.png" alt="Your quotes, your characters, 100% you" width="410"><br><sub><b>Your quotes, your characters, 100% you</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-5-cats-en.png" alt="And sometimes, the cats chat" width="410"><br><sub><b>And sometimes, the cats chat</b></sub></td>
+    <td width="50%" align="center"><img src="store-assets/screenshot-6-ksuite-en.png" alt="A free Infomaniak my kSuite account is all you need" width="410"><br><sub><b>A free Infomaniak my kSuite account is all you need</b></sub></td>
   </tr>
 </table>
 
@@ -48,7 +46,7 @@ The koala nudges you to do your habit, then whispers a thought. Everything is tu
 
 ## Installation
 
-Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder. The `.xpi` in `download/` is already **signed by Mozilla**, ready to install directly.
+Koala Zen works on **Chrome and Firefox**. Pick your browser below. The ready-to-use packages are in the [`download/`](download) folder. The `.xpi` in `download/` is already **signed by Mozilla**, ready to install directly. *For now it is still version 2.1.0: the signed 2.2.0 replaces it as soon as Mozilla has reviewed it. The Chrome package is already 2.2.0.*
 
 ### Chrome, Edge, Brave (the simplest, about a minute)
 The extension isn't on the Chrome Web Store yet, so you add it by hand. It stays installed across restarts, just leave developer mode on.
@@ -116,36 +114,40 @@ Need help with a step? Here too, an AI like **Euria by Infomaniak** can get you 
 
 ---
 
+## First launch
+A four-step tour opens on install and can be replayed from the link under the version number: your first habit, **What you get** (the benefits), **Connect your calendar** (optional, a token limited to the single `workspace:calendar` scope, in three numbered steps: create it in the Manager, tick this scope only, paste it; then the calendars to watch), and **Your data stays with you** (no account, no Koala Zen server, everything stays on this device, your tokens are encrypted and each limited to one use, and a backup is a file you export from Data). The mail token is not asked here; it is added later in the calendar card if you turn on the mail features. Each step has its own illustration, with the reminder koala waving on the welcome screen. Back and Skip sit at the top, the main button stays at the bottom, and the popup keeps the same height from one step to the next.
+
 ## Plugin settings
 **Everything in Koala Zen is customizable.** Click the koala icon in the toolbar to open the panel. The header shows when the next visit is due, and there are four tabs: **Settings** (how and when the koala shows up), **Custom** (what it shows), **Stats** (your progress) and **Data** (backup and erasing).
 
 **Settings** tab, in order:
 - **Pause**: postpone the next appearance (**Later**), pause for **1 hour**, or stop for **today**. A **Resume** button cancels the pause at any time, and your streak stays intact while paused.
-- **Catch up**: if you postpone or miss breaks, an amber banner shows how far behind you are and lets you make one up.
 - **Reminder rhythm**: pick **Pomodoro** (25 min), **Deep work** (52 min), **Ultradian** (90 min), or **Custom** and set the interval yourself with the slider (5 to 240 minutes, in steps of five).
 - **Focus break** (off by default): the page is dimmed for the length of the break, so you really do stop. You choose the duration.
-- **Passing animals** (on by default): a cat walks across the page to say hello and leaves. It asks nothing and counts for nothing. Sometimes two cats, or a cat and a fox, cross paths and greet each other in turn. At most one every two hours, four a day, only between 8am and 8pm, and never during a call, a pause or a focus break.
+- **Passing animals** (on by default): a cat walks across the page to say hello and leaves. It asks nothing and counts for nothing. Sometimes two cats, or a cat and a fox, cross paths and greet each other in turn. At most one every two hours, four a day, only between 8am and 8pm, and never during a call, a pause or a focus break. **Evening rounds** (new in 2.2): on top of those free visits, a cat walks by at 5, 6, 7, 8 and 9 pm to suggest, with a smile and a little more firmly each hour, that it is time to think about stopping work. One per hour, never repeated, and they obey the same do-not-disturb rules; a round missed at the hour (no web page in front, keyboard left) is retried for twenty minutes, then dropped. The cats and the fox were also redrawn, with rounder heads, expressive eyes, blinking, twitching ears and a wagging tail. On Saturdays and Sundays the passing cat switches to its weekend lines: it wonders why you are working, and salutes it as something original, in the same teasing tone.
 - **The heads-up before a call** (follows the same setting as passing animals): two seconds after landing on one of the listed videoconference pages, the cat walks by once with a teasing line about the meeting that is about to start.
-- **Do not disturb**: **during a video call** (the koala never appears on the listed sites, by default `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, and subdomains are covered, so `zoom.us` also covers `us02web.zoom.us`) and **when you leave the keyboard**.
+- **Do not disturb**: **during a video call** (the koala never appears on the listed sites, by default `kmeet.infomaniak.com`, `teams.microsoft.com`, `teams.live.com`, `zoom.us`, `meet.google.com`, and subdomains are covered, so `zoom.us` also covers `us02web.zoom.us`), **when you leave the keyboard**, and **during a meeting in your Infomaniak Calendar** (off by default). The connection itself lives in its own card, **Infomaniak Calendar**, right below: connect with an Infomaniak token limited to the single `workspace:calendar` scope (a token that also opens email or kDrive is refused, see Privacy), then **tick the calendars to watch**, one or several (work and personal), among the ones you can read, yours first with the default one marked. Their events are merged, an event present in two calendars counts once. The card then shows the watched calendars and the next meeting. Back in Do not disturb, turn the switch on and, from then on, any event with two people or more, you included and not declined (full-day events and events marked free are ignored), silences passing animals for its whole duration, and the header reads "Quiet, meeting in progress". A habit reminder that would fall during such a meeting, or less than ten minutes before one, is not dropped but **moved to the first free slot of at least ten minutes**, one minute after it opens (a run of back-to-back meetings is skipped as a whole; with no slot within six hours the reminder is skipped). The same connection also feeds the **time in meetings** figure of the Stats tab: meetings with two people or more, you included and not declined, counted per day, with the last 90 days read once when you pick the calendar. A second switch in the calendar card, **3 min before the start**, works on its own, with or without the silence: three minutes before each such event it shows a bubble on the page, in blue with a calendar tag so that it is never mistaken for a habit reminder, with a live countdown, a **Join the call** button when it has a video link and a **Close** button, or a system notification when no web page is in front. The bubble never goes away on its own: it stays, counting down and then counting the minutes since the start, until you close it. Neither heads-up appears while the computer is asleep, locked or untouched for ten minutes; the extension checks again a minute later and shows it only if the meeting has not started yet. A third switch, **5 min before the end**, does the same five minutes before the end, in amber, so that you finish on time. Unlike the quiet and the start heads-up, it covers **every timed event** of the calendar, including the ones you are alone in (a focus block, a personal appointment); only full-day events and invitations you declined are left out.
+- **Notify attendees by email** (new in 2.2, off by default): a fourth switch in the calendar card. It needs a **second token, limited to the single `workspace:mail` scope**, which the card asks for when you turn it on (a token that also opens the calendar or kDrive is refused); the calendar token keeps reading the attendees, the mail token only sends. You then pick the **sending address** among your mailboxes and their aliases. From then on the blue start bubble shows a **Notify** button, and so does the calendar card when a meeting starts within the hour or is running. It opens a small panel: three ready messages (5 minutes late, 10 minutes late, absent), the attendees as removable chips with the organizer first and you excluded, the subject, and the full text to reread and edit. One **Send** button, nothing leaves before you click it, each message can be sent once per meeting, at most six emails per hour, and a confirmation tells you how many people got it. Attendee addresses are fetched when you open the panel and never stored. **Change calendar** and **Disconnect calendar** are one click away.
 - **Screen time**: choose the time zone that defines your day for the counter shown in the bubbles. Europe/Zurich by default, or **Automatic (browser)**.
 
 At the bottom, **Bring the koala** triggers an immediate appearance, handy for testing, and it ignores the video-call pause. The version and last-update date are shown discreetly underneath.
 
 **Custom** tab, in order:
-- **Goals**: your habit prompts. Add them one by one, remove with ×, and drag the handle to reorder. They come up one at a time, in your order. Leave the list empty to use the bundled goals. Underneath, **your daily target** sets the number of habits you aim for each day, and it drives the marks in the reminder and the dashed line in the statistics.
+- **Goals**: your habit prompts. Add them one by one, remove with ×, and drag the handle to reorder. They come up one at a time, in your order. Leave the list empty to use the bundled goals. Underneath, **your daily target** sets the number of habits you aim for each day, and it drives the marks in the reminder and the dashed line in the statistics. Once the target is reached the line turns green, and every habit beyond it adds a gold mark and reads, for instance, "5 of 3 today, +2 bonus", so the extra effort is counted rather than hidden behind a full bar.
 - **Quotes**: switch between **Yours** and **Bundled**. Add your own as "Text | Author" (the author is optional). **Browse the bundled ones** opens a full list where you can search, **hide** a quote so the koala stops saying it, or **edit** one, which creates your own version and leaves the original untouched.
-- **Characters**: add your own PNG or animated GIF files (a transparent background works best). They replace the bundled koalas unless you tick **Keep the bundled koalas**. Click × to remove one. Static images are resized to save space, and everything stays on your device.
+- **Characters**: by default, two koalas drawn by hand as busts, the face first, with real koala ears (a soft furry rim and a pale downy inside): one announces the reminders and waves on arrival, one shares the quote with half-closed eyes and a blade of grass in the corner of its mouth. They blink and twitch their ears in turn. Add your own PNG or animated GIF files (a transparent background works best). They replace the bundled koalas unless you tick **Keep the bundled koalas**. Click × to remove one. Static images are resized to save space, and everything stays on your device.
+- **Theme** (new in 2.2): **Automatic** follows your system's light or dark mode, or force **Light** or **Dark**. Applies to the panel; the bubbles on web pages keep their own colors.
 - **Animations**: **Automatic** follows your system's reduced-motion setting, or force them **Always** or **Never**.
 
 Click **Save** on either tab after a change.
 
-**Stats** tab. Pick a period (today, yesterday, this or last week, this or last month, since you started) and read four figures, each with a line of context: habits done compared with the previous period, habits postponed with the time of day you postpone most, average energy with its trend, and screen time with a daily average. Below, a per-day chart for habits (done and postponed side by side) with your daily target as a dashed line, a per-day chart for screen time, and a cadence line tying your habits to your screen time. Then your current streak as a progress bar toward your record, and how your average energy compares on days you do a little versus a lot. The wording adapts to your own data, so it never claims a link that is not there. On the very first run, the tab shows what will appear and when instead of a wall of zeros.
+**Stats** tab. Pick a period (today, yesterday, this or last week, this or last month, since you started) and read four figures, each with a line of context: habits done compared with the previous period, habits postponed with the time of day you postpone most, and screen time with a daily average, plus, once an Infomaniak calendar is connected, your **time in meetings** with the number of meetings (and meetings per week over two weeks or more). Overlapping meetings, and the same meeting seen in two watched calendars, count once. With **Count my emails** on (calendar card, it uses the same mailbox as Notify attendees), two more tiles show **emails handled** (read or deleted, with how many were deleted and received) and **emails sent** with a daily average; only the counts are read, never a sender, subject or content. Below, a per-day chart for habits (done and postponed side by side) with your daily target as a dashed line, a per-day chart for screen time, a per-day chart for time in meetings when there is any, a per-day chart of emails handled and sent when they are counted, and under screen time a cadence line (one habit for so much screen time). All four charts share the same height and header, with a legend whenever they show two series. Over three weeks or more, a line under the meetings chart and one under the emails chart name your **busiest weekday** (the highest average, never a total), or say the load is spread when no day stands out by 15 % or more. Then your current streak as a progress bar toward your record. The wording adapts to your own data, so it never claims a link that is not there. On the very first run, the tab shows what will appear and when instead of a wall of zeros.
 
 **Data** tab:
-- **Backup and restore**: one card, two destinations. Tick the parts you want (settings, goals and quotes, statistics, imported characters, each with its weight) and choose **merge** or **replace** for restoring — both choices apply to whichever destination you use below. **Local file**: **Export** a `.json` file, **Import** brings it back. **kDrive** (optional): Infomaniak's cloud storage, [free account here](https://www.infomaniak.com/en/free-cloud) if you don't have one yet. Paste a personal Infomaniak access token with the kDrive scope ([how to get one](https://faq.infomaniak.com/2582)) to back up and restore the exact same data to your own kDrive, folder `Apps/Koala Zen`. If your account has more than one kDrive, you pick which one; with only one, it connects straight away. A "Change kDrive" link lets you switch later. Nothing is sent until you provide a token and connect; disconnect any time to stop. The token is encrypted at rest and never included in the local `.json` export.
+- **Backup and restore**: one card, one destination, a **local file**. Tick the parts you want (settings, goals and quotes, statistics, imported characters, each with its weight, and **Infomaniak connections**: your calendar and mail tokens with the chosen calendars and sending address, off by default) and choose **merge** or **replace** for restoring. **Export** writes a `.json` file, **Import** brings it back. Nothing is sent anywhere, and there is no automatic backup: exporting is up to you. The connections are encrypted with a passphrase of **at least 12 characters** that you type at export and again at restore, and that is never stored; a live counter tells you how many characters are still missing. The tokens are protected by PBKDF2-SHA256 with 600,000 iterations, then AES-GCM 256. A file made before 2026-09-29 restores its connection settings but never its tokens (they had too many rights): paste new single-scope tokens afterwards. *(Until 2026-09-29 this card also offered a kDrive backup and a daily automatic kDrive backup; both are gone.)*
 - **What Koala Zen takes up**: a gauge splitting your storage between characters, history and content.
-- **Everything stays with you**: no account, nothing sent, no analytics — unless you turn on kDrive backup above.
-- **Erase**: the history alone, or everything including settings and content. Both ask for a second click to confirm, so export first.
+- **Everything stays with you**: no Koala Zen server, your data stays on this device, and the backup is a file you keep.
+- **Erase**: the history alone, or everything including settings, content and the connections (erasing everything also deletes the tokens' encryption key). Both ask for a second click to confirm, so export first.
 
 The koala appears on the active web page, not on the browser's internal pages (`chrome://`, `about:`…), which don't allow extensions.
 
@@ -165,7 +167,7 @@ The committed `manifest.json` targets both engines. For Firefox the script drops
 
 ## Customisation in the code
 - **Default quotes and prompts** live in `quotes.js` (`KZ_QUOTES` = `{ t, a }`, `KZ_SPORT` = the default habit prompts). Most people can just use the settings above.
-- **Default images**: replace the files in `images/` and update `DEFAULT_KOALAS` at the top of `content.js`. The cat lines and images are `KZ_SNARK` in `quotes.js` and `SNARK_KOALAS` in `content.js`.
+- **Default characters**: the two koalas are drawn in SVG in `KOALA_SVGS` at the top of `content.js`, one for the reminder (it waves), one for the quote (blade of grass, half-closed eyes). Ears, eyes and the waving paw carry classes the CSS animates. Edit the markup there; no image file is involved.
 - **Reminder timings**: the `T` object at the top of `content.js` holds every duration of the choreography, in milliseconds.
 - **Default video-call sites**: `DEFAULTS.mutedPatterns` in `background.js` and `popup.js`.
 
@@ -176,24 +178,38 @@ Reload the extension after editing any file.
 manifest.json     extension manifest (Manifest V3, Chrome + Firefox)
 background.js     service worker: schedules reminders, applies the video-call pause,
                   tracks daily active screen time and the daily statistics,
-                  and talks to the kDrive API for the optional cloud backup
+                  talks to the Infomaniak Calendar API for the optional meeting silence
+                  and to the Infomaniak Mail API for the optional mail features
 content.js        draws the koala, the bubbles and the reminder choreography
 passages.js       the passing-animals scenes (cats, and occasional cat/fox meetings)
-quotes.js         the default quotes, habit prompts and cat lines
+quotes.js         the default quotes, habit prompts and passing-animal lines
 popup.html/js     the four-tab panel: Settings, Custom, Stats, Data
-rules.json        declarativeNetRequest rule that strips the Origin header on
-                  requests to api.infomaniak.com, required for the kDrive backup
 build.sh          builds the Chrome (.zip) and Firefox (.xpi) packages
 download/         ready-to-install packages (Chrome .zip, Firefox .xpi)
-images/           the default koalas and the cat (PNG)
+images/           the welcome koala of the onboarding (SVG, animated and still)
 icons/            toolbar icons
-store-assets/     listing text and screenshots for the add-on stores
+store-assets/     store listings (Chrome, Mozilla), GitHub kit, screenshots in 3 languages,
+                  and generateur/ to regenerate them from the real interface
 ```
 
 ## Privacy
-By default, nothing leaves your browser. Your settings, your goals and quotes, your statistics and any images you add are stored locally with the browser's storage API. Export and import go through a file you handle yourself. No servers, no analytics, no tracking.
+By default, nothing leaves your browser. Your settings, your goals and quotes, your statistics and any images you add are stored locally with the browser's storage API. Backup is a file you export and import yourself from the Data tab. No account, no Koala Zen server, no analytics, no tracking. There is no kDrive backup anymore (removed on 2026-09-29), so none of your data is ever uploaded to any cloud.
 
-The one exception is the **optional** kDrive backup in the Data tab: if you paste your own Infomaniak access token and connect, Koala Zen uploads the same data as the local export to your own kDrive, folder `Apps/Koala Zen`, only when you click "Back up" (or restore from there). Nothing is sent before you do this, and disconnecting stops it. The token is encrypted at rest in the extension's local storage and is never included in the `.json` export file. This requires the `declarativeNetRequest` permission (to strip a browser-added header that would otherwise break the request) and reaches only `api.infomaniak.com`.
+Only two **optional** features reach the network, both towards your own Infomaniak account, with your own tokens, and only once you turn them on:
+- The **Infomaniak Calendar** connection (Settings tab, Infomaniak Calendar card), with a token limited to the single `workspace:calendar` scope. While it is on, Koala Zen reads the events of the calendars you ticked, from 12 hours back to 36 hours ahead, every five minutes, through `api.infomaniak.com` only. It keeps locally nothing but the start, end, title, attendee count and video link of the events that qualify as meetings, plus a per-day count of minutes in meetings for the Stats tab, so that it can stay quiet and warn you, and it never sends any of it anywhere. Turning the switch off or disconnecting clears that cache. The `notifications` permission serves one purpose, the three-minute heads-up when no web page is in front to show the bubble.
+- The **mail features**, **Notify attendees by email** and **Count my emails**, with a second token limited to the single `workspace:mail` scope, through `mail.infomaniak.com` (and `api.infomaniak.com` for your address's signature). Warn creates a draft in your own mailbox and sends it only when you click Send, only to the attendees you kept, and keeps nothing of them afterwards. Count my emails reads only the number of messages per day, never a sender, subject or content.
+
+**Tokens.** Each token must open one use and nothing else. When you paste one, Koala Zen makes a few read-only test calls and **refuses a token that also opens the other Koala Zen use or kDrive** ("This token also opens…"). Scopes Koala Zen never calls cannot be detected that way, so tick a single scope when you create the token in the Manager. Tokens are encrypted with AES-GCM 256. The key is a **non-extractable** `CryptoKey` kept in the extension's IndexedDB: no code, not even the extension's own, can read its bytes; it is not stored next to the encrypted tokens in `storage.local`, and it is never part of any export. Honest limit: a program that reads your browser profile files on disk could still recover it, because extensions have no access to the system keychain without a separate native helper app. **Erase everything** deletes the key too. The extension's calls carry no cookies, only the token. Tokens leave the device only inside the optional **Infomaniak connections** part of an exported file, encrypted with your passphrase (see Data tab), never in clear.
+
+**Closed list of calls.** Infomaniak's scopes are broad: `workspace:calendar` can also create, change and delete events and read your contacts, and `workspace:mail` can read, delete and move any email. Koala Zen only uses eleven precise calls (read calendars and events, list mailboxes and folders, count messages, create and send a draft, read signatures, and one kDrive probe). Any other call is refused inside the extension before it leaves, so even a hijacked extension could not use your tokens for anything else. Give your tokens an expiry date when you create them in the Manager.
+
+**Out of the pages' reach (ECC security review, 2026-10-06).** Sensitive data (meeting titles and links, your identity, your calendars, your mailbox, emails already sent and the encrypted tokens) lives in an IndexedDB vault in the background that page scripts can neither read nor change; only the numeric stats stay in shared storage. A page can prepare or send an email only for the bubble Koala Zen just showed it, through a one-time nonce tied to that tab and that meeting; the subject is always built by Koala Zen. Send and Join need a real click on a bubble visible for at least half a second (Send stays greyed out until then). A simulated Escape closes nothing. Scope probes refuse a token when in doubt (offline, server error) and run again when a backup is imported. No redirect is followed. The rule that strips the Origin header now only targets the mail API; the calendar never needed it.
+
+**Updating from an earlier 2.2 build.** Earlier instructions asked for a single token carrying several scopes (kDrive, calendar and mail). On update, those stored tokens are forgotten and the old encryption key that sat in `storage.local` is deleted, along with the kDrive settings. Your selected calendars and mailbox are kept: the Calendar card explains why and asks you for new single-scope tokens.
+
+**On web pages.** The koala, the meeting bubbles and the passing animals are drawn inside a **closed** shadow DOM, so the website's own scripts cannot read the meeting title or the attendee addresses, rewrite the message or click Send. The **Send** and **Join the call** buttons react only to a real gesture of yours (trusted events), never to a click simulated by a script. Before sending, the background re-reads the meeting's attendees and refuses the whole send if any recipient is not an invitee. From page scripts, the background accepts only four message types (a reminder outcome, preparing and sending the notify email, opening the meeting link); everything else, tokens, connections, settings and backups, is accepted only from the extension's own pages.
+
+**Permissions.** `declarativeNetRequest` is used for one session rule that strips a browser-added `Origin` header only on the extension's own background requests (no tab) to `api.infomaniak.com` and `mail.infomaniak.com`, which the Infomaniak API would otherwise reject, and on nothing else: requests made by web pages, including Infomaniak's own tools open in a tab, are never touched.
 
 ## License
 MIT. See [LICENSE](LICENSE).

@@ -17,6 +17,7 @@ const SRC = fs.readFileSync(path.join(RACINE, "passages.js"), "utf8");
 
 // opts.url et opts.storageGet servent au coucou de visioconference, qui lit sa
 // propre page et son propre stockage independamment du reste du fichier.
+let OUVRIR_RACINES = true;
 function charge(largeur, animMode, opts) {
   opts = opts || {};
   const dom = new JSDOM("<!doctype html><html><body></body></html>", {
@@ -59,8 +60,25 @@ function charge(largeur, animMode, opts) {
   // partagent leur portee globale lexicale. C'est precisement ce qui permet a
   // passages.js de lire KZ_HELLO par son nom nu. On evalue donc ensemble, pour
   // modeliser la realite au lieu de valider un chemin qui n'existe pas.
+  // opts.avant(w) permet de regler la fenetre AVANT le chargement des scripts,
+  // par exemple l'horloge de la page pour le coucou de visioconference.
+  // Cinq lots du soir, distincts des deux autres, pour prouver quel lot et
+  // quelle heure se sont affiches.
+  const SOIR = [17, 18, 19, 20, 21].map((h) => ["Soir " + h + " h, phrase un", "Soir " + h + " h, phrase deux", "Soir " + h + " h, phrase trois", "Soir " + h + " h, phrase quatre"]);
+  // 2026-09-29 : le produit ferme ses racines (mode "closed"). Les tests ont
+  // besoin d'y regarder : ils les ouvrent ici, sauf quand un test verifie
+  // justement qu'elles sont fermees (OUVRIR_RACINES a faux). jsdom ne sait
+  // pas produire de clic de confiance : __kzEssaiJsdom le remplace.
+  if (OUVRIR_RACINES) {
+    const attache = w.Element.prototype.attachShadow;
+    w.Element.prototype.attachShadow = function (o) { return attache.call(this, Object.assign({}, o, { mode: "open" })); };
+  }
+  w.__kzEssaiJsdom = true;
+  if (typeof opts.avant === "function") opts.avant(w);
   w.eval("const KZ_HELLO = " + JSON.stringify(PHRASES) + ";\n"
-    + "const KZ_MEETING = " + JSON.stringify(REUNION) + ";\n" + SRC);
+    + "const KZ_MEETING = " + JSON.stringify(REUNION) + ";\n"
+    + (opts.sansSoir ? "" : "const KZ_EVENING = " + JSON.stringify(SOIR) + ";\n")
+    + "const KZ_WEEKEND = " + JSON.stringify(["Week-end, phrase un", "Week-end, phrase deux", "Week-end, phrase trois"]) + ";\n" + SRC);
   return { w, doc: w.document, journal, ecouteurs, P: w.KZ_PASSAGES };
 }
 const attends = (ms) => new Promise((r) => setTimeout(r, ms || 30));
@@ -83,7 +101,7 @@ async function testScenes() {
   }
   for (const [id, ms] of TABLE) {
     const e = charge();
-    e.P.play({ variant: id, ms: 40, who: "cat", coat: 2, phrase: 1 });
+    e.P.play({ variant: id, ms: 160, who: "cat", coat: 2, phrase: 1 });
     await attends(10);
     const l = calque(e.doc);
     verifie(id + ", le calque est monte", !!l);
@@ -92,7 +110,7 @@ async function testScenes() {
     verifie(id + ", la bulle porte du texte reel et pas une image",
       !!(l && (l.querySelector(".kz-pass-bubble").textContent || "").length > 5));
     verifie(id + ", la bulle a sa pointe", !!(l && l.querySelector(".kz-pass-tip")));
-    await attends(160);
+    await attends(320);
     verifie(id + ", tout est retire a la fin", !calque(e.doc), id);
   }
 }
@@ -165,8 +183,15 @@ async function testCalque() {
     /\.kz-pass-layer[^}]*left: 0[^}]*right: 0[^}]*top: 0[^}]*bottom: 0/.test(st));
   verifie("aucun element du calque n'est focusable",
     !hote.shadowRoot.querySelector("button, a, input, [tabindex]"));
-  verifie("mouvement reduit du systeme, le calque disparait",
-    /prefers-reduced-motion: reduce\) \{ \.kz-pass-layer \{ display: none/.test(st));
+  // 2026-09-16 : la regle CSS prefers-reduced-motion cachait le calque quel que
+  // soit le reglage Animations. En mode "Toujours", les passages etaient donc
+  // invisibles tout en consommant leur creneau. C'est reduceMotion(), qui suit
+  // le reglage, qui decide, jamais une regle CSS globale.
+  verifie("aucune regle CSS ne cache le calque sur mouvement reduit, c'est reduceMotion() qui decide",
+    !/prefers-reduced-motion/.test(st));
+  const srcP = fs.readFileSync(path.join(RACINE, "passages.js"), "utf8");
+  verifie("play() s'arrete des l'entree sur mouvement reduit",
+    /async function play\(sp\) \{[\s\S]{0,200}if \(reduceMotion\(\)\) return;/.test(srcP));
   await attends(240);
 }
 
@@ -398,6 +423,83 @@ async function testFidelite() {
     && !/\.createContextualFragment\(/.test(SRC));
 }
 
+/* ============ 10. Robustesse, revue du 2026-09-16 ============ */
+async function testRobustesse() {
+  // Onglet masque : les animations CSS se figent, et la fin du passage recule
+  // d'autant. Avant, l'horloge de clear() continuait et le chat disparaissait
+  // au milieu de l'ecran au retour.
+  const e1 = charge();
+  e1.P.play({ variant: "cross", ms: 200, who: "cat", coat: 0, phrase: 0 });
+  await attends(60);
+  verifie("le passage est monte", !!calque(e1.doc));
+  Object.defineProperty(e1.doc, "hidden", { value: true, configurable: true });
+  e1.doc.dispatchEvent(new e1.w.Event("visibilitychange"));
+  await attends(400);
+  verifie("onglet masque, le passage attend au lieu de disparaitre", !!calque(e1.doc));
+  Object.defineProperty(e1.doc, "hidden", { value: false, configurable: true });
+  e1.doc.dispatchEvent(new e1.w.Event("visibilitychange"));
+  await attends(60);
+  verifie("au retour, le passage est encore la pour le temps qui lui restait", !!calque(e1.doc));
+  await attends(400);
+  verifie("puis il se retire normalement", !calque(e1.doc));
+
+  // Un passage interrompu par un rappel ne doit jamais effacer le suivant :
+  // le tour d'attente du premier ne touche plus a rien une fois remplace.
+  // stop("call") retire tout de suite, et le second passage demarre AVANT que
+  // le tour d'attente du premier ne se reveille (il dort jusqu'a 250 ms).
+  const e2 = charge();
+  e2.P.play({ variant: "cross", ms: 400, who: "cat", coat: 0, phrase: 0 });
+  await attends(40);
+  e2.P.stop("call");
+  verifie("le premier passage est bien retire par l'appel", !calque(e2.doc));
+  await attends(20);
+  e2.P.play({ variant: "sit", ms: 400, who: "cat", coat: 1, phrase: 1 });
+  await attends(40);
+  verifie("le second passage est monte", !!calque(e2.doc));
+  await attends(260);
+  verifie("le tour d'attente perime du premier n'a pas efface le second", !!calque(e2.doc));
+  await attends(300);
+  verifie("le second se retire a sa propre fin", !calque(e2.doc));
+
+  // Une scene qui echoue ne bloque pas les suivantes.
+  const e3 = charge();
+  const sauve = e3.P.SCENES.cross;
+  e3.P.SCENES.cross = () => { throw new Error("scene cassee"); };
+  e3.P.play({ variant: "cross", ms: 200, who: "cat", coat: 0, phrase: 0 });
+  await attends(40);
+  verifie("une scene qui plante ne laisse rien a l'ecran", !calque(e3.doc));
+  e3.P.SCENES.cross = sauve;
+  e3.P.play({ variant: "cross", ms: 200, who: "cat", coat: 0, phrase: 0 });
+  await attends(40);
+  verifie("et le passage suivant joue quand meme", !!calque(e3.doc));
+  await attends(320);
+
+  // Coucou de visio : injecte tardivement dans une page ouverte depuis
+  // longtemps (rappel de rendez-vous, bouton du popup), il ne joue pas, sinon
+  // "avant que ca commence" tombait en plein appel.
+  const CFG = { passages: true, mutedPatterns: ["kmeet.infomaniak.com"], pausedUntil: 0, animMode: "always" };
+  const e4 = charge(1400, undefined, { url: "https://kmeet.infomaniak.com/salle-1", storageGet: async () => CFG,
+    avant: (w) => { w.performance.now = () => 20000; } });
+  e4.P.G.meetingDelay = 5;
+  await attends(80);
+  verifie("injecte apres quinze secondes de page, le coucou de visio ne joue pas", !calque(e4.doc));
+  const e5 = charge(1400, undefined, { url: "https://kmeet.infomaniak.com/salle-1", storageGet: async () => CFG,
+    avant: (w) => { w.performance.now = () => 1200; } });
+  e5.P.G.meetingDelay = 5;
+  await attends(80);
+  verifie("au chargement de la page, le coucou de visio joue", !!calque(e5.doc));
+
+  // Le clignement ferme l'oeil entier quand il est un groupe.
+  const e6 = charge();
+  e6.P.play({ variant: "cross", ms: 300, who: "cat", coat: 1, phrase: 0 });
+  await attends(40);
+  const yeux = calque(e6.doc) ? calque(e6.doc).querySelectorAll(".kz-eyes") : [];
+  verifie("les yeux groupes (sclere, pupille, reflet) clignent en bloc",
+    yeux.length >= 2 && Array.prototype.every.call(yeux, (n) => n.nodeName.toLowerCase() === "g"),
+    Array.prototype.map.call(yeux, (n) => n.nodeName).join(","));
+  await attends(340);
+}
+
 /* ============ 9. Le coucou de visioconference ============ */
 // Independant de l'ordonnanceur des animaux de passage, ce coucou se
 // declenche seul a la lecture de la page, sur la meme liste de domaines que
@@ -478,6 +580,174 @@ async function testCoucouVisio() {
     e1.P.hostDeVisio(["*.infomaniak.com"]));
 }
 
+/* ============ 11. Les dessins redessines du 2026-09-18 ============ */
+// Gabarit commun aux sept pelages et au renard. Ce que walkify et blinkify
+// exigent est verifie sur la chaine ET sur le DOM monte.
+async function testDessins() {
+  const env = charge();
+  const tous = env.P.COATS.concat([env.P.FOX_SVG]);
+  tous.forEach((markup, i) => {
+    const nom = i < 7 ? "pelage " + i : "renard";
+    verifie(nom + ", quatre pattes et rien d'autre en rect", (markup.match(/<rect/g) || []).length === 4);
+    verifie(nom + ", la queue est le premier path et vit dans g.kz-tail",
+      markup.indexOf('<g class="kz-tail"><path') > -1 && markup.indexOf("<path") === markup.indexOf('<g class="kz-tail"><path') + '<g class="kz-tail">'.length);
+    verifie(nom + ", deux yeux en groupe, sclere d'une couleur que blinkify connait",
+      (markup.match(/<g><ellipse[^>]*fill="#(F6E9B4|F0DE9C|C9DFA0|BFD79A|5C4436)"/g) || []).length === 2);
+    verifie(nom + ", un reflet blanc dans chaque oeil", (markup.match(/fill="#FFFFFF"/g) || []).length >= 2);
+    verifie(nom + ", deux oreilles kz-ear", (markup.match(/class="kz-ear"/g) || []).length === 2);
+    verifie(nom + ", des moustaches cote museau", /stroke-linecap="round" opacity="0.9"/.test(markup));
+    verifie(nom + ", une tete ronde", /<circle cx="87" cy="(29|30)" r="17"/.test(markup));
+    verifie(nom + ", un nez", i < 7 ? /L87 38.4 Z" fill=/.test(markup) : /fill="#2B2B33"/.test(markup));
+  });
+  verifie("le renard a une queue touffue a pointe creme",
+    /kz-tail"><path[^>]*stroke="#C96C24" stroke-width="11"[^>]*><\/path><path[^>]*stroke="#F7EFE6"/.test(env.P.FOX_SVG));
+  verifie("sept pelages tous differents", new Set(env.P.COATS).size === 7);
+  verifie("un tigre roux, un tigre gris, un smoking, un collier",
+    env.P.COATS.filter((c) => /opacity="0.7"><\/path><path class="kz-ear"/.test(c) || /stroke-width="3.2" fill="none" stroke-linecap="round" opacity="0.7"/.test(c)).length === 2
+    && env.P.COATS.some((c) => /#F2C94C/.test(c)));
+
+  for (let i = 0; i < 7; i++) {
+    const e = charge();
+    e.P.play({ variant: "cross", ms: 160, coat: i, phrase: 0 });
+    await attends(10);
+    const svg = calque(e.doc).querySelector("svg");
+    const queue = svg.querySelector("g.kz-tail");
+    verifie("pelage " + i + ", c'est le groupe de la queue qui bat", !!queue && /kzCatTail/.test(queue.getAttribute("style") || ""));
+    verifie("pelage " + i + ", la pointe ne bat pas a part de la queue",
+      !!queue && ![...queue.querySelectorAll("path")].some((p) => /kzCatTail/.test(p.getAttribute("style") || "")));
+    verifie("pelage " + i + ", la queue pivote a sa base", !!queue && /transform-origin:\s*26px 54px/.test(queue.getAttribute("style") || ""));
+    const oreilles = svg.querySelectorAll(".kz-ear");
+    verifie("pelage " + i + ", les deux oreilles tressaillent, decalees l'une de l'autre",
+      oreilles.length === 2 && [...oreilles].every((o) => /kzEarTwitch 7000ms/.test(o.getAttribute("style") || ""))
+      && oreilles[0].getAttribute("style") !== oreilles[1].getAttribute("style"));
+    const yeux = svg.querySelectorAll(".kz-eyes");
+    verifie("pelage " + i + ", deux yeux clignent par leur groupe entier",
+      yeux.length === 2 && [...yeux].every((y) => y.nodeName.toLowerCase() === "g" && y.querySelectorAll("circle").length === 2));
+    const pattes = svg.querySelectorAll("rect");
+    verifie("pelage " + i + ", chaque patte pivote a son propre haut",
+      [...pattes].every((r) => new RegExp("transform-origin:\\s*[0-9.]+px " + r.getAttribute("y") + "px").test(r.getAttribute("style") || "")));
+    await attends(320);
+  }
+
+  const ef = charge();
+  ef.P.play({ variant: "meetFox", ms: 160, coat: 0, phrase: 0 });
+  await attends(10);
+  const svgs = calque(ef.doc).querySelectorAll("svg");
+  const fox = svgs[1];
+  verifie("renard, le groupe de la queue bat, pivot a sa base",
+    !!fox && /kzCatTail/.test(fox.querySelector("g.kz-tail").getAttribute("style")) && /26px 52px/.test(fox.querySelector("g.kz-tail").getAttribute("style")));
+  verifie("renard, deux yeux bruns clignent", !!fox && fox.querySelectorAll(".kz-eyes").length === 2);
+  verifie("renard, les oreilles tressaillent", !!fox && fox.querySelectorAll(".kz-ear").length === 2 && /kzEarTwitch/.test(fox.querySelectorAll(".kz-ear")[1].getAttribute("style")));
+  verifie("renard, quatre pattes animees", !!fox && [...fox.querySelectorAll("rect")].every((r) => /kzCatLeg/.test(r.getAttribute("style"))));
+  await attends(320);
+
+  // 2026-09-21 : un conteneur laisse par une version precedente du script
+  // garde une feuille perimee, elle doit etre remplacee au premier passage.
+  const STYLES_P = (SRC.match(/const STYLES = `([\s\S]*?)`;/) || [])[1];
+  const ev = charge(undefined, undefined, { avant: (w) => {
+    const vieux = w.document.createElement("div");
+    vieux.id = "kz-passage-host";
+    const sh = vieux.attachShadow({ mode: "open" });
+    const st = w.document.createElement("style");
+    st.textContent = "/* version precedente */";
+    sh.appendChild(st);
+    w.document.body.appendChild(vieux);
+  } });
+  ev.P.play({ variant: "cross", ms: 160, coat: 0, phrase: 0 });
+  await attends(10);
+  const hoteV = ev.doc.getElementById("kz-passage-host");
+  verifie("un conteneur de passages d'une version precedente est remplace, avec notre feuille",
+    !!STYLES_P && ev.doc.querySelectorAll("#kz-passage-host").length === 1 && !!calque(ev.doc)
+    && hoteV.shadowRoot.querySelectorAll("style").length === 1
+    && hoteV.shadowRoot.querySelector("style").textContent.indexOf("version precedente") < 0
+    && hoteV.shadowRoot.querySelector("style").textContent.indexOf("kzEarTwitch") >= 0);
+  await attends(320);
+
+  verifie("kzEarTwitch est declaree dans les styles", /@keyframes kzEarTwitch \{ 0%, 86%, 100% \{ transform: rotate\(0deg\); \}/.test(SRC));
+  verifie(".kz-ear pivote a sa base", /\.kz-ear \{ transform-box: fill-box; transform-origin: 50% 100%; \}/.test(SRC));
+  verifie("le tressaillement passe par une rotation, jamais une opacite", !/kzEarTwitch[\s\S]{0,200}opacity/.test(SRC));
+}
+
+/* ============ 12. Les rondes du soir cote page ============ */
+async function testSoir() {
+  const e = charge();
+  e.P.play({ variant: "sit", ms: 160, coat: 1, phrase: 1, pool: "evening", slot: 2, hour: 19 });
+  await attends(10);
+  let b = calque(e.doc).querySelector(".kz-pass-bubble");
+  verifie("le lot du soir de 19 h, deuxieme phrase, est lu", !!b && b.textContent.indexOf("Soir 19 h, phrase deux") === 0, b && b.textContent);
+  verifie("la scene du soir est une scene ordinaire, memes classes", !!calque(e.doc).querySelector(".kz-pass-svg") && !!calque(e.doc).querySelector(".kz-pass-tip"));
+  await attends(320);
+  verifie("la ronde se retire a la fin comme les autres", !calque(e.doc));
+
+  const e4 = charge();
+  e4.P.play({ variant: "cross", ms: 160, coat: 0, phrase: 3, pool: "evening", slot: 4, hour: 21 });
+  await attends(10);
+  b = calque(e4.doc).querySelector(".kz-pass-bubble");
+  verifie("le lot de 21 h, quatrieme phrase", !!b && b.textContent === "Soir 21 h, phrase quatre", b && b.textContent);
+  await attends(320);
+
+  const e2 = charge();
+  e2.P.play({ variant: "cross", ms: 160, coat: 1, phrase: 0, pool: "evening", slot: 9 });
+  await attends(10);
+  verifie("un creneau inconnu ne monte rien et rend la main", !calque(e2.doc));
+  e2.P.play({ variant: "cross", ms: 160, coat: 1, phrase: 0 });
+  await attends(10);
+  verifie("et un passage suivant repart", !!calque(e2.doc));
+  await attends(320);
+
+  const e3 = charge(undefined, undefined, { sansSoir: true });
+  e3.P.play({ variant: "cross", ms: 160, coat: 1, phrase: 0, pool: "evening", slot: 0 });
+  await attends(10);
+  verifie("sans KZ_EVENING, rien ne casse et rien ne monte", !calque(e3.doc));
+
+  const e5 = charge();
+  e5.P.play({ variant: "cross", ms: 160, coat: 1, phrase: 1 });
+  await attends(10);
+  verifie("sans lot, les phrases habituelles", calque(e5.doc).querySelector(".kz-pass-bubble").textContent === "Petit passage, pour rien");
+  await attends(320);
+
+  // 2026-09-26 : le lot du week-end, meme tirage, autre texte.
+  const e6 = charge();
+  e6.P.play({ variant: "cross", ms: 160, coat: 1, phrase: 1, pool: "weekend" });
+  await attends(10);
+  verifie("le lot du week-end est lu quand le fond le demande", calque(e6.doc).querySelector(".kz-pass-bubble").textContent === "Week-end, phrase deux");
+  await attends(320);
+
+  // Les phrases livrees dans quotes.js.
+  const q = fs.readFileSync(path.join(RACINE, "quotes.js"), "utf8");
+  for (const L of ["FR", "EN", "DE"]) {
+    const m = q.match(new RegExp("const KZ_EVENING_" + L + " = (\\[[\\s\\S]*?\\n\\]);"));
+    const lots = m ? eval(m[1]) : null;
+    verifie("KZ_EVENING_" + L + " a cinq lots de quatre phrases", !!lots && lots.length === 5 && lots.every((l) => l.length === 4),
+      lots ? lots.map((l) => l.length).join(",") : "absent");
+    verifie("KZ_EVENING_" + L + ", aucune phrase vide, aucune trop longue pour la bulle",
+      !!lots && lots.every((l) => l.every((p) => typeof p === "string" && p.length > 10 && p.length <= 110)));
+    verifie("KZ_EVENING_" + L + ", vingt phrases toutes differentes", !!lots && new Set(lots.flat()).size === 20);
+    verifie("KZ_EVENING_" + L + ", chaque lot nomme son heure",
+      !!lots && lots.every((l, i) => l.every((p) => p.indexOf(String(L === "EN" ? (i + 5) : (i + 17))) > -1)));
+  }
+  verifie("KZ_EVENING suit la langue de la page", /const KZ_EVENING = KZ_IS_FR \? KZ_EVENING_FR : \(KZ_IS_DE \? KZ_EVENING_DE : KZ_EVENING_EN\);/.test(q));
+  verifie("pas de ß dans les phrases allemandes", !/ß/.test((q.match(/const KZ_EVENING_DE[\s\S]*?\n\];/) || [""])[0]));
+}
+
+
+/* ================= Au-dessus de tout, 2026-10-01 ================= */
+async function testAuDessus() {
+  const ouverts = [];
+  const e = charge(undefined, undefined, { avant: (w) => {
+    w.HTMLElement.prototype.showPopover = function () { ouverts.push(this.id); this.__ouvert = true; };
+    const orig = w.Element.prototype.matches;
+    w.Element.prototype.matches = function (sel) { return sel === ":popover-open" ? !!this.__ouvert : orig.call(this, sel); };
+  } });
+  e.P.play({ variant: "cross", ms: 160, coat: 0, phrase: 0 });
+  await attends(10);
+  const h = e.doc.getElementById("kz-passage-host");
+  verifie("les animaux aussi passent dans la couche superieure, en popover manuel", !!h && h.getAttribute("popover") === "manual" && ouverts.indexOf("kz-passage-host") >= 0, JSON.stringify(ouverts));
+  verifie("leur conteneur ne prend aucune place : 0 x 0 px, sans fond, z-index maximal en secours",
+    /all:initial/.test(h.getAttribute("style")) && /width:0/.test(h.getAttribute("style")) && /z-index:2147483647/.test(h.getAttribute("style")));
+  await attends(320);
+}
+
 (async () => {
   const suites = [
     ["Les cinq scenes", testScenes],
@@ -489,7 +759,11 @@ async function testCoucouVisio() {
     ["Interruptions", testInterruptions],
     ["Aucune trace dans les donnees", testAucuneTrace],
     ["Fidelite a la planche", testFidelite],
-    ["Le coucou de visioconference", testCoucouVisio]
+    ["Le coucou de visioconference", testCoucouVisio],
+    ["Robustesse, revue du 2026-09-16", testRobustesse],
+    ["Les dessins redessines", testDessins],
+    ["Les rondes du soir cote page", testSoir],
+    ["Au-dessus de tout", testAuDessus]
   ];
   for (const [nom, f] of suites) {
     const avant = ok + ko, avantKo = ko;

@@ -14,7 +14,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUT="$ROOT/dist"
-FILES=(manifest.json background.js content.js passages.js popup.html popup.js quotes.js rules.json _locales icons images)
+FILES=(manifest.json background.js content.js passages.js popup.html popup.js quotes.js _locales icons images)
 
 rm -rf "$OUT"
 mkdir -p "$OUT"

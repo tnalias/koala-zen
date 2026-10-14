@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Koala Zen",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "default_locale": "en",
   "description": "__MSG_extDesc__",
   "permissions": [
@@ -11,17 +11,13 @@
     "tabs",
     "scripting",
     "unlimitedStorage",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "notifications"
   ],
   "host_permissions": [
     "http://*/*",
     "https://*/*"
   ],
-  "declarative_net_request": {
-    "rule_resources": [
-      { "id": "ruleset_1", "enabled": true, "path": "rules.json" }
-    ]
-  },
   "background": {
     "service_worker": "background.js",
     "scripts": [
@@ -40,17 +36,6 @@
         "content.js"
       ],
       "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "images/*.png"
-      ],
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ]
     }
   ],
   "action": {

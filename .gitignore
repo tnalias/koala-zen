@@ -1,0 +1,4 @@
+node_modules/
+dist/
+store-assets/generateur/build/
+.DS_Store
