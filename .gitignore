@@ -1,10 +1,11 @@
 node_modules/
 dist/
-store-assets/generateur/build/
+tests/
 .DS_Store
-
-# Kits internes (fiches des boutiques, notes pour les relecteurs, generateur) :
-# gardes en local, pas publies.
 store-assets/*.md
 store-assets/generateur/
 store-assets/archive-2.1/
+store-assets/*-de.png
+store-assets/chrome-*.png
+store-assets/github-social-preview.png
+download/koala-zen-firefox.xpi

@@ -9,21 +9,13 @@ const IK_API = "https://api.infomaniak.com";
 const MAIL_API = "https://mail.infomaniak.com/api";
 
 // ===========================================================================
-// L'en-tete Origin sur les appels a l'API Infomaniak.
+// L'en-tete Origin sur les appels a l'API mail d'Infomaniak.
 // Le navigateur ajoute Origin: chrome-extension://... (ou moz-extension://)
-// aux requetes du fond de l'extension, et l'API refuse alors les ecritures
-// par une redirection silencieuse. Jusqu'au 2026-09-21 une regle STATIQUE
-// (rules.json) retirait Origin sur TOUTES les requetes XHR vers
-// api.infomaniak.com, y compris celles des pages Infomaniak ouvertes dans un
-// onglet : l'outil Newsletter, qui appelle la meme API avec ses cookies,
-// perdait son Origin et voyait ses requetes refusees. Signale par Thomas.
-// La regle est desormais une regle de SESSION limitee aux requetes qui ne
-// viennent d'aucun onglet (tabs.TAB_ID_NONE, -1), c'est a dire les notres
-// depuis le service worker. Une page web garde son Origin, quoi qu'elle
-// appelle. Posee a chaque reveil du worker, idempotente.
+// aux requetes du fond, et l'API mail les refuse alors. Une regle de session
+// retire cet en-tete, seulement sur l'API mail et seulement pour les requetes
+// sans onglet (tabIds [-1]) : celles du service worker, jamais une page.
+// Posee a chaque reveil du worker, idempotente.
 // ===========================================================================
-// La regle ne vise que l'API mail : l'API du Manager (agenda, profil) accepte
-// l'en-tete Origin. tabIds [-1] : jamais une page.
 const ORIGIN_RULE_IDS = [1, 2];
 const ORIGIN_RULES = [{
   id: 2,
@@ -283,16 +275,13 @@ api.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// Les messages qu'une page (content.js) a le droit d'envoyer, 2026-09-29.
-// Tout le reste (jetons, connexions, reglages, sauvegardes) ne s'accepte que
-// d'une page de l'extension (popup). Defense en profondeur : une page web ne
-// peut deja pas parler a l'extension, mais un script de page detourne ne
-// doit jamais pouvoir lire ou changer un jeton.
+// Les messages qu'une page (content.js) a le droit d'envoyer. Tout le reste
+// (jetons, connexions, reglages, sauvegardes) ne s'accepte que d'une page de
+// l'extension (popup).
 const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url"];
 function depuisExtension(sender) {
-  // Refus par defaut. Seule une page de
-  // l'extension (adresse sous la racine de l'extension) est de confiance ;
-  // un expediteur sans adresse ne l'est plus.
+  // Refus par defaut : seule une page de l'extension (adresse sous sa
+  // racine) est de confiance.
   if (!sender || !sender.url) return false;
   if (sender.id && api.runtime.id && sender.id !== api.runtime.id) return false;
   let racine = "";
@@ -828,15 +817,10 @@ async function targetTab() {
 }
 
 // ===========================================================================
-// Les jetons Infomaniak, revus le 2026-09-29 (audit de securite demande par
-// Thomas). Deux jetons, chacun limite a UN usage : workspace:calendar pour
-// l'agenda, workspace:mail pour Prevenir et les stats des mails. kDrive est
-// retire : plus aucune sauvegarde en ligne, l'export manuel seulement.
-//
-// Chiffrement AES-GCM 256. La cle est une CryptoKey NON EXPORTABLE rangee
-// dans IndexedDB : aucun code, meme celui de l'extension, ne peut en lire les
-// octets, elle n'est plus a cote des jetons dans storage.local et ne part
-// dans aucun export.
+// Les jetons Infomaniak. Deux jetons, chacun limite a UN usage :
+// workspace:calendar pour l'agenda, workspace:mail pour Prevenir et les stats
+// des mails. Chiffrement AES-GCM 256, avec une CryptoKey non exportable
+// rangee dans IndexedDB ; elle ne part dans aucun export.
 // ===========================================================================
 const SECRET_DB = "kz-secrets";
 const SECRET_STORE = "keys";
@@ -948,14 +932,11 @@ async function securityMigrateV3() {
   if (avait) { try { await secretTx("readwrite", (st) => st.delete(SECRET_KEY_ID)); } catch (e) { /* noop */ } }
 }
 // ===========================================================================
-// Le coffre. storage.local est
-// lisible ET modifiable par les scripts de page (content.js) : un moteur de
-// page compromis y lisait les titres de reunion et l'adresse mail, et
-// pouvait y glisser un lien que Rejoindre ouvrirait, ou remettre a zero les
-// envois deja faits. Ces cles vivent desormais dans IndexedDB, a l'origine
-// de l'extension, hors de portee des pages. kvGet et kvSet aiguillent chaque
-// cle : coffre ou storage.local. Les stats (nombres seulement) restent dans
-// storage.local, le popup les lit directement.
+// Le coffre : les donnees sensibles (agenda, identite, boite, envois, jetons
+// chiffres) vivent dans IndexedDB, a l'origine de l'extension, hors de portee
+// des pages. kvGet et kvSet aiguillent chaque cle : coffre ou storage.local.
+// Les stats (nombres seulement) restent dans storage.local, le popup les lit
+// directement.
 // ===========================================================================
 const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
 function estCoffre(k) { return VAULT_KEYS.indexOf(k) >= 0; }
