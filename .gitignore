@@ -2,3 +2,9 @@ node_modules/
 dist/
 store-assets/generateur/build/
 .DS_Store
+
+# Kits internes (fiches des boutiques, notes pour les relecteurs, generateur) :
+# gardes en local, pas publies.
+store-assets/*.md
+store-assets/generateur/
+store-assets/archive-2.1/

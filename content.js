@@ -1242,9 +1242,8 @@ if (globalThis.__kzLoaded !== true) {
       const rangee = document.createElement("div"); rangee.className = "kz-notify-kinds";
       const boutons = {};
       const subj = document.createElement("div"); subj.className = "kz-notify-subj";
-      // Le texte se relit et se retouche ici (demande de Thomas, 2026-09-22).
-      // Revue ECC du 2026-10-06 : ce qu'on tape dans une page, la page peut
-      // le lire ; risque faible et assume, l'objet reste construit par le fond.
+      // Le texte se relit et se retouche ici (demande de Thomas, 2026-09-22) ;
+      // l'objet reste construit par le fond.
       const ta = document.createElement("textarea"); ta.className = "kz-notify-body"; ta.setAttribute("aria-label", kzMsg("notifyBodyLabel", "Message"));
       let gabaritCourant = "";
       const applique = () => {

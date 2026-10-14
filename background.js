@@ -22,12 +22,8 @@ const MAIL_API = "https://mail.infomaniak.com/api";
 // depuis le service worker. Une page web garde son Origin, quoi qu'elle
 // appelle. Posee a chaque reveil du worker, idempotente.
 // ===========================================================================
-// 2026-10-06 (revue ECC, point M3, ajuste) : la regle ne vise plus l'API du
-// Manager (agenda, profil), dont les lectures passent avec l'en-tete Origin
-// (verifie en reel des aout) et ou Koala Zen n'ecrit jamais. Elle reste sur
-// l'API mail, toutes methodes, comme elle a fonctionne en usage reel : y
-// limiter aux ecritures n'a pas pu etre verifie sans jeton, et casserait peut
-// etre la liste des boites et les stats. tabIds [-1] : jamais une page.
+// La regle ne vise que l'API mail : l'API du Manager (agenda, profil) accepte
+// l'en-tete Origin. tabIds [-1] : jamais une page.
 const ORIGIN_RULE_IDS = [1, 2];
 const ORIGIN_RULES = [{
   id: 2,

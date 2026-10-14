@@ -23,8 +23,8 @@
 ### Security
 - Two separate Infomaniak tokens, each limited to a single scope (`workspace:calendar`, `workspace:mail`); a token that opens more is refused.
 - Tokens are encrypted with a non-extractable key; sensitive data lives in a store web pages cannot read.
-- The extension only makes the eleven API calls it needs; anything else is refused before it leaves.
-- Bubbles are isolated from the page's code; emails can only go to the meeting's attendees, once per message, within an hourly limit.
+- The extension only makes the API calls its features need; anything else is refused.
+- Bubbles are isolated from the page's code; emails can only go to the meeting's attendees.
 - Backup passphrases need at least 12 characters.
 
 ### After updating
