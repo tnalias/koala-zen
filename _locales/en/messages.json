@@ -1,0 +1,1296 @@
+{
+  "extDesc": {
+    "message": "A friendly koala reminds you to take small breaks, helps you never miss a meeting, and keeps your data on your device."
+  },
+  "tabSettings": {
+    "message": "Settings"
+  },
+  "tabPersoShort": {
+    "message": "Custom"
+  },
+  "tabStats": {
+    "message": "Stats"
+  },
+  "tabData": {
+    "message": "Data"
+  },
+  "nextVisitIn": {
+    "message": "Next visit in {n} min"
+  },
+  "nextVisitNow": {
+    "message": "Next visit any moment now"
+  },
+  "nextVisitSoon": {
+    "message": "Next visit soon"
+  },
+  "grpPause": {
+    "message": "Pause"
+  },
+  "pauseLater": {
+    "message": "Later"
+  },
+  "pause1h": {
+    "message": "1 hour"
+  },
+  "pauseToday": {
+    "message": "Today"
+  },
+  "pauseHint": {
+    "message": "Your streak stays intact while paused."
+  },
+  "pausedUntilLabel": {
+    "message": "Paused until"
+  },
+  "resume": {
+    "message": "Resume"
+  },
+  "grpRhythm": {
+    "message": "Rhythm"
+  },
+  "presetPomodoro": {
+    "message": "Pomodoro"
+  },
+  "presetDeep": {
+    "message": "Deep work"
+  },
+  "presetUltra": {
+    "message": "Ultradian"
+  },
+  "presetCustom": {
+    "message": "Custom"
+  },
+  "rhythmHint": {
+    "message": "Custom accepts 5 to 240 minutes, in steps of five."
+  },
+  "focusLabel": {
+    "message": "Focus break"
+  },
+  "focusHint": {
+    "message": "The page is blocked for the length of the break, so you really do stop."
+  },
+  "focusSecondsLabel": {
+    "message": "Block duration"
+  },
+  "grpDnd": {
+    "message": "Do not disturb"
+  },
+  "muteLabel": {
+    "message": "During a video call"
+  },
+  "addSite": {
+    "message": "Add"
+  },
+  "removeSite": {
+    "message": "Remove this site"
+  },
+  "idleLabel": {
+    "message": "When you step away"
+  },
+  "idleHint": {
+    "message": "After 60 seconds"
+  },
+  "grpScreen": {
+    "message": "Screen time"
+  },
+  "screenTzLabel": {
+    "message": "Time zone"
+  },
+  "screenTzAuto": {
+    "message": "Automatic (browser)"
+  },
+  "screenTzHint": {
+    "message": "Resets at midnight."
+  },
+  "save": {
+    "message": "Save"
+  },
+  "saved": {
+    "message": "Saved"
+  },
+  "bringNow": {
+    "message": "Call the koala"
+  },
+  "updatedOn": {
+    "message": "updated on"
+  },
+  "sportLabel": {
+    "message": "Goals"
+  },
+  "sportMeta": {
+    "message": "One at a time"
+  },
+  "sportPlaceholder": {
+    "message": "New goal"
+  },
+  "sportEmpty": {
+    "message": "No goals of your own. The koala picks from the bundled goals."
+  },
+  "sportFallback": {
+    "message": "Move a little"
+  },
+  "goalLabel": {
+    "message": "Your daily target"
+  },
+  "goalHint": {
+    "message": "Used as a marker in your statistics."
+  },
+  "goalOff": {
+    "message": "none"
+  },
+  "addAria": {
+    "message": "Add"
+  },
+  "removeItem": {
+    "message": "Remove"
+  },
+  "quotesLabel": {
+    "message": "Quotes"
+  },
+  "quotesMine": {
+    "message": "Yours"
+  },
+  "quotesBuilt": {
+    "message": "Bundled"
+  },
+  "quotesPlaceholder": {
+    "message": "New quote"
+  },
+  "quotesEmpty": {
+    "message": "No quotes of your own. The koala picks from the bundled quotes."
+  },
+  "keepDefaultQuotes": {
+    "message": "Keep the bundled quotes"
+  },
+  "browseLink": {
+    "message": "Browse the {n} bundled ones"
+  },
+  "authorUnknown": {
+    "message": "Anonymous"
+  },
+  "browseTitle": {
+    "message": "Bundled quotes"
+  },
+  "browseActive": {
+    "message": "{a} of {n} active"
+  },
+  "browseSearch": {
+    "message": "Search quotes"
+  },
+  "browseAll": {
+    "message": "All"
+  },
+  "browseHidden": {
+    "message": "Hidden"
+  },
+  "browseHiddenNote": {
+    "message": "Hidden: the koala won't say it again"
+  },
+  "browseHide": {
+    "message": "Hide"
+  },
+  "browseUnhide": {
+    "message": "Show again"
+  },
+  "browseMore": {
+    "message": "{n} more quotes below"
+  },
+  "browseNone": {
+    "message": "No matching quotes."
+  },
+  "editTitle": {
+    "message": "You are editing a bundled quote"
+  },
+  "editAuthor": {
+    "message": "Author"
+  },
+  "editHint": {
+    "message": "Saving creates your own version. The original stays in the list, untouched."
+  },
+  "editSave": {
+    "message": "Save my version"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "koalasLabel": {
+    "message": "Characters"
+  },
+  "koalasHint": {
+    "message": "Your images stay on your device, unless you include them in a backup file."
+  },
+  "keepDefaultKoalas": {
+    "message": "Keep the bundled koalas"
+  },
+  "defaultKoalas": {
+    "message": "The bundled koalas"
+  },
+  "removeImg": {
+    "message": "Remove"
+  },
+  "outOf": {
+    "message": "of"
+  },
+  "grpAnimations": {
+    "message": "Animations"
+  },
+  "animAuto": {
+    "message": "Automatic"
+  },
+  "animAlways": {
+    "message": "Always"
+  },
+  "animNever": {
+    "message": "Never"
+  },
+  "animationsHint": {
+    "message": "Automatic follows your system."
+  },
+  "grpTheme": {
+    "message": "Theme"
+  },
+  "themeAuto": {
+    "message": "Automatic"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "themeHint": {
+    "message": "Automatic follows your system."
+  },
+  "statsDoneLabel": {
+    "message": "Habits done"
+  },
+  "statsReportsLabel": {
+    "message": "Postponed"
+  },
+  "statsScreenLabel": {
+    "message": "Screen time"
+  },
+  "statsMeetingLabel": {
+    "message": "Time in meetings"
+  },
+  "statsMailOut": {
+    "message": "Emails sent"
+  },
+  "statsMailLabel": {
+    "message": "Emails"
+  },
+  "statsMailOutWord": {
+    "message": "Sent"
+  },
+  "statsPerDay": {
+    "message": "Per day"
+  },
+  "statsDoneWord": {
+    "message": "Done"
+  },
+  "statsReportsWord": {
+    "message": "Postponed"
+  },
+  "statsGoalLegend": {
+    "message": "Target: {n} a day"
+  },
+  "statsSingleDayNote": {
+    "message": "Pick a week or a month to see the trend."
+  },
+  "statsStreak": {
+    "message": "Your streak"
+  },
+  "statsStreakDays": {
+    "message": "days in a row"
+  },
+  "statsStreakDay": {
+    "message": "day in a row"
+  },
+  "statsRecordWord": {
+    "message": "Record"
+  },
+  "statsStreakFirst": {
+    "message": "Complete a habit to start your streak."
+  },
+  "statsStreakResume": {
+    "message": "Pick your streak back up today."
+  },
+  "statsStreakAtRecord": {
+    "message": "You've matched your record. Keep going!"
+  },
+  "statsStreakGoal": {
+    "message": "{n} more days and you beat your record."
+  },
+  "backupTitle": {
+    "message": "Backup and restore"
+  },
+  "backupHint": {
+    "message": "Choose what the file contains. It stays on your computer."
+  },
+  "partSettings": {
+    "message": "Settings"
+  },
+  "partContent": {
+    "message": "Goals and quotes"
+  },
+  "partStats": {
+    "message": "Statistics"
+  },
+  "partKoalas": {
+    "message": "Imported characters"
+  },
+  "partConnexions": {
+    "message": "Infomaniak connections"
+  },
+  "partConnexionsHint": {
+    "message": "Calendar and email tokens, encrypted. Remember your passphrase: it isn't stored anywhere."
+  },
+  "backupPassPh": {
+    "message": "Passphrase"
+  },
+  "backupPassMissing": {
+    "message": "Your passphrase needs at least 12 characters to include the connections."
+  },
+  "connexionsRestored": {
+    "message": "Connections restored"
+  },
+  "connexionsBadPass": {
+    "message": "Wrong passphrase. Connections not restored."
+  },
+  "connexionsSkipped": {
+    "message": "Connections not restored: the passphrase is missing."
+  },
+  "partKoalasShort": {
+    "message": "Characters"
+  },
+  "partHistory": {
+    "message": "History"
+  },
+  "partContentShort": {
+    "message": "Content"
+  },
+  "exportBtn": {
+    "message": "Export"
+  },
+  "importBtn": {
+    "message": "Import"
+  },
+  "exportDone": {
+    "message": "File created"
+  },
+  "importDone": {
+    "message": "Data restored"
+  },
+  "importBad": {
+    "message": "Unreadable file"
+  },
+  "importModeLabel": {
+    "message": "On import"
+  },
+  "importMerge": {
+    "message": "Merge"
+  },
+  "importReplace": {
+    "message": "Replace"
+  },
+  "importModeHint": {
+    "message": "Merge keeps what you have, replace overwrites everything."
+  },
+  "storageTitle": {
+    "message": "Space used by Koala Zen"
+  },
+  "eraseTitle": {
+    "message": "Erase"
+  },
+  "eraseHistory": {
+    "message": "History"
+  },
+  "historyDays": {
+    "message": "{n} days"
+  },
+  "historyEmpty": {
+    "message": "Nothing yet"
+  },
+  "eraseBtn": {
+    "message": "Erase"
+  },
+  "eraseAll": {
+    "message": "Everything, and start over"
+  },
+  "eraseAllSub": {
+    "message": "Settings and content included"
+  },
+  "eraseAllBtn": {
+    "message": "Erase all"
+  },
+  "eraseConfirm": {
+    "message": "Confirm"
+  },
+  "eraseHint": {
+    "message": "You'll be asked to confirm. Export first, just in case."
+  },
+  "eraseHistoryDone": {
+    "message": "History erased"
+  },
+  "eraseAllDone": {
+    "message": "Everything has been reset"
+  },
+  "privacyTitle": {
+    "message": "Everything stays with you"
+  },
+  "privacySub": {
+    "message": "No Koala Zen server. Your data stays on this device, and the backup is a file you keep."
+  },
+  "unitHour": {
+    "message": "h"
+  },
+  "unitMin": {
+    "message": "min"
+  },
+  "unitSec": {
+    "message": "s"
+  },
+  "unitByte": {
+    "message": "B"
+  },
+  "unitKb": {
+    "message": "KB"
+  },
+  "unitMb": {
+    "message": "MB"
+  },
+  "bubblePillHabit": {
+    "message": "Hey, it's time"
+  },
+  "bubblePillQuote": {
+    "message": "Thought of the day"
+  },
+  "bubblePillFocus": {
+    "message": "Focus break"
+  },
+  "btnDone": {
+    "message": "Done"
+  },
+  "btnLater": {
+    "message": "Later"
+  },
+  "btnDoneIn": {
+    "message": "Done in {n} s"
+  },
+  "screenTodayLine": {
+    "message": "Today, {d} of screen time"
+  },
+  "dayProgress": {
+    "message": "{d} of {g} today"
+  },
+  "dayProgressBonus": {
+    "message": "{d} of {g} today, +{n} bonus",
+    "description": "Ligne de progression de la bulle quand l'objectif du jour est depasse"
+  },
+  "winTitle": {
+    "message": "Nicely done"
+  },
+  "winStreak": {
+    "message": "Streak"
+  },
+  "winDays": {
+    "message": "days"
+  },
+  "firstVisitIn": {
+    "message": "First visit in {n} min"
+  },
+  "blankTitle": {
+    "message": "Nothing to show, for now"
+  },
+  "blankSub": {
+    "message": "Your numbers fill in on their own. The koala drops by for the first time in {n} minutes, and this screen comes alive with your first habit done."
+  },
+  "soonTitle": {
+    "message": "What will appear here"
+  },
+  "soon1": {
+    "message": "Habits you've done and postponed"
+  },
+  "soon1w": {
+    "message": "Starting today"
+  },
+  "soon2": {
+    "message": "Your streak of days in a row"
+  },
+  "soon2w": {
+    "message": "After 2 days"
+  },
+  "soon3": {
+    "message": "Your screen time, day by day"
+  },
+  "soon3w": {
+    "message": "Starting today"
+  },
+  "ghostPreview": {
+    "message": "Preview"
+  },
+  "bubbleAria": {
+    "message": "Koala Zen reminder"
+  },
+  "focusRemaining": {
+    "message": "{n} seconds left"
+  },
+  "focusOver": {
+    "message": "The break is over, you can confirm"
+  },
+  "bulkOpen": {
+    "message": "Add several at once"
+  },
+  "bulkTitle": {
+    "message": "Add quotes"
+  },
+  "bulkSub": {
+    "message": "One quote per line"
+  },
+  "bulkHint": {
+    "message": "The text, a dash, the author. The author is optional."
+  },
+  "bulkPlaceholder": {
+    "message": "No rush, the day is long - Anonymous"
+  },
+  "bulkHowT": {
+    "message": "How the line is read"
+  },
+  "bulkDemoQ": {
+    "message": "No rush, the day is long"
+  },
+  "bulkDemoA": {
+    "message": "Anonymous"
+  },
+  "bulkDemoL1": {
+    "message": "Quote"
+  },
+  "bulkDemoL2": {
+    "message": "Author"
+  },
+  "bulkRule": {
+    "message": "Commas don't matter: only a dash with a space on each side splits. Without a dash, the whole line becomes the quote and the author is saved as Anonymous."
+  },
+  "bulkCheckBtn": {
+    "message": "Check"
+  },
+  "bulkCancel": {
+    "message": "Cancel"
+  },
+  "bulkPreview": {
+    "message": "Preview"
+  },
+  "bulkLines": {
+    "message": "{n} lines"
+  },
+  "bulkReady": {
+    "message": "{n} ready"
+  },
+  "bulkReadyN": {
+    "message": "{n} quotes ready"
+  },
+  "bulkDupN": {
+    "message": "{n} duplicates removed automatically"
+  },
+  "bulkLongN": {
+    "message": "{n} too long, ignored"
+  },
+  "bulkTooMany": {
+    "message": "lines after 500 are ignored"
+  },
+  "bulkApplyN": {
+    "message": "Add the {n} quotes"
+  },
+  "bulkNothing": {
+    "message": "Nothing to add"
+  },
+  "bulkBackText": {
+    "message": "Back to the text"
+  },
+  "phStable": {
+    "message": "same as {p}"
+  },
+  "phMore": {
+    "message": "{n} more than {p}"
+  },
+  "phLess": {
+    "message": "{n} fewer than {p}"
+  },
+  "phPrevDay": {
+    "message": "the day before"
+  },
+  "phPrevWeek": {
+    "message": "last week"
+  },
+  "phPrevMonth": {
+    "message": "last month"
+  },
+  "phPrevYear": {
+    "message": "last year"
+  },
+  "phPrevPeriod": {
+    "message": "the previous period"
+  },
+  "phSlotMorning": {
+    "message": "mostly in the morning"
+  },
+  "phSlotEarly": {
+    "message": "mostly in the early afternoon"
+  },
+  "phSlotLate": {
+    "message": "mostly in the late afternoon"
+  },
+  "phSlotEvening": {
+    "message": "mostly in the evening"
+  },
+  "phScreenAvg": {
+    "message": "{d} a day on average"
+  },
+  "phMeetingOne": {
+    "message": "1 meeting"
+  },
+  "phMeetingMany": {
+    "message": "{n} meetings"
+  },
+  "phMeetingPerWeek": {
+    "message": "{n} a week"
+  },
+  "phPerDay": {
+    "message": "{n} a day on average"
+  },
+  "busyMeet": {
+    "message": "{j} is your busiest day: {n} of meetings on average."
+  },
+  "busyMeetEven": {
+    "message": "Your meetings are spread across the week."
+  },
+  "busyMail": {
+    "message": "{j} is your busiest day: {n} emails handled on average."
+  },
+  "busyMailEven": {
+    "message": "Your emails are spread across the week."
+  },
+  "phMeetingShare": {
+    "message": "{p}% of your screen time"
+  },
+  "phStreakSpan": {
+    "message": "from {a} to {b}"
+  },
+  "phRecordMonth": {
+    "message": "in {m}, across all history"
+  },
+  "phPace": {
+    "message": "One habit every {d} of screen time"
+  },
+  "stRangeDay": {
+    "message": "Day"
+  },
+  "stRangeWeek": {
+    "message": "Week"
+  },
+  "stRangeMonth": {
+    "message": "Month"
+  },
+  "stRangeYear": {
+    "message": "Year"
+  },
+  "stRangeAll": {
+    "message": "All"
+  },
+  "stPrev": {
+    "message": "Previous period"
+  },
+  "stNext": {
+    "message": "Next period"
+  },
+  "stBestStreak": {
+    "message": "Best streak"
+  },
+  "stRecord": {
+    "message": "Your record"
+  },
+  "stTotalOf": {
+    "message": "Total over {n} days"
+  },
+  "stTotalAll": {
+    "message": "All-time total"
+  },
+  "daysWord": {
+    "message": "days"
+  },
+  "dayWord": {
+    "message": "day"
+  },
+  "statusCall": {
+    "message": "Quiet, call in progress"
+  },
+  "passagesLabel": {
+    "message": "Passing animals"
+  },
+  "passagesHint": {
+    "message": "They drop by to say hello, asking nothing. You choose when."
+  },
+  "passagesRandomLabel": {
+    "message": "Throughout the day"
+  },
+  "passagesRandomHint": {
+    "message": "A cat or a fox, at random, from 8 am to 8 pm."
+  },
+  "passagesEveningLabel": {
+    "message": "At the end of the day"
+  },
+  "passagesEveningHint": {
+    "message": "From 5 to 9 pm, a cat reminds you every hour, with a smile, that it is time to stop."
+  },
+  "passagesMeetingLabel": {
+    "message": "When a video call starts"
+  },
+  "passagesMeetingHint": {
+    "message": "A cat walks by to say hello before it begins."
+  },
+  "remindersLabel": {
+    "message": "Habit reminders"
+  },
+  "remindersHint": {
+    "message": "A break to move, at your pace. Turn them off to keep only your calendar reminders."
+  },
+  "statusRemindersOff": {
+    "message": "Habit reminders off"
+  },
+  "characterHint": {
+    "message": "The koala or your images in every bubble. Turn them off for a plain, professional style, without quotes."
+  },
+  "koalasImages": {
+    "message": "Your images"
+  },
+  "characterPassagesNote": {
+    "message": "Passing animals still cross the screen."
+  },
+  "characterPassagesOff": {
+    "message": "Turn them off too"
+  },
+  "bringNowPlain": {
+    "message": "Show a reminder now"
+  },
+  "proEyebrowHabit": {
+    "message": "Suggested break"
+  },
+  "proDone": {
+    "message": "Noted"
+  },
+  "proStreak": {
+    "message": "{n}-day streak"
+  },
+  "quotesSoberNote": {
+    "message": "The plain style shows no quotes. Turn characters back on, just above, to see them."
+  },
+  "quotesHint": {
+    "message": "A short thought to breathe, after each habit you complete."
+  },
+  "persoRemindersNote": {
+    "message": "Habits and quotes are hidden while habit reminders are off."
+  },
+  "statsRemindersNote": {
+    "message": "Habits and your streak are hidden while habit reminders are off."
+  },
+  "remindersTurnOn": {
+    "message": "Turn habit reminders back on"
+  },
+  "blankSubNoHabits": {
+    "message": "Your screen time shows up here from today."
+  },
+  "customIntervalLabel": {
+    "message": "Your custom interval"
+  },
+  "partStatsShort": {
+    "message": "History"
+  },
+  "frTitle": {
+    "message": "A koala will drop by"
+  },
+  "frSub": {
+    "message": "Now and then, it suggests a quick movement break."
+  },
+  "frHabitLabel": {
+    "message": "Your first habit"
+  },
+  "frHabitPh": {
+    "message": "Stand up and move for two minutes"
+  },
+  "frStart": {
+    "message": "Get started"
+  },
+  "browseCopy": {
+    "message": "Copy to mine"
+  },
+  "browseCopied": {
+    "message": "Copied"
+  },
+  "passagesTest": {
+    "message": "See a passing animal now"
+  },
+  "bulkLine": {
+    "message": "{n} line"
+  },
+  "bulkReady1": {
+    "message": "{n} ready"
+  },
+  "bulkReadyN1": {
+    "message": "{n} quote ready"
+  },
+  "bulkDupN1": {
+    "message": "{n} duplicate removed automatically"
+  },
+  "bulkLongN1": {
+    "message": "{n} too long, ignored"
+  },
+  "bulkApplyN1": {
+    "message": "Add the quote"
+  },
+  "passagesFreqLabel": {
+    "message": "Frequency"
+  },
+  "freqRare": {
+    "message": "Rare"
+  },
+  "freqNormal": {
+    "message": "Normal"
+  },
+  "freqFrequent": {
+    "message": "Frequent"
+  },
+  "freqHintRare": {
+    "message": "Up to once every 3 h."
+  },
+  "freqHintNormal": {
+    "message": "Up to once every 2 h."
+  },
+  "freqHintFrequent": {
+    "message": "Up to once an hour."
+  },
+  "backupLocalLabel": {
+    "message": "Local file"
+  },
+  "agendaLabel": {
+    "message": "During a meeting in my calendar"
+  },
+  "agendaTokenHint": {
+    "message": "A token limited to the workspace:calendar scope."
+  },
+  "agendaPickTitle": {
+    "message": "Calendars to watch"
+  },
+  "agendaPickHint": {
+    "message": "Tick one or more calendars."
+  },
+  "agendaPickOk": {
+    "message": "Watch"
+  },
+  "agendaConnectedToMany": {
+    "message": "Watched calendars: {n}"
+  },
+  "agendaDefaultTag": {
+    "message": "Default calendar"
+  },
+  "agendaSharedTag": {
+    "message": "Shared"
+  },
+  "agendaConnectedTo": {
+    "message": "Watched calendar: {n}"
+  },
+  "agendaInProgress": {
+    "message": "Meeting in progress until {h}"
+  },
+  "agendaNextAt": {
+    "message": "Next: {t} at {h}"
+  },
+  "agendaNone": {
+    "message": "Nothing in your calendar for the next 36 hours."
+  },
+  "agendaWarnLabel": {
+    "message": "5 min before the start"
+  },
+  "agendaWarnHint": {
+    "message": "Never miss the start. Blue bubble, stays until you close it."
+  },
+  "agendaEndWarnLabel": {
+    "message": "5 min before the end"
+  },
+  "agendaEndWarnHint": {
+    "message": "Finish on time, even solo events. Amber bubble."
+  },
+  "notifyLabel": {
+    "message": "Notify attendees"
+  },
+  "notifyHint": {
+    "message": "A ready-made email for being late or absent. Review it, send it."
+  },
+  "mailStatsLabel": {
+    "message": "Count my emails"
+  },
+  "mailStatsHint": {
+    "message": "Handled, deleted and sent per day. Numbers only."
+  },
+  "mailStatsNeedsBox": {
+    "message": "Pick your mailbox first in “Notify attendees”."
+  },
+  "notifyPickTitle": {
+    "message": "Send from"
+  },
+  "notifyTokenHint": {
+    "message": "A second token, limited to the workspace:mail scope."
+  },
+  "notifyAliasOf": {
+    "message": "Alias of {m}"
+  },
+  "notifyFrom": {
+    "message": "From {e}"
+  },
+  "notifyLinked": {
+    "message": "Address chosen"
+  },
+  "notifyErrNoMailbox": {
+    "message": "No mailbox on this account."
+  },
+  "notifyButton": {
+    "message": "Notify attendees"
+  },
+  "notifyButtonShort": {
+    "message": "Notify"
+  },
+  "notifyLate5": {
+    "message": "5 min late"
+  },
+  "notifyLate10": {
+    "message": "10 min late"
+  },
+  "notifyAbsent": {
+    "message": "Can't attend"
+  },
+  "notifyTo": {
+    "message": "To"
+  },
+  "notifySubject": {
+    "message": "Subject"
+  },
+  "notifyBodyLabel": {
+    "message": "Message"
+  },
+  "notifySend": {
+    "message": "Send"
+  },
+  "notifySending": {
+    "message": "Sending…"
+  },
+  "notifyBack": {
+    "message": "Back"
+  },
+  "notifyCancel": {
+    "message": "Cancel"
+  },
+  "notifyRemove": {
+    "message": "Remove {n}"
+  },
+  "notifyLoading": {
+    "message": "Loading the attendees…"
+  },
+  "notifyNoRecipients": {
+    "message": "Nobody to notify."
+  },
+  "notifyAlready": {
+    "message": "Already sent"
+  },
+  "notifySentOne": {
+    "message": "Sent to 1 person"
+  },
+  "notifySentMany": {
+    "message": "Sent to {n} people"
+  },
+  "notifyErrOff": {
+    "message": "Turn on “Notify attendees” in Koala Zen."
+  },
+  "notifyErrScope": {
+    "message": "The token lacks the workspace:mail scope."
+  },
+  "notifyErrOffline": {
+    "message": "No connection. Try again."
+  },
+  "notifyErrGeneric": {
+    "message": "Could not send. Try again, or write from kMail."
+  },
+  "notifySubjLate": {
+    "message": "{n} min late · {t}"
+  },
+  "notifyBodyLate": {
+    "message": "Hello,\n\nI will be {n} min late for “{t}” ({h}). Please start without me.\n\nSee you shortly"
+  },
+  "notifySubjAbsent": {
+    "message": "Can't attend · {t}"
+  },
+  "notifyBodyAbsent": {
+    "message": "Hello,\n\nI won't be able to attend “{t}” ({h}).\n\nSorry for the inconvenience"
+  },
+  "agendaChange": {
+    "message": "Change calendar"
+  },
+  "agendaDisconnect": {
+    "message": "Disconnect calendar"
+  },
+  "agendaLinked": {
+    "message": "Calendar connected"
+  },
+  "agendaErrNoCalendar": {
+    "message": "No readable calendar on this account."
+  },
+  "statusMeeting": {
+    "message": "Meeting in progress, reminders paused"
+  },
+  "meetingSoonPill": {
+    "message": "Meeting in {n} min"
+  },
+  "meetingSoonAt": {
+    "message": "At {h}"
+  },
+  "meetingSoonPeople": {
+    "message": "{n} attendees"
+  },
+  "meetingJoin": {
+    "message": "Join the call"
+  },
+  "meetingUntitled": {
+    "message": "Untitled"
+  },
+  "meetingEndPill": {
+    "message": "Ends in {n} min"
+  },
+  "meetingCountdown": {
+    "message": "Starts in {t}"
+  },
+  "meetingStarted": {
+    "message": "Started {t} ago"
+  },
+  "meetingEndCountdown": {
+    "message": "Ends in {t}"
+  },
+  "meetingEnded": {
+    "message": "Ended {t} ago"
+  },
+  "meetingUntil": {
+    "message": "until {h}"
+  },
+  "meetingClose": {
+    "message": "Close"
+  },
+  "stTotalOne": {
+    "message": "Day total"
+  },
+  "historyDayOne": {
+    "message": "1 day"
+  },
+  "agendaCardTitle": {
+    "message": "Infomaniak Calendar"
+  },
+  "agendaCardHint": {
+    "message": "Never miss a meeting, end on time, notify in one click."
+  },
+  "agendaDndNeeds": {
+    "message": "Connect your calendar first, below."
+  },
+  "agendaGrpRemind": {
+    "message": "Reminders"
+  },
+  "agendaGrpMail": {
+    "message": "Email"
+  },
+  "frNext": {
+    "message": "Continue"
+  },
+  "frSkip": {
+    "message": "Skip"
+  },
+  "frReplay": {
+    "message": "Replay the tour"
+  },
+  "frFeatTitle": {
+    "message": "What you get"
+  },
+  "frFeat1": {
+    "message": "Move without thinking about it"
+  },
+  "frFeat1s": {
+    "message": "An active break at your pace, never during a video call."
+  },
+  "frFeat2": {
+    "message": "Never miss a meeting"
+  },
+  "frFeat2s": {
+    "message": "A bubble 5 min before, with the video call link."
+  },
+  "frFeat3": {
+    "message": "See where your time goes"
+  },
+  "frFeat3s": {
+    "message": "Habits, screen time, meetings and emails, day by day."
+  },
+  "frIkTitle": {
+    "message": "Connect your Infomaniak Calendar"
+  },
+  "frIkSub": {
+    "message": "Optional. Infomaniak only, not Google or Outlook."
+  },
+  "frIkLink": {
+    "message": "Open the Manager"
+  },
+  "frIkAgenda": {
+    "message": "Calendar connected"
+  },
+  "frBkTitle": {
+    "message": "Your data stays with you"
+  },
+  "statsMailDone": {
+    "message": "Emails handled"
+  },
+  "statsMailDoneWord": {
+    "message": "Handled"
+  },
+  "phMailDone": {
+    "message": "{d} of them deleted, out of {n} received"
+  },
+  "statsHabitsChart": {
+    "message": "Habits"
+  },
+  "frHabitHint": {
+    "message": "You can add more in Custom."
+  },
+  "frIkStep1": {
+    "message": "Create a token in the Manager."
+  },
+  "frIkStep2": {
+    "message": "Tick this scope only and set an expiry date."
+  },
+  "frIkStep3": {
+    "message": "Paste it here."
+  },
+  "frIkDoneTitle": {
+    "message": "You're connected"
+  },
+  "frBkSub": {
+    "message": "No account, no Koala Zen server."
+  },
+  "frFeat5": {
+    "message": "End your meetings on time"
+  },
+  "frFeat5s": {
+    "message": "A bubble 5 min before the end, and no reminders during it."
+  },
+  "frFeat6": {
+    "message": "Say you're late in one click"
+  },
+  "frFeat6s": {
+    "message": "The email to attendees is already written. Review it, send it."
+  },
+  "tokenShow": {
+    "message": "Show"
+  },
+  "tokenHide": {
+    "message": "Hide"
+  },
+  "tokenPh": {
+    "message": "Paste the token here"
+  },
+  "tokenConnect": {
+    "message": "Connect"
+  },
+  "tokenConnecting": {
+    "message": "Connecting…"
+  },
+  "pickChoose": {
+    "message": "Choose"
+  },
+  "tokenErrEmpty": {
+    "message": "Paste a token first."
+  },
+  "tokenErrBlocked": {
+    "message": "The request was unexpectedly blocked. Try again."
+  },
+  "tokenErrUnknown": {
+    "message": "An unexpected error occurred ({c})."
+  },
+  "tokenCreate": {
+    "message": "Create the token in the Manager"
+  },
+  "scopeCalendar": {
+    "message": "the calendar"
+  },
+  "scopeMail": {
+    "message": "email"
+  },
+  "scopeKdrive": {
+    "message": "kDrive"
+  },
+  "tokenErrInvalid": {
+    "message": "This token doesn't work. Check that it is active and fully copied."
+  },
+  "tokenErrOffline": {
+    "message": "Can't reach Infomaniak. Check your connection."
+  },
+  "tokenErrNotConfigured": {
+    "message": "No token saved yet."
+  },
+  "tokenErrScope": {
+    "message": "This token lacks the {s} scope."
+  },
+  "tokenErrBroad": {
+    "message": "This token also opens {x}. Create one with only the {s} scope."
+  },
+  "notifyErrRecipients": {
+    "message": "A recipient isn't one of the attendees. Nothing was sent."
+  },
+  "notifyErrTokens": {
+    "message": "A token is missing. Paste it in the Calendar card."
+  },
+  "tokensResetHint": {
+    "message": "For your security, Koala Zen now asks for one token per feature. Paste a token limited to workspace:calendar."
+  },
+  "tokensResetMail": {
+    "message": "Paste a new token, limited to the workspace:mail scope."
+  },
+  "backupPassOk": {
+    "message": "Long enough."
+  },
+  "backupPassLeft": {
+    "message": "At least {n} more characters."
+  },
+  "connexionsOldTokens": {
+    "message": "Connection settings restored. Paste new tokens: the ones in this file had too many permissions."
+  },
+  "frBk1": {
+    "message": "Everything stays on this device."
+  },
+  "frBk2": {
+    "message": "Your tokens are encrypted, each limited to one feature."
+  },
+  "frBk3": {
+    "message": "Need a backup? Export a file from Data."
+  },
+  "tokenErrNotAllowed": {
+    "message": "Koala Zen blocked this request: it isn't needed."
+  },
+  "frIkMailLater": {
+    "message": "Email: later, in the Calendar card, with its own token"
+  },
+  "notifyErrRate": {
+    "message": "Too many emails in a short time. Try again in a while."
+  },
+  "notifyErrExpired": {
+    "message": "This bubble has expired. Use Koala Zen to notify attendees."
+  },
+  "tokenErrProbe": {
+    "message": "Couldn't check this token's rights. Check your connection and try again."
+  },
+  "connexionsUnchecked": {
+    "message": "Settings restored. Tokens not verified: paste them again in the Calendar card."
+  }
+}
