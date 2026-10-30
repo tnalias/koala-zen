@@ -616,6 +616,8 @@
     .danger-t { font-size: 14px; line-height: 19px; font-weight: 500; color: var(--w); }
     .danger-l { font-size: 13px; line-height: 18px; color: var(--w); }
     .danger-s { font-size: 12px; line-height: 16px; color: var(--rd-soft); }
+    /* En sombre, le rose fonce sur le rouge clair n'atteignait que 4,4:1 : meme encre que le reste du bloc (5,2:1). */
+    :root[data-theme="dark"] .danger-s { color: var(--w); }
     .danger-sep { height: 1px; background: rgba(255,255,255,.25); margin: 0 -12px; }
     .danger-b { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 9999px; border: 1px solid rgba(255,255,255,.55); color: var(--w); font-size: 12px; font-weight: 500; white-space: nowrap; }
     .danger-b:hover { background: rgba(255,255,255,.14); }
