@@ -5,8 +5,13 @@
 ### New
 - **Habit reminders can be turned off** with one switch at the top of their card: keep only your calendar reminders. Everything that only serves them (focus break, habits, quotes, habit stats and streak) is then hidden, with a note to turn them back on.
 - **Quotes can be turned off.**
-- **A new welcome tour:** pick what helps you (habit reminders, Infomaniak Calendar, passing animals, characters), then only the screens you need, and preview the bubble before you start. Replay it any time, it starts from your current settings.
-- **Clearer settings:** focus break now sits with habit reminders, Pause says what it stops, and your habit list is called Habits.
+- **A new welcome tour:** pick what helps you (habit reminders, Infomaniak Calendar and Mail, passing animals, characters), then only the screens you need, and preview the bubble before you start. Replay it any time, it starts from your current settings.
+- **One token for calendar and mail:** a single Infomaniak token with both scopes now works for both. Separate tokens still work. Any other scope is still refused.
+- **Mail in the welcome tour:** connect it with your calendar, pick your address, and choose between notifying attendees and counting your emails.
+- **Clearer settings:** focus break now sits with habit reminders, Pause says what it stops, and your habit list is called Habits. When a feature is off, its options fold away and only its switch remains.
+- **Readable monthly charts:** full dates on the axis, wider bars, and two series drawn one in front of the other.
+- **Clearer stats for each period:** totals named after the period, monthly charts titled per month, averages over the days you actually used, best streaks with their dates, and the selected period stands out in dark mode.
+- **Email stats catch up on the last 31 days**, so a full month fills in.
 - **Motion that helps:** a ring around the koala fills up until its next visit, options fade with their switch, the end of the tour confirms with a drawn check, and charts rise once instead of on every change. All of it follows the Animations setting.
 - **Accessibility:** switches show keyboard focus and are easier to see, small links and buttons are easier to hit, and animations now follow your system's reduced-motion setting by default.
 - **Professional style:** turn characters off for neutral bubbles: a discreet label, ink text, a simple confirmation, no quotes and no celebration.
@@ -20,6 +25,8 @@
 - A meeting reminder now takes priority over a waiting habit reminder, which comes back once you close it.
 - Clicking Close in a bubble no longer closes a window open on the page, such as a Trello card.
 - The Calendar card shows your next event, whatever it is. With habit reminders off, focus pause is greyed out.
+- Yearly stats no longer divide screen time by 365 days, including days still to come.
+- In dark mode, unticked addresses and calendars no longer show a faint check mark.
 
 ## 2.2.0
 

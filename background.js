@@ -1272,11 +1272,16 @@ async function tokenExtras(token, besoin) {
   extras.doute = doute;
   return extras;
 }
-// Le verdict d'une sonde, pour la connexion et l'import.
-function verdictSonde(extras) {
-  if (extras.length) return { ok: false, error: "too_broad", extras: extras.slice() };
+// Le verdict d'une sonde, pour la connexion et l'import. 2026-10-30 : un
+// jeton commun agenda + mail est accepte (permis), et sert aux deux ; tout
+// autre acces en plus (kDrive...) reste refuse. communs dit lesquels des
+// acces permis le jeton ouvre aussi.
+function verdictSonde(extras, permis) {
+  const ok = Array.isArray(permis) ? permis : [];
+  const trop = extras.filter((x) => ok.indexOf(x) < 0);
+  if (trop.length) return { ok: false, error: "too_broad", extras: trop };
   if (extras.doute) return { ok: false, error: "probe_failed" };
-  return { ok: true };
+  return { ok: true, communs: extras.filter((x) => ok.indexOf(x) >= 0) };
 }
 
 // ===========================================================================
@@ -1866,13 +1871,20 @@ async function agendaConnect(tokenArg) {
   if (!token) token = await agendaToken();
   if (!token) return { ok: false, error: "empty_token" };
   const liste = await agendaListCalendars(token);
-  if (!liste.ok) { await agendaRememberError(liste.error); return liste; }
+  // Un jeton saisi qui echoue est dit tout de suite, sans laisser d'erreur
+  // memorisee pour la carte Agenda.
+  if (!liste.ok) { if (!saisi) await agendaRememberError(liste.error); return liste; }
+  let mailAussi = false;
   if (saisi) {
-    const v = verdictSonde(await tokenExtras(token, "calendar"));
+    const v = verdictSonde(await tokenExtras(token, "calendar"), ["mail"]);
     if (!v.ok) return v;
+    mailAussi = v.communs.indexOf("mail") >= 0;
   }
   const patch = { agendaLastError: "", agendaMyUserId: liste.myUserId || 0 };
   if (saisi) { patch.agendaTokenEnc = await secretEncrypt(token); patch.tokensReset = false; }
+  // Un jeton commun ouvre aussi le mail : il sert de jeton mail, sauf si un
+  // jeton mail a part est deja enregistre.
+  if (mailAussi && !(await kvGet(["notifyTokenEnc"])).notifyTokenEnc) patch.notifyTokenEnc = await secretEncrypt(token);
   const email = await agendaProfileEmail(token);
   patch.agendaMyEmail = email || "";
   await kvSet(patch);
@@ -1880,9 +1892,9 @@ async function agendaConnect(tokenArg) {
     const seul = liste.calendars[0];
     const r = await agendaChoose(seul.id, seul.name);
     if (!r.ok) return r;
-    return { ok: true, calendarName: seul.name };
+    return { ok: true, calendarName: seul.name, mailToo: mailAussi };
   }
-  return { ok: true, needsChoice: true, calendars: liste.calendars };
+  return { ok: true, needsChoice: true, calendars: liste.calendars, mailToo: mailAussi };
 }
 
 async function agendaListCalendarsForPopup() {
@@ -2017,12 +2029,17 @@ async function notifyConnect(tokenArg) {
   const saisi = String(tokenArg || "").trim();
   const liste = await notifyListMailboxes(saisi || null);
   if (!liste.ok) return liste;
+  let agendaAussi = false;
   if (saisi) {
-    const v = verdictSonde(await tokenExtras(saisi, "mail"));
+    const v = verdictSonde(await tokenExtras(saisi, "mail"), ["calendar"]);
     if (!v.ok) return v;
-    await kvSet({ notifyTokenEnc: await secretEncrypt(saisi) });
+    agendaAussi = v.communs.indexOf("calendar") >= 0;
+    const patch = { notifyTokenEnc: await secretEncrypt(saisi) };
+    // Jeton commun : il sert aussi a l'agenda, s'il n'a pas deja le sien.
+    if (agendaAussi && !(await kvGet(["agendaTokenEnc"])).agendaTokenEnc) { patch.agendaTokenEnc = await secretEncrypt(saisi); patch.tokensReset = false; }
+    await kvSet(patch);
   }
-  return liste;
+  return Object.assign({}, liste, { calendarToo: agendaAussi });
 }
 
 // Eteindre Prevenir oublie la boite, l'adresse et le jeton propre au mail.
@@ -2341,11 +2358,11 @@ async function connexionsImport(blob, pass) {
   // verifiables (hors ligne), ils ne sont pas restaures et on le dit.
   let nonVerifies = false;
   if (jetons && clair.agendaToken) {
-    const v = verdictSonde(await tokenExtras(String(clair.agendaToken), "calendar"));
+    const v = verdictSonde(await tokenExtras(String(clair.agendaToken), "calendar"), ["mail"]);
     if (v.ok) { patch.agendaTokenEnc = await secretEncrypt(String(clair.agendaToken)); patch.tokensReset = false; } else nonVerifies = true;
   }
   if (jetons && clair.notifyToken) {
-    const v = verdictSonde(await tokenExtras(String(clair.notifyToken), "mail"));
+    const v = verdictSonde(await tokenExtras(String(clair.notifyToken), "mail"), ["calendar"]);
     if (v.ok) patch.notifyTokenEnc = await secretEncrypt(String(clair.notifyToken)); else nonVerifies = true;
   }
   ["agendaCalendarId", "agendaMyUserId", "notifyMailboxHosting"].forEach((k) => { if (clair[k] !== undefined) patch[k] = nombre(clair[k]); });
@@ -2367,10 +2384,11 @@ async function connexionsImport(blob, pass) {
 // recus partent vite en Archives, Corbeille ou Spam : recus = toute la boite
 // (severywhere=1) moins Envoyes, Brouillons, Spam et Corbeille. Cinq appels
 // par jour, aujourd'hui et hier toutes les trente minutes, puis l'historique
-// rattrape un jour par tour sur quatorze jours.
+// rattrape un jour par tour sur trente et un jours.
 // ===========================================================================
 const MAIL_STATS_EVERY_MS = 30 * 60 * 1000;
-const MAIL_STATS_BACKFILL_DAYS = 14;
+// 2026-10-30 : 31 jours, pour qu'un mois entier se remplisse dans les stats.
+const MAIL_STATS_BACKFILL_DAYS = 31;
 const MAIL_DAILY_KEEP_DAYS = 400;
 
 async function mailFolders(token, uuid) {

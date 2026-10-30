@@ -371,9 +371,6 @@
   "partKoalasShort": {
     "message": "Figuren"
   },
-  "partHistory": {
-    "message": "Verlauf"
-  },
   "partContentShort": {
     "message": "Inhalte"
   },
@@ -403,9 +400,6 @@
   },
   "importModeHint": {
     "message": "Zusammenführen behält, was du hast, Ersetzen überschreibt alles."
-  },
-  "storageTitle": {
-    "message": "Von Koala Zen belegt"
   },
   "eraseTitle": {
     "message": "Löschen"
@@ -685,7 +679,7 @@
     "message": "von {a} bis {b}"
   },
   "phRecordMonth": {
-    "message": "im {m}, über den ganzen Verlauf"
+    "message": "aufgestellt im {m}"
   },
   "phPace": {
     "message": "Eine Gewohnheit pro {d} Bildschirmzeit"
@@ -716,9 +710,6 @@
   },
   "stRecord": {
     "message": "Dein Rekord"
-  },
-  "stTotalOf": {
-    "message": "Total über {n} Tage"
   },
   "stTotalAll": {
     "message": "Total seit Beginn"
@@ -877,7 +868,7 @@
     "message": "Während eines Meetings in meinem Kalender"
   },
   "agendaTokenHint": {
-    "message": "Ein Token nur mit dem Bereich workspace:calendar."
+    "message": "Ein Token nur mit workspace:calendar. Füge workspace:mail hinzu, damit er auch für Mail dient."
   },
   "agendaPickTitle": {
     "message": "Zu überwachende Kalender"
@@ -940,7 +931,7 @@
     "message": "Senden von"
   },
   "notifyTokenHint": {
-    "message": "Ein zweiter Token, nur mit dem Bereich workspace:mail."
+    "message": "Ein Token nur mit workspace:mail. Ein gemeinsamer Token mit workspace:calendar geht auch."
   },
   "notifyAliasOf": {
     "message": "Alias von {m}"
@@ -1185,9 +1176,6 @@
   "frDoneSub": {
     "message": "Alles bleibt auf diesem Gerät, ohne Konto und ohne Koala-Zen-Server."
   },
-  "frDoneHint": {
-    "message": "Alles lässt sich jederzeit in den Einstellungen ändern."
-  },
   "frDemoOpen": {
     "message": "So sieht es aus"
   },
@@ -1294,7 +1282,7 @@
     "message": "Diesem Token fehlt der Bereich {s}."
   },
   "tokenErrBroad": {
-    "message": "Dieser Token öffnet auch {x}. Erstelle einen nur mit dem Bereich {s}."
+    "message": "Dieser Token öffnet auch {x}. Erstelle einen nur mit {s}."
   },
   "notifyErrRecipients": {
     "message": "Eine Adresse gehört nicht zu den Teilnehmenden. Nichts wurde gesendet."
@@ -1320,9 +1308,6 @@
   "tokenErrNotAllowed": {
     "message": "Koala Zen hat diese Anfrage blockiert: Sie wird nicht benötigt."
   },
-  "frIkMailLater": {
-    "message": "Mail: später, in der Karte Kalender, mit eigenem Token"
-  },
   "notifyErrRate": {
     "message": "Zu viele Mails in kurzer Zeit. Versuch es später nochmal."
   },
@@ -1334,5 +1319,56 @@
   },
   "connexionsUnchecked": {
     "message": "Einstellungen wiederhergestellt. Token nicht geprüft: Füge sie in der Karte Kalender erneut ein."
+  },
+  "frOptMail": {
+    "message": "Und deine Infomaniak Mail"
+  },
+  "frOptMailS": {
+    "message": "Bei Verspätung Bescheid geben, Mails zählen."
+  },
+  "frIkTitleBoth": {
+    "message": "Verbinde Kalender und Mail"
+  },
+  "frIkStep2Both": {
+    "message": "Wähle diese zwei Bereiche und setze ein Ablaufdatum."
+  },
+  "frIkMail": {
+    "message": "Mail verbunden"
+  },
+  "frMailTitle": {
+    "message": "Deine Mail"
+  },
+  "frMailFrom": {
+    "message": "Deine Adresse"
+  },
+  "frSumMailLater": {
+    "message": "Mail später verbinden, in den Einstellungen"
+  },
+  "frSumMailBoth": {
+    "message": "Mail: bei Verspätung Bescheid geben und Mails zählen"
+  },
+  "frSumMailNotify": {
+    "message": "Mail: bei Verspätung Bescheid geben"
+  },
+  "frSumMailStats": {
+    "message": "Mail: Mails zählen"
+  },
+  "frSumMailOff": {
+    "message": "Infomaniak Mail aus"
+  },
+  "tokenErrScopeBoth": {
+    "message": "Dieser Token öffnet weder workspace:calendar noch workspace:mail."
+  },
+  "stTotalYear": {
+    "message": "Total des Jahres"
+  },
+  "stTotalMonth": {
+    "message": "Total des Monats"
+  },
+  "stTotalWeek": {
+    "message": "Total der Woche"
+  },
+  "statsPerMonth": {
+    "message": "Pro Monat"
   }
 }

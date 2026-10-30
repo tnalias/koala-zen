@@ -45,6 +45,7 @@
       --gt-pill: #F0D9A8;
       /* Fond du segmente de statistiques */
       --seg: #E6E6E6;
+      --seg-on: #FFFFFF;
       /* Rouge, la zone destructive */
       --rd: #A82722;
       --rd-soft: #F2C9C7;
@@ -103,6 +104,9 @@
       --gt: #0F1214;
       --gt-bd: #2A3036;
       --seg: #2A3036;
+      /* 2026-10-30 : en sombre, la periode choisie se souleve (plus claire
+         que le fond), comme les controles segmentes d'Apple. */
+      --seg-on: #343A40;
       --rd: #E07570;
       --rd-soft: #4A2523;
       --bl-bg: #1A2634;
@@ -148,7 +152,7 @@
     .segbox.segbox--range .seg-b { flex: 1 1 0; display: flex; align-items: center; justify-content: center;
       height: 28px; border-radius: 7px; border: none; background: none; font: inherit;
       font-size: 11px; color: var(--g500); cursor: pointer; padding: 0; white-space: nowrap; }
-    .segbox.segbox--range .seg-b--on { background: var(--w); font-weight: 500;
+    .segbox.segbox--range .seg-b--on { background: var(--seg-on); font-weight: 500;
       color: var(--g600); box-shadow: var(--sh-tab); }
     .nav { display: flex; align-items: center; gap: 6px; }
     .nav-a { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9999px; border: 1px solid var(--gr-300);
@@ -235,16 +239,21 @@
     .fr-hero--bl { background: var(--bl-bg); color: var(--bl-mid); }
     .fr-hero--k { width: 148px; height: 148px; background: var(--gr-150); }
     .fr-hero--k img { width: 132px; height: auto; margin-top: 10px; }
-    .fr-hero--sm { width: 64px; height: 64px; transition: opacity .25s ease, filter .25s ease; }
-    .fr-hero--sm img { width: 58px; margin-top: 5px; }
+    .fr-hero--sm { flex: 0 0 auto; width: 40px; height: 40px; transition: opacity .25s ease, filter .25s ease; }
+    .fr-hero--sm img { width: 36px; margin-top: 4px; }
+    .fr-tk { display: flex; align-items: center; justify-content: center; gap: 8px; }
     .fr-step--choix { gap: 12px; }
     .fr-opts .fr-opt { gap: 10px; }
     .fr-opts .fr-ico { width: 28px; height: 28px; border-radius: 8px; }
     .fr-opts .fr-ico svg { width: 16px; height: 16px; }
     .fr-hero--off { opacity: .35; filter: grayscale(1); }
+    /* Le mail, sous l'agenda dont il depend : en retrait, sans icone ni filet. */
+    .fr-feats .fr-opt.fr-opt--sub { border-top: 0; padding-top: 0; padding-left: 38px; }
+    .fr-mails { max-height: 96px; overflow-y: auto; }
+    .fr-mails .bq { padding: 8px 0; }
     .fr-opt-b { flex: 1 1 auto; min-width: 0; }
-    .fr-feats.fr-opts { gap: 10px; }
-    .fr-feats .fr-opt + .fr-opt { border-top: 1px solid var(--g200); padding-top: 10px; }
+    .fr-feats.fr-opts { gap: 8px; }
+    .fr-feats .fr-opt + .fr-opt { border-top: 1px solid var(--g200); padding-top: 8px; }
     .fr-head { display: flex; flex-direction: column; gap: 6px; }
     .fr-t { margin: 0; font-size: 20px; line-height: 26px; font-weight: 600; color: var(--g600); }
     .fr-s { margin: 0; font-size: 13px; line-height: 18px; color: var(--g500); }
@@ -399,7 +408,7 @@
     /* Segments */
     .seg { display: flex; gap: 3px; padding: 3px; background: var(--g200); border-radius: 9px; }
     .seg-b { flex: 1 1 0; display: flex; align-items: center; justify-content: center; height: 28px; border-radius: 7px; color: var(--g500); font-size: 11px; white-space: nowrap; }
-    .seg-b--on { background: var(--w); color: var(--g600); font-weight: 500; box-shadow: var(--sh-tab); }
+    .seg-b--on { background: var(--seg-on); color: var(--g600); font-weight: 500; box-shadow: var(--sh-tab); }
 
     /* Presets de rythme */
     .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -553,8 +562,9 @@
     @keyframes nfFlame { from { transform: scaleY(.7); } to { transform: scaleY(1.15); } }
     .seg-b--off { color: var(--g400); cursor: default; }
     /* Lignes a cocher du choix des agendas */
-    .bq-ck { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--g300); background: var(--w); color: #FFFFFF; font-size: 12px; line-height: 16px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
-    .bq--on .bq-ck { background: var(--gr); border-color: var(--gr); }
+    .bq-ck { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--g300); background: var(--w); color: transparent; font-size: 12px; line-height: 16px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    /* La coche n'apparait que cochee : en sombre, le fond de la case n'est plus blanc. */
+    .bq--on .bq-ck { background: var(--gr); border-color: var(--gr); color: #FFFFFF; }
     .bq--pick { cursor: pointer; }
     .tile--meet { background: var(--bl-bg); border: 1px solid var(--bl-bd); }
     /* 2026-09-26 : grille 2 x 3 equilibree. Sans reunions, l'ecran prend la
@@ -595,8 +605,18 @@
     .lg-d--rep { background: var(--ch-rep); }
     .lg-d--in { background: var(--ch-in); }
     .lg-d--out { background: var(--ch-out); }
-    .axis { display: flex; justify-content: space-between; gap: 6px; }
-    .ax { flex: 1 1 0; text-align: center; font-size: 10px; color: var(--g500); overflow: hidden; }
+    /* L'axe a le meme pas que les colonnes, et une date plus large que sa
+       colonne deborde des deux cotes au lieu d'etre coupee (2026-10-30). */
+    .axis { display: flex; justify-content: space-between; gap: 4px; }
+    .ax { flex: 1 1 0; min-width: 0; display: flex; justify-content: center; white-space: nowrap; font-size: 10px; color: var(--g500); overflow: visible; }
+    /* Au-dela de 14 colonnes (un mois, tout l'historique), les colonnes se
+       serrent et deux series se superposent : la premiere large derriere, la
+       seconde plus etroite devant. Cote a cote, elles ne faisaient plus que
+       1 ou 2 px. */
+    .cols--dense, .axis--dense { gap: 1px; }
+    .cols--dense .col { position: relative; gap: 0; }
+    .cols--dense .col-b { position: absolute; bottom: 0; left: 12%; right: 12%; max-width: none; }
+    .cols--dense .col-b ~ .col-b { left: 24%; right: 24%; outline: 1px solid var(--w); }
 
     .streak-v { display: flex; align-items: baseline; gap: 5px; }
     .streak-n { font-size: 26px; line-height: 28px; font-weight: 600; color: var(--g600); font-variant-numeric: tabular-nums; }
@@ -611,7 +631,6 @@
 
     /* ---------- Donnees ---------- */
     .parts { display: flex; flex-direction: column; gap: 8px; }
-    .dline { display: flex; height: 10px; border-radius: 9999px; overflow: hidden; background: var(--g200); }
     .danger { display: flex; flex-direction: column; gap: 10px; background: var(--rd); border-radius: 12px; padding: 12px; }
     .danger-t { font-size: 14px; line-height: 19px; font-weight: 500; color: var(--w); }
     .danger-l { font-size: 13px; line-height: 18px; color: var(--w); }
@@ -899,7 +918,7 @@
         <div class="hint" data-i18n="agendaCardHint">Ne rate plus une réunion, finis à l'heure, préviens en un clic.</div>
         <div id="agendaBox">
           <div id="agendaSetup" hidden>
-            <div class="hint" id="agendaSetupHint" data-i18n="agendaTokenHint">Un jeton limité au seul périmètre workspace:calendar.</div>
+            <div class="hint" id="agendaSetupHint" data-i18n="agendaTokenHint">Un jeton limité à workspace:calendar. Ajoute workspace:mail pour qu'il serve aussi au mail.</div>
             <div class="addrow" id="agendaTokenRow">
               <input type="password" class="add-in" id="agendaTokenInput" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
               <button type="button" class="tiny fixed" id="agendaTokenShow" data-i18n="tokenShow">Afficher</button>
@@ -961,7 +980,7 @@
               <label class="sw"><input type="checkbox" id="mailStatsTgl" data-i18n-aria="mailStatsLabel"><span class="sw-t"></span></label>
             </div>
             <div id="notifyTokenBox" hidden>
-              <div class="hint" id="notifyTokenHint" data-i18n="notifyTokenHint">Un second jeton, limité au seul périmètre workspace:mail.</div>
+              <div class="hint" id="notifyTokenHint" data-i18n="notifyTokenHint">Un jeton limité à workspace:mail. Un jeton commun avec workspace:calendar marche aussi.</div>
               <div class="addrow" id="notifyTokenRow">
                 <input type="password" class="add-in" id="notifyTokenInput" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
                 <button type="button" class="tiny fixed" id="notifyTokenShow" data-i18n="tokenShow">Afficher</button>
@@ -1277,14 +1296,17 @@
 
       <div class="fr-main">
         <section class="fr-step fr-step--choix" data-step="0" data-fr="choix">
-          <div class="fr-hero fr-hero--k fr-hero--sm" id="frHeroK"><img id="frKoala" src="images/koala-hello.svg" alt="" width="132" height="114"></div>
           <div class="fr-head">
-            <h1 class="fr-t" data-i18n="frChoiceTitle">Choisis ce qui t'aide</h1>
+            <!-- 2026-10-30 : le koala a cote du titre, pour laisser la place
+                 au mail sous l'agenda sans depasser 600 px. -->
+            <div class="fr-tk"><div class="fr-hero fr-hero--k fr-hero--sm" id="frHeroK"><img id="frKoala" src="images/koala-hello.svg" alt="" width="132" height="114"></div>
+            <h1 class="fr-t" data-i18n="frChoiceTitle">Choisis ce qui t'aide</h1></div>
             <p class="fr-s" data-i18n="frChoiceSub">Tout se change plus tard, dans Réglages.</p>
           </div>
           <div class="card fr-feats fr-opts" role="group" data-i18n-aria="frChoiceTitle">
             <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptHabits">Rappels d'habitude</div><div class="fr-fs" data-i18n="frOptHabitsS">Une pause pour bouger, à ton rythme.</div></div><label class="sw"><input type="checkbox" id="frOptHabits" checked data-i18n-aria="frOptHabits"><span class="sw-t"></span></label></div>
             <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptAgenda">Agenda Infomaniak</div><div class="fr-fs" data-i18n="frOptAgendaS">Une bulle 5 min avant chaque rendez-vous.</div></div><label class="sw"><input type="checkbox" id="frOptAgenda" data-i18n-aria="frOptAgenda"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt fr-opt--sub" id="frOptMailRow" hidden><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptMail">Et ton mail Infomaniak</div><div class="fr-fs" data-i18n="frOptMailS">Prévenir d'un retard, compter tes mails.</div></div><label class="sw"><input type="checkbox" id="frOptMail" checked data-i18n-aria="frOptMail"><span class="sw-t"></span></label></div>
             <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="9" r="1.6"/><circle cx="11" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="19" cy="9" r="1.6"/><path d="M13 12c-3 0-5.5 2.6-5.5 5 0 1.6 1.3 2.5 2.8 2.5 1 0 1.7-.5 2.7-.5s1.7.5 2.7.5c1.5 0 2.8-.9 2.8-2.5 0-2.4-2.5-5-5.5-5z"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptPassages">Animaux de passage</div><div class="fr-fs" data-i18n="frOptPassagesS">Un chat passe dire bonjour, sans rien demander.</div></div><label class="sw"><input type="checkbox" id="frOptPassages" checked data-i18n-aria="frOptPassages"><span class="sw-t"></span></label></div>
             <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--gy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"/><path d="M9 10h.01M15 10h.01"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptCharacter">Personnages</div><div class="fr-fs" data-i18n="frOptCharacterS">Le koala dans les bulles, ou un style sobre.</div></div><label class="sw"><input type="checkbox" id="frOptCharacter" checked data-i18n-aria="frOptCharacter"><span class="sw-t"></span></label></div>
           </div>
@@ -1313,14 +1335,15 @@
         <section class="fr-step" data-step="2" data-fr="agenda" hidden>
           <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg></div>
           <div class="fr-head">
-            <h1 class="fr-t" data-i18n="frIkTitle">Connecte ton agenda Infomaniak</h1>
+            <h1 class="fr-t" id="frIkTitle" data-i18n="frIkTitle">Connecte ton agenda Infomaniak</h1>
             <p class="fr-s" data-i18n="frIkSub">Facultatif. Infomaniak uniquement, pas Google ni Outlook.</p>
           </div>
           <div class="card fr-card">
+            <div class="fr-done" id="frIkPart" hidden></div>
             <div id="frIkForm" class="fr-card">
               <ol class="fr-ol">
                 <li class="fr-li"><span class="fr-n">1</span><div class="fr-li-b"><span class="fr-li-t" data-i18n="frIkStep1">Crée un jeton dans le Manager.</span><a class="fr-ext" href="https://manager.infomaniak.com/v3/ng/accounts/token/list" target="_blank" rel="noopener noreferrer"><span data-i18n="frIkLink">Ouvrir le Manager</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></a></div></li>
-                <li class="fr-li"><span class="fr-n">2</span><div class="fr-li-b"><span class="fr-li-t" data-i18n="frIkStep2">Coche ce seul périmètre et fixe une échéance.</span><div class="fr-chips" id="frScopes"><code class="fr-chip">workspace:calendar</code></div></div></li>
+                <li class="fr-li"><span class="fr-n">2</span><div class="fr-li-b"><span class="fr-li-t" id="frIkStep2" data-i18n="frIkStep2">Coche ce seul périmètre et fixe une échéance.</span><div class="fr-chips" id="frScopes"><code class="fr-chip" id="frScopeCal">workspace:calendar</code><code class="fr-chip" id="frScopeMail" hidden>workspace:mail</code></div></div></li>
                 <li class="fr-li"><span class="fr-n">3</span><div class="fr-li-b"><label class="fr-li-t" for="frToken" data-i18n="frIkStep3">Colle-le ici.</label>
                   <div class="fr-field">
                     <input type="password" class="add-in" id="frToken" data-i18n-ph="tokenPh" placeholder="Coller le jeton ici" autocomplete="off">
@@ -1339,14 +1362,32 @@
           </div>
         </section>
 
-        <section class="fr-step fr-step--fin" data-step="3" data-fr="fin" hidden>
+        <!-- 2026-10-30 : le mail, une fois connecte. Les deux usages et
+             l'adresse, avec de bons reglages par defaut ; tout s'enregistre
+             avec Commencer. -->
+        <section class="fr-step" data-step="3" data-fr="mail" hidden>
+          <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frMailTitle">Ton mail</h1>
+          </div>
+          <div class="card fr-feats fr-opts" role="group" data-i18n-aria="frMailTitle">
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="notifyLabel">Prévenir les participants</div><div class="fr-fs" data-i18n="notifyHint">Mail déjà écrit pour un retard ou une absence. Tu relis, tu envoies.</div></div><label class="sw"><input type="checkbox" id="frMailNotify" checked data-i18n-aria="notifyLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="mailStatsLabel">Compter mes mails</div><div class="fr-fs" data-i18n="mailStatsHint">Traités, supprimés et envoyés par jour. Les nombres seulement.</div></div><label class="sw"><input type="checkbox" id="frMailStats" checked data-i18n-aria="mailStatsLabel"><span class="sw-t"></span></label></div>
+          </div>
+          <div class="card fr-card" id="frMailBox" hidden>
+            <div class="fr-lab" id="frMailFromLab" data-i18n="frMailFrom">Ton adresse</div>
+            <div class="fr-mails" id="frMailList" role="radiogroup" aria-labelledby="frMailFromLab"></div>
+          </div>
+          <div class="nf-msg nf-msg--err" id="frMailErr" role="alert" hidden></div>
+        </section>
+
+        <section class="fr-step fr-step--fin" data-step="4" data-fr="fin" hidden>
           <div class="fr-hero fr-hero--gr fr-hero--done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="fr-coche" d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frDoneTitle">C'est prêt</h1>
             <p class="fr-s" data-i18n="frDoneSub">Tout reste sur cet appareil, sans compte ni serveur Koala Zen.</p>
           </div>
           <div class="card fr-done" id="frSummary" aria-live="polite"></div>
-          <div class="hint" data-i18n="frDoneHint">Tout se change dans Réglages, à tout moment.</div>
           <button type="button" class="tiny fr-demo-open" id="frDemoOpen" data-i18n="frDemoOpen">Voir à quoi ça ressemble</button>
         </section>
       </div>
@@ -1498,7 +1539,7 @@
              graphe de meme hauteur, axe, phrase d'analyse eventuelle. Couleurs
              par mesure, les memes que les tuiles, validees clair et sombre
              (daltonisme et contraste) avec la skill dataviz. -->
-        <div class="card-t" data-i18n="statsPerDay">Par jour</div>
+        <div class="card-t" id="chartsTitle" data-i18n="statsPerDay">Par jour</div>
         <div class="ch" id="chHabits">
           <div class="ch-h"><div class="ch-t" data-i18n="statsHabitsChart">Habitudes</div></div>
           <div class="legend">
@@ -1617,23 +1658,6 @@
         <input type="file" id="importFile" accept="application/json,.json" hidden>
         <div class="saved" id="dataMsg"></div>
 
-      </section>
-
-      <section class="card">
-        <div class="card-h">
-          <div class="card-t" data-i18n="storageTitle">Ce que Koala Zen occupe</div>
-          <div class="card-m" id="szTotal"></div>
-        </div>
-        <div class="dline">
-          <div id="dlKoalas" style="background:#2FAE4A;width:0"></div>
-          <div id="dlStats" style="background:#9BD4A8;width:0"></div>
-          <div id="dlContent" style="background:#E0E0E0;width:0"></div>
-        </div>
-        <div class="legend">
-          <span class="lg"><span class="lg-d" style="background:#2FAE4A"></span><span class="lg-t" data-i18n="partKoalasShort">Personnages</span></span>
-          <span class="lg"><span class="lg-d" style="background:#9BD4A8"></span><span class="lg-t" data-i18n="partHistory">Historique</span></span>
-          <span class="lg"><span class="lg-d" style="background:#E0E0E0"></span><span class="lg-t" data-i18n="partContentShort">Contenus</span></span>
-        </div>
       </section>
 
       <section class="privacy">

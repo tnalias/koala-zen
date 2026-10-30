@@ -528,7 +528,7 @@ $("intPlus").addEventListener("click", () => { setInterval2(customMinutes + 5, "
 let focusSeconds = 30;
 function paintFocus() {
   $("focusValue").textContent = focusSeconds + " " + msg("unitSec", "s");
-  $("focusSecWrap").classList.toggle("row-dim", !$("focusMode").checked);
+  $("focusSecWrap").hidden = !$("focusMode").checked;
 }
 $("focusMode").addEventListener("change", paintFocus);
 $("focMinus").addEventListener("click", () => { focusSeconds = clampInt(focusSeconds - 5, 5, 120, 30); paintFocus(); });
@@ -830,8 +830,10 @@ function currentPassageFrequency() {
 }
 function paintPassagesFreqWrap() {
   const on = $("passagesTgl").checked;
-  $("passagesSubWrap").classList.toggle("row-dim", !on);
-  $("passagesFreqWrap").classList.toggle("row-dim", !on || !$("passagesRandomTgl").checked);
+  // Eteint, ce qui ne sert plus se replie : il ne reste que l'interrupteur.
+  $("passagesSubWrap").hidden = !on;
+  $("passagesTest").hidden = !on;
+  $("passagesFreqWrap").hidden = !$("passagesRandomTgl").checked;
 }
 document.querySelectorAll("#passagesFreqSeg .seg-b").forEach((b) => {
   b.addEventListener("click", () => { applyPassageFrequency(b.getAttribute("data-freq")); });
@@ -861,8 +863,9 @@ $("passagesTgl").addEventListener("change", paintPause);
 function habitsOn() { return $("remindersTgl").checked; }
 function paintReminders() {
   const on = habitsOn();
-  // La pause focus vit dans rhythmWrap : elle se grise avec le rythme.
-  $("rhythmWrap").classList.toggle("row-dim", !on);
+  // 2026-10-30 : eteints, le rythme et la pause focus se replient ; il ne
+  // reste que l'interrupteur, comme dans les Reglages d'iOS.
+  $("rhythmWrap").hidden = !on;
   $("now").hidden = !on;
   // Sans rappels, plus de visite a attendre : l'anneau part tout de suite.
   if (!on) paintRing(null);
@@ -886,7 +889,7 @@ function paintQuotes() {
   const sobre = !$("characterTgl").checked;
   $("quotesSoberNote").hidden = !sobre;
   $("quotesTglRow").classList.toggle("row-dim", sobre);
-  $("quotesWrap").classList.toggle("row-dim", sobre || !$("quotesTgl").checked);
+  $("quotesWrap").hidden = sobre || !$("quotesTgl").checked;
 }
 $("quotesTgl").addEventListener("change", paintQuotes);
 
@@ -897,7 +900,7 @@ $("quotesTgl").addEventListener("change", paintQuotes);
 // plutot que de les couper en silence.
 function paintCharacter() {
   const on = $("characterTgl").checked;
-  $("characterWrap").classList.toggle("row-dim", !on);
+  $("characterWrap").hidden = !on;
   $("characterPassagesNote").hidden = on || !$("passagesTgl").checked;
   paintQuotes();
   const essai = on ? msg("bringNow", "Faire venir le koala") : msg("bringNowPlain", "Afficher un rappel maintenant");
@@ -1405,19 +1408,44 @@ function nomDeJour(d) {
   catch (e) { return ""; }
 }
 
-// 4. Temps d'ecran, moyenne par jour de la periode.
+// 4. Temps d'ecran, moyenne par jour suivi de la periode : seulement les
+// jours qui ont du temps d'ecran (2026-10-30 : l'annee divisait par 365,
+// jours a venir compris), comme les mails.
+function joursAvecEcran(start, end) {
+  let n = 0, d = atMidnight(start); const last = atMidnight(end); let g = 0;
+  while (d.getTime() <= last.getTime() && g < 4000) { if (Number(SCREEN[keyOf(d)]) > 0) n++; d = addDays(d, 1); g++; }
+  return n;
+}
+// Les jours ecoules de la plage depuis le premier jour suivi, jamais ceux a
+// venir : le rythme des reunions par semaine se calcule dessus.
+function joursEcoules(range) {
+  const cles = Object.keys(STATS).concat(Object.keys(SCREEN), Object.keys(MEET), Object.keys(MAIL)).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  if (!cles.length) return 0;
+  const p = cles[0].split("-").map(Number);
+  const debut = Math.max(atMidnight(range[0]).getTime(), new Date(p[0], p[1] - 1, p[2]).getTime());
+  const fin = Math.min(atMidnight(range[1]).getTime(), atMidnight(new Date()).getTime());
+  return fin < debut ? 0 : Math.round((fin - debut) / 86400000) + 1;
+}
 function phraseEcran(sec, jours) {
   const n = Math.max(0, Math.round(Number(jours) || 0));
   if (!n || !sec) return "";
   return msg("phScreenAvg", "{d} en moyenne par jour").replace("{d}", fmtDurShort(Math.round(sec / n)));
 }
 
-// 5. Meilleure serie, ses bornes.
-function phraseSerie(bornes) {
+// 5. Meilleure serie, ses bornes. Les noms des jours dans une semaine ;
+// au-dela, les dates, sinon « du dimanche au vendredi » ne dit pas lequel.
+function phraseSerie(bornes, kind) {
   if (!bornes || !bornes.debut || !bornes.fin) return "";
   if (keyOf(bornes.debut) === keyOf(bornes.fin)) return "";
-  return msg("phStreakSpan", "du {a} au {b}")
-    .replace("{a}", nomDeJour(bornes.debut)).replace("{b}", nomDeJour(bornes.fin));
+  let a = nomDeJour(bornes.debut), b = nomDeJour(bornes.fin);
+  if (kind !== "week") {
+    const memeMois = bornes.debut.getMonth() === bornes.fin.getMonth() && bornes.debut.getFullYear() === bornes.fin.getFullYear();
+    try {
+      a = bornes.debut.toLocaleDateString(uiLang(), memeMois ? { day: "numeric" } : { day: "numeric", month: "short" });
+      b = bornes.fin.toLocaleDateString(uiLang(), { day: "numeric", month: "short" });
+    } catch (e) { /* noms des jours */ }
+  }
+  return msg("phStreakSpan", "du {a} au {b}").replace("{a}", a).replace("{b}", b);
 }
 
 // 6. Record, le mois ou il a ete pose.
@@ -1425,7 +1453,7 @@ function phraseRecord(fin) {
   if (!fin) return "";
   let mois = "";
   try { mois = fin.toLocaleDateString(uiLang(), { month: "long" }); } catch (e) { return ""; }
-  return msg("phRecordMonth", "en {m}, tous temps confondus").replace("{m}", mois);
+  return msg("phRecordMonth", "établi en {m}").replace("{m}", mois);
 }
 
 // Cadence, temps d'ecran divise par le nombre d'habitudes faites.
@@ -1578,18 +1606,29 @@ function showFirstRun(on) {
 /* ---------- Onboarding, refait le 2026-10-30 ----------
    Un parcours court qui suit les choix (guide Apple : rapide, facultatif,
    de bons reglages par defaut, la configuration non essentielle remise a
-   plus tard). Ce qui t'aide : quatre interrupteurs. Ta pause et son rythme,
-   seulement si les rappels d'habitude sont allumes. L'agenda, seulement
-   s'il est allume. Le resume pour finir. Continuer avance, Retour recule,
-   Passer saute la connexion de l'agenda. */
-const FR_ORDRE = ["choix", "habitude", "agenda", "fin"];
+   plus tard). Ce qui t'aide : les interrupteurs, le mail en retrait sous
+   l'agenda dont il depend (Prevenir vise les participants d'un rendez-vous,
+   et Reglages range le mail dans la carte Agenda). Ta pause et son rythme,
+   seulement si les rappels d'habitude sont allumes. La connexion Infomaniak,
+   un seul ecran pour l'agenda et le mail : un jeton commun suffit, deux
+   jetons separes marchent aussi. Ton mail, une fois connecte. Le resume
+   pour finir. Continuer avance, Retour recule, Passer saute la connexion. */
+const FR_ORDRE = ["choix", "habitude", "agenda", "mail", "fin"];
 let frEtape = 0;
 let frAgendaOk = false;
+let frMailOk = false;
+// Les adresses du mail, lues une fois connecte, et celle choisie.
+let frMailAdresses = null;
+let frMailChoix = "";
 // L'etat de depart des interrupteurs : a la premiere installation, les
 // valeurs par defaut ; quand on revoit la presentation, les reglages actuels.
-let frDepart = { agenda: false };
+let frDepart = { agenda: false, mail: false };
+// Le mail ne compte que sous un agenda allume.
+function frMailVoulu() { return $("frOptAgenda").checked && $("frOptMail").checked; }
 function frParcours() {
-  return FR_ORDRE.filter((n) => (n !== "habitude" || $("frOptHabits").checked) && (n !== "agenda" || $("frOptAgenda").checked));
+  return FR_ORDRE.filter((n) => (n !== "habitude" || $("frOptHabits").checked)
+    && (n !== "agenda" || $("frOptAgenda").checked)
+    && (n !== "mail" || (frMailVoulu() && frMailOk)));
 }
 function frRythme() {
   const b = document.querySelector("#frRhythm .seg-b--on") || document.querySelector('#frRhythm [data-min="30"]');
@@ -1614,21 +1653,37 @@ async function frPrepare() {
   // L'agenda : eteint a la premiere installation (il faut un compte
   // Infomaniak) ; allume en revoyant la presentation s'il est connecte et
   // qu'un de ses rappels ou son silence est actif, et alors deja « connecte ».
-  $("frIkForm").hidden = false; $("frCals").hidden = true; $("frIkDone").hidden = true; frErreur("");
-  frAgendaOk = false;
-  frDepart = { agenda: false };
+  // Le mail : propose des que l'agenda s'allume ; en revoyant la
+  // presentation, allume s'il sert (Prevenir ou les stats).
+  $("frCals").hidden = true; frErreur(""); frMailErreur("");
+  frAgendaOk = false; frMailOk = false; frMailAdresses = null; frMailChoix = "";
+  frDepart = { agenda: false, mail: false };
   $("frOptAgenda").checked = false;
+  $("frOptMail").checked = true;
+  $("frMailNotify").checked = true;
+  $("frMailStats").checked = true;
   if (!premiere) {
     const st = await sendR("kz-agenda-status");
     const connecte = !!(st && st.configured && st.hasToken);
     frDepart.agenda = connecte && (st.warn !== false || st.endWarn !== false || !!st.enabled);
     $("frOptAgenda").checked = frDepart.agenda;
-    if (connecte) { frAgendaOk = true; frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }]); }
+    frAgendaOk = connecte;
+    frMailOk = !!(st && st.notifyHasToken);
+    frDepart.mail = frMailOk && !!st.notifyMailboxEmail && !!(st.notifyEnabled || st.mailStatsEnabled);
+    // Le mail reprend son etat ; tant que l'agenda n'est pas connecte, il
+    // est propose comme a la premiere installation.
+    $("frOptMail").checked = frDepart.mail || !connecte;
+    if (frDepart.mail) {
+      $("frMailNotify").checked = !!st.notifyEnabled;
+      $("frMailStats").checked = !!st.mailStatsEnabled;
+      frMailChoix = st.notifyMailboxEmail;
+    }
   }
-  frStep(frEtape);
+  frIkPeint();
 }
 function frStep(n) {
   const parcours = frParcours();
+  $("frOptMailRow").hidden = !$("frOptAgenda").checked;
   frEtape = Math.max(0, Math.min(parcours.length - 1, n));
   const nom = parcours[frEtape];
   document.querySelectorAll("#firstRun .fr-step").forEach((s) => { s.hidden = s.getAttribute("data-fr") !== nom; });
@@ -1644,10 +1699,11 @@ function frStep(n) {
   $("frStart").hidden = !derniere;
   // A l'etape de l'agenda, avant connexion, Continuer et Passer feraient la
   // meme chose : seul Passer s'affiche, Continuer vient une fois connecte.
-  const ikEnAttente = nom === "agenda" && $("frIkDone").hidden;
+  const ikEnAttente = nom === "agenda" && frIkManque().length > 0;
   $("frSkip").hidden = !ikEnAttente;
   $("frNext").hidden = derniere || ikEnAttente;
   if (derniere) frResume();
+  if (nom === "mail") frMailCharge();
   $("frDemoOpen").hidden = !$("frOptHabits").checked && !$("frOptAgenda").checked;
   if (!derniere && !$("frDemo").hidden) frDemoFerme();
   const cible = document.querySelector('#firstRun .fr-step[data-fr="' + nom + '"] input:not([type=checkbox]), #firstRun .fr-step[data-fr="' + nom + '"] .btn-main');
@@ -1663,6 +1719,12 @@ function frResume() {
   if (!$("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumAgendaOff", "Agenda Infomaniak éteint") });
   else if (frAgendaOk) lignes.push({ ok: true, t: msg("frSumAgenda", "Agenda Infomaniak, une bulle 5 min avant") });
   else lignes.push({ ok: false, t: msg("frSumAgendaLater", "Agenda Infomaniak à connecter plus tard, dans Réglages") });
+  const mail = frMailEtat();
+  if (mail === "later") lignes.push({ ok: false, t: msg("frSumMailLater", "Mail à connecter plus tard, dans Réglages") });
+  else if (mail === "both") lignes.push({ ok: true, t: msg("frSumMailBoth", "Mail : prévenir d'un retard et compter tes mails") });
+  else if (mail === "notify") lignes.push({ ok: true, t: msg("frSumMailNotify", "Mail : prévenir d'un retard") });
+  else if (mail === "stats") lignes.push({ ok: true, t: msg("frSumMailStats", "Mail : compter tes mails") });
+  else if ($("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumMailOff", "Mail Infomaniak éteint") });
   lignes.push($("frOptPassages").checked ? { ok: true, t: msg("frOptPassages", "Animaux de passage") } : { ok: false, t: msg("frSumPassagesOff", "Animaux de passage éteints") });
   lignes.push($("frOptCharacter").checked ? { ok: true, t: msg("frSumCharacter", "Le koala dans chaque bulle") } : { ok: true, t: msg("frSumCharacterOff", "Style sobre, sans personnage") });
   const host = $("frSummary"); clear(host);
@@ -1673,12 +1735,20 @@ function frResume() {
     host.appendChild(row);
   });
 }
-["frOptHabits", "frOptAgenda", "frOptPassages", "frOptCharacter"].forEach((id) => {
+["frOptHabits", "frOptAgenda", "frOptMail", "frOptPassages", "frOptCharacter"].forEach((id) => {
   $(id).addEventListener("change", () => {
     if (id === "frOptCharacter") $("frHeroK").classList.toggle("fr-hero--off", !$(id).checked);
-    frStep(frEtape);
+    if (id === "frOptAgenda" || id === "frOptMail") frIkPeint();
+    else frStep(frEtape);
   });
 });
+// Ce que le mail fera au depart : eteint, a connecter plus tard, ou ses usages.
+function frMailEtat() {
+  if (!frMailVoulu()) return "off";
+  if (!frMailOk || !frMailChoix) return "later";
+  const n = $("frMailNotify").checked; const s = $("frMailStats").checked;
+  return n && s ? "both" : n ? "notify" : s ? "stats" : "off";
+}
 document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
   b.addEventListener("click", () => frPeintRythme(Number(b.getAttribute("data-min"))));
 });
@@ -1744,25 +1814,58 @@ $("frTokenShow").addEventListener("click", () => {
   $("frTokenShow").textContent = vu ? msg("tokenShow", "Afficher") : msg("tokenHide", "Masquer");
 });
 function frErreur(texte) { $("frIkErr").textContent = texte || ""; $("frIkErr").hidden = !texte; }
+function frMailErreur(texte) { $("frMailErr").textContent = texte || ""; $("frMailErr").hidden = !texte; }
+// Ce qui reste a connecter, selon les choix.
+function frIkManque() {
+  const manque = [];
+  if ($("frOptAgenda").checked && !frAgendaOk) manque.push("calendar");
+  if (frMailVoulu() && !frMailOk) manque.push("mail");
+  return manque;
+}
+// L'ecran de connexion suit les choix : titre, perimetres a cocher, et ce
+// qui est deja connecte. Tout connecte, il le dit et Continuer apparait.
+function frIkPeint() {
+  const mail = frMailVoulu();
+  const manque = frIkManque();
+  $("frIkTitle").textContent = mail ? msg("frIkTitleBoth", "Connecte agenda et mail") : msg("frIkTitle", "Connecte ton agenda Infomaniak");
+  $("frScopeCal").hidden = manque.indexOf("calendar") < 0;
+  $("frScopeMail").hidden = manque.indexOf("mail") < 0;
+  $("frIkStep2").textContent = manque.length > 1
+    ? msg("frIkStep2Both", "Coche ces deux périmètres et fixe une échéance.")
+    : msg("frIkStep2", "Coche ce seul périmètre et fixe une échéance.");
+  const faits = [];
+  if ($("frOptAgenda").checked && frAgendaOk) faits.push({ ok: true, t: msg("frIkAgenda", "Agenda connecté") });
+  if (mail && frMailOk) faits.push({ ok: true, t: msg("frIkMail", "Mail connecté") });
+  if (!manque.length) { frFini(faits); return; }
+  // Il reste a connecter : la liste de ce qui l'est deja, puis le formulaire.
+  $("frIkDone").hidden = true;
+  const part = $("frIkPart"); clear(part);
+  faits.forEach((l) => part.appendChild(frLigne(l)));
+  part.hidden = !faits.length;
+  if ($("frCals").hidden) $("frIkForm").hidden = false;
+  frStep(frEtape);
+}
+function frLigne(l) {
+  const row = el("div", "fr-res" + (l.ok ? "" : " fr-res--later"));
+  const i = el("span", "fr-res-i"); const ic = svgNode(l.ok ? FR_CHECK : FR_LATER); if (ic) i.appendChild(ic);
+  row.appendChild(i); row.appendChild(el("span", "fr-res-t", l.t));
+  return row;
+}
 // Le resultat de la connexion : un titre, puis une ligne par service, coche
 // verte si c'est fait, gris si c'est pour plus tard.
 const FR_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const FR_LATER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12"/></svg>';
 function frFini(lignes) {
-  $("frIkForm").hidden = true; $("frCals").hidden = true;
+  $("frIkForm").hidden = true; $("frCals").hidden = true; $("frIkPart").hidden = true;
   const host = $("frIkDone"); clear(host);
   host.appendChild(el("div", "fr-done-t", msg("frIkDoneTitle", "C'est connecté")));
-  lignes.forEach((l) => {
-    const row = el("div", "fr-res" + (l.ok ? "" : " fr-res--later"));
-    const i = el("span", "fr-res-i"); const ic = svgNode(l.ok ? FR_CHECK : FR_LATER); if (ic) i.appendChild(ic);
-    row.appendChild(i); row.appendChild(el("span", "fr-res-t", l.t));
-    host.appendChild(row);
-  });
+  lignes.forEach((l) => host.appendChild(frLigne(l)));
   host.hidden = false;
   frStep(frEtape);
 }
-// Etape agenda : un jeton saisi, verifie par le fond (il doit lire les
-// agendas et n'ouvrir ni le mail ni kDrive), puis les agendas a cocher.
+// Etape de connexion : un jeton saisi, verifie par le fond (il doit lire
+// les agendas, ou les boites mail ; l'agenda et le mail ensemble sont
+// acceptes, kDrive jamais), puis les agendas a cocher.
 function frAgendas(calendars) {
   $("frIkForm").hidden = true;
   $("frCals").hidden = false;
@@ -1788,23 +1891,83 @@ function frAgendas(calendars) {
     const c = await sendR("kz-agenda-choose", { calendars: choix });
     if (!c || !c.ok) { $("frCalOk").disabled = false; frErreur(ikErrText(c && c.error, "calendar")); return; }
     frAgendaOk = true;
-    frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }, { ok: false, t: msg("frIkMailLater", "Mail : plus tard, carte Agenda, avec son propre jeton") }]);
+    $("frCals").hidden = true;
+    frIkPeint();
   };
 }
 $("frConnect").addEventListener("click", async () => {
   const token = $("frToken").value.trim();
+  const manque = frIkManque();
+  const besoin = manque.length > 1 ? "both" : manque[0] || "calendar";
   frErreur("");
-  if (!token) { frErreur(ikErrText("empty_token", "calendar")); return; }
+  if (!token) { frErreur(ikErrText("empty_token", besoin)); return; }
   $("frConnect").disabled = true;
-  const r = await sendR("kz-agenda-connect", { token: token });
+  // L'agenda d'abord s'il manque ; un jeton qui ne lit pas l'agenda peut
+  // etre celui du mail, essaye ensuite si le mail manque aussi.
+  let r = null; let cote = "mail";
+  if (manque.indexOf("calendar") >= 0) {
+    r = await sendR("kz-agenda-connect", { token: token });
+    cote = "calendar";
+    if (r && !r.ok && r.error === "missing_scope" && manque.indexOf("mail") >= 0) {
+      const m = await sendR("kz-notify-connect", { token: token });
+      if (m && (m.ok || m.error !== "missing_scope")) { r = m; cote = "mail"; }
+    }
+  } else {
+    r = await sendR("kz-notify-connect", { token: token });
+  }
   $("frConnect").disabled = false;
   // Le jeton quitte le champ quoi qu'il arrive.
   $("frToken").value = "";
-  if (!r || !r.ok) { frErreur(ikErrText(r && r.error, "calendar", r && r.extras)); return; }
-  if (r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return; }
-  frAgendaOk = true;
-  frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }, { ok: false, t: msg("frIkMailLater", "Mail : plus tard, carte Agenda, avec son propre jeton") }]);
+  if (!r || !r.ok) { frErreur(ikErrText(r && r.error, besoin, r && r.extras)); return; }
+  if (cote === "calendar") {
+    if (r.mailToo) frMailOk = true;
+    if (r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return; }
+    frAgendaOk = true;
+  } else {
+    frMailOk = true;
+    if (Array.isArray(r.addresses)) frMailAdresses = r.addresses;
+    if (r.calendarToo) frAgendaOk = await frAgendaApresMail();
+  }
+  frIkPeint();
 });
+// Un jeton commun colle pour le mail sert aussi a l'agenda : il reste a
+// choisir les agendas, avec ce jeton deja enregistre.
+async function frAgendaApresMail() {
+  const r = await sendR("kz-agenda-connect", { token: "" });
+  if (r && r.ok && r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return false; }
+  return !!(r && r.ok);
+}
+// Ton mail : les adresses de la boite, lues une fois. Une seule, elle est
+// prise ; plusieurs, la principale est cochee et on peut changer.
+async function frMailCharge() {
+  if (!frMailAdresses) {
+    const r = await sendR("kz-notify-mailboxes");
+    if (!r || !r.ok) { frMailErreur(ikErrText(r && r.error, "mail")); $("frMailBox").hidden = true; return; }
+    frMailAdresses = r.addresses || [];
+  }
+  frMailErreur("");
+  if (!frMailAdresses.length) { frMailErreur(ikErrText("no_mailbox", "mail")); $("frMailBox").hidden = true; return; }
+  if (!frMailAdresses.some((a) => a.email === frMailChoix)) frMailChoix = (frMailAdresses.find((a) => a.principal) || frMailAdresses[0]).email;
+  const host = $("frMailList"); clear(host);
+  if (frMailAdresses.length === 1) {
+    host.appendChild(el("div", "fr-fs", msg("notifyFrom", "Depuis {e}").replace("{e}", frMailChoix)));
+  } else {
+    frMailAdresses.forEach((ad) => {
+      const row = el("div", "bq bq--pick"); row.setAttribute("role", "radio"); row.setAttribute("tabindex", "0");
+      row.appendChild(el("span", "bq-ck", "✓"));
+      const b = el("div", "bq-b"); b.appendChild(el("div", "bq-t", ad.email));
+      if (!ad.principal) b.appendChild(el("div", "bq-a", msg("notifyAliasOf", "Alias de {m}").replace("{m}", ad.name || "")));
+      row.appendChild(b);
+      const peint = () => { const on = ad.email === frMailChoix; row.classList.toggle("bq--on", on); row.setAttribute("aria-checked", on ? "true" : "false"); };
+      const prend = () => { frMailChoix = ad.email; host.querySelectorAll(".bq--pick").forEach((n) => n.dispatchEvent(new Event("kz-peint"))); };
+      row.addEventListener("kz-peint", peint);
+      row.addEventListener("click", prend);
+      row.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); prend(); } });
+      peint(); host.appendChild(row);
+    });
+  }
+  $("frMailBox").hidden = false;
+}
 // Commencer enregistre les choix d'un coup, et le popup les montre aussitot.
 // L'agenda n'est touche que si son interrupteur a change : l'eteindre coupe
 // ses rappels et son silence sans oublier la connexion ; le laisser eteint a
@@ -1827,6 +1990,19 @@ $("frStart").addEventListener("click", async () => {
     payload.agendaWarn = agenda;
     payload.agendaEndWarn = agenda;
     if (!agenda) payload.agendaEnabled = false;
+  }
+  // Le mail : l'adresse choisie et ses deux usages. Eteint alors qu'il
+  // servait, la boite et le jeton du mail sont oublies (le fond le fait
+  // quand les stats et Prevenir sont eteints ensemble).
+  const mail = frMailEtat();
+  const adresse = frMailAdresses && frMailAdresses.find((a) => a.email === frMailChoix);
+  if (mail !== "off" && mail !== "later" && adresse) {
+    await sendR("kz-notify-choose", { mailbox: adresse });
+    payload.notifyEnabled = mail === "both" || mail === "notify";
+    payload.mailStatsEnabled = mail === "both" || mail === "stats";
+  } else if (mail === "off" && frDepart.mail) {
+    payload.notifyEnabled = false;
+    payload.mailStatsEnabled = false;
   }
   await send("kz-save", { payload: payload });
   CFG = Object.assign(CFG, payload);
@@ -1888,9 +2064,13 @@ function renderStats() {
 
   majRangeSeg();
   $("periodDates").textContent = libellePeriode(statsKind, range);
-  $("totalHead").textContent = (statsKind === "all")
-    ? msg("stTotalAll", "Total, tout l'historique")
-    : (days === 1 ? msg("stTotalOne", "Total du jour") : msg("stTotalOf", "Total des {n} jours").replace("{n}", String(days)));
+  // 2026-10-30 : le nom de la periode, plus « Total des 365 jours » pour une
+  // annee a peine commencee.
+  $("totalHead").textContent = statsKind === "all" ? msg("stTotalAll", "Total, tout l'historique")
+    : statsKind === "year" ? msg("stTotalYear", "Total de l'année")
+    : statsKind === "month" ? msg("stTotalMonth", "Total du mois")
+    : statsKind === "week" ? msg("stTotalWeek", "Total de la semaine")
+    : msg("stTotalOne", "Total du jour");
 
   countUp($("statDone"), agg.done, 0);
   countUp($("statRep"), agg.rep, 0);
@@ -1902,7 +2082,7 @@ function renderStats() {
   const donePrev = pr ? sumRange(pr[0], pr[1]).done : null;
   $("statDoneSub").textContent = phraseEcart(agg.done, donePrev, statsKind);
   $("statRepSub").textContent = phraseCreneau(agg.repH);
-  $("statScreenSub").textContent = phraseEcran(scr, days);
+  $("statScreenSub").textContent = phraseEcran(scr, joursAvecEcran(range[0], range[1]));
 
   // Le temps en reunion, seulement quand l'agenda en a fourni.
   const montrerReu = hasMeetings();
@@ -1912,7 +2092,7 @@ function renderStats() {
   if (montrerReu) {
     const meet = meetingSecRange(range[0], range[1]);
     $("statMeet").textContent = meet > 0 ? fmtDurTile(meet) : "—";
-    $("statMeetSub").textContent = phraseReunion(meet, scr, days, meetingCountRange(range[0], range[1]));
+    $("statMeetSub").textContent = phraseReunion(meet, scr, joursEcoules(range), meetingCountRange(range[0], range[1]));
   }
   const montrerMail = hasMail();
   $("mailInTile").hidden = !montrerMail;
@@ -1935,7 +2115,7 @@ function renderStats() {
   const b = serieBornes(range[0], range[1]);
   $("statBest").textContent = String(b ? b.n : 0);
   $("statBestUnit").textContent = (b && b.n === 1) ? msg("dayWord", "jour") : msg("daysWord", "jours");
-  $("statBestSub").textContent = phraseSerie(b);
+  $("statBestSub").textContent = phraseSerie(b, statsKind);
   const rec = recordTousTemps();
   $("statRecord").textContent = String(rec ? rec.n : 0);
   $("statRecordUnit").textContent = (rec && rec.n === 1) ? msg("dayWord", "jour") : msg("daysWord", "jours");
@@ -1951,6 +2131,9 @@ function renderStats() {
   document.querySelector("#statsTiles .tile--rep").hidden = !habitudes;
   $("streakCard").hidden = !habitudes;
   $("chHabits").hidden = !habitudes;
+  // Sur un seul jour, une « meilleure serie » vaut toujours 1 : les tuiles de
+  // serie laissent la place, la carte Ta serie dit deja serie et record.
+  $("streakTiles").hidden = !habitudes || statsKind === "day";
 }
 function dayBuckets(range) {
   const out = []; const days = rangeDays(range);
@@ -1992,6 +2175,7 @@ const PLOT_H = 64;
 // part de zero et s'arrete au maximum (ou a l'objectif s'il est plus haut).
 function drawColumns(host, buckets, series, maxVal, targets) {
   clear(host);
+  host.classList.toggle("cols--dense", buckets.length > 14);
   const max = Math.max(1, maxVal);
   buckets.forEach((b, i) => {
     const col = el("div", "col");
@@ -2019,6 +2203,7 @@ function renderTrend(period, range) {
   const days = rangeDays(range);
   const monthly = (period === "all" || days > 45);
   const buckets = monthly ? monthBuckets(range) : dayBuckets(range);
+  $("chartsTitle").textContent = monthly ? msg("statsPerMonth", "Par mois") : msg("statsPerDay", "Par jour");
   const targets = [];
 
   // 1. Habitudes : faites et reportees cote a cote, avec l'objectif du jour
@@ -2083,6 +2268,7 @@ function renderTrend(period, range) {
 }
 function fillAxis(host, buckets) {
   clear(host);
+  host.classList.toggle("axis--dense", buckets.length > 14);
   buckets.forEach((b) => host.appendChild(el("div", "ax", b.label || "")));
 }
 
@@ -2133,12 +2319,6 @@ function renderData() {
   $("segStats").style.width = (100 * sz.stats / tot) + "%";
   $("segContent").style.width = (100 * (sz.content + sz.settings) / tot) + "%";
 
-  const total = sz.settings + sz.content + sz.stats + sz.koalas;
-  $("szTotal").textContent = fmtBytes(total);
-  const pc = (n) => (total > 0 ? Math.round((n / total) * 1000) / 10 : 0) + "%";
-  $("dlKoalas").style.width = pc(sz.koalas);
-  $("dlStats").style.width = pc(sz.stats);
-  $("dlContent").style.width = pc(sz.content + sz.settings);
 
   const nDays = Object.keys(STATS).length;
   $("historyDays").textContent = nDays > 1
@@ -2386,7 +2566,9 @@ function ikUsage(nom) {
 }
 // besoin : "calendar" ou "mail", le perimetre attendu dans ce contexte.
 function ikErrText(code, besoin, extras) {
-  const perimetre = besoin === "mail" ? "workspace:mail" : "workspace:calendar";
+  // "both" : l'onboarding attend un jeton commun agenda + mail.
+  const perimetre = besoin === "both" ? "workspace:calendar + workspace:mail" : besoin === "mail" ? "workspace:mail" : "workspace:calendar";
+  if (code === "missing_scope" && besoin === "both") return msg("tokenErrScopeBoth", "Ce jeton n'ouvre ni workspace:calendar ni workspace:mail.");
   if (code === "empty_token") return msg("tokenErrEmpty", "Colle d'abord un jeton.");
   if (code === "invalid_token") return msg("tokenErrInvalid", "Ce jeton ne fonctionne pas. Vérifie qu'il est actif et copié en entier.");
   if (code === "offline") return msg("tokenErrOffline", "Impossible de joindre Infomaniak. Vérifie ta connexion.");
@@ -2461,7 +2643,7 @@ async function agendaRefreshUI() {
   if (!configured) {
     $("agendaSetupHint").textContent = (st && st.tokensReset)
       ? msg("tokensResetHint", "Pour ta sécurité, Koala Zen demande maintenant un jeton par usage. Colle un jeton limité à workspace:calendar.")
-      : msg("agendaTokenHint", "Un jeton limité au seul périmètre workspace:calendar.");
+      : msg("agendaTokenHint", "Un jeton limité à workspace:calendar. Ajoute workspace:mail pour qu'il serve aussi au mail.");
     if (st && st.lastError && st.lastError !== "not_configured") ikToast($("agendaMsg"), ikErrText(st.lastError, "calendar"), true);
     return;
   }
@@ -2495,7 +2677,7 @@ async function agendaRefreshUI() {
   $("notifyTokenBox").hidden = !mailSansJeton;
   $("notifyTokenHint").textContent = mailSansJeton
     ? msg("tokensResetMail", "Colle un nouveau jeton, limité au seul périmètre workspace:mail.")
-    : msg("notifyTokenHint", "Un second jeton, limité au seul périmètre workspace:mail.");
+    : msg("notifyTokenHint", "Un jeton limité à workspace:mail. Un jeton commun avec workspace:calendar marche aussi.");
   notifyCible = null;
   if (notifOk) {
     if (Number(st.inUntil) > now && st.inId) notifyCible = { id: st.inId, start: Number(st.inStart) || 0, title: st.inTitle || "" };

@@ -371,9 +371,6 @@
   "partKoalasShort": {
     "message": "Personnages"
   },
-  "partHistory": {
-    "message": "Historique"
-  },
   "partContentShort": {
     "message": "Contenus"
   },
@@ -403,9 +400,6 @@
   },
   "importModeHint": {
     "message": "Fusionner garde ce que tu as, remplacer écrase tout."
-  },
-  "storageTitle": {
-    "message": "Ce que Koala Zen occupe"
   },
   "eraseTitle": {
     "message": "Effacer"
@@ -685,7 +679,7 @@
     "message": "du {a} au {b}"
   },
   "phRecordMonth": {
-    "message": "en {m}, tous temps confondus"
+    "message": "établi en {m}"
   },
   "phPace": {
     "message": "Une habitude toutes les {d} d'écran"
@@ -716,9 +710,6 @@
   },
   "stRecord": {
     "message": "Ton record"
-  },
-  "stTotalOf": {
-    "message": "Total des {n} jours"
   },
   "stTotalAll": {
     "message": "Total, tout l'historique"
@@ -877,7 +868,7 @@
     "message": "Pendant un rendez-vous de mon agenda"
   },
   "agendaTokenHint": {
-    "message": "Un jeton limité au seul périmètre workspace:calendar."
+    "message": "Un jeton limité à workspace:calendar. Ajoute workspace:mail pour qu'il serve aussi au mail."
   },
   "agendaPickTitle": {
     "message": "Agendas à surveiller"
@@ -940,7 +931,7 @@
     "message": "Envoyer depuis"
   },
   "notifyTokenHint": {
-    "message": "Un second jeton, limité au seul périmètre workspace:mail."
+    "message": "Un jeton limité à workspace:mail. Un jeton commun avec workspace:calendar marche aussi."
   },
   "notifyAliasOf": {
     "message": "Alias de {m}"
@@ -1185,9 +1176,6 @@
   "frDoneSub": {
     "message": "Tout reste sur cet appareil, sans compte ni serveur Koala Zen."
   },
-  "frDoneHint": {
-    "message": "Tout se change dans Réglages, à tout moment."
-  },
   "frDemoOpen": {
     "message": "Voir à quoi ça ressemble"
   },
@@ -1294,7 +1282,7 @@
     "message": "Ce jeton n'a pas le périmètre {s}."
   },
   "tokenErrBroad": {
-    "message": "Ce jeton ouvre aussi {x}. Crée-en un avec le seul périmètre {s}."
+    "message": "Ce jeton ouvre aussi {x}. Crée-en un limité à {s}."
   },
   "notifyErrRecipients": {
     "message": "Un destinataire ne fait pas partie des invités. Rien n'est parti."
@@ -1320,9 +1308,6 @@
   "tokenErrNotAllowed": {
     "message": "Koala Zen a refusé cet appel : il ne fait pas partie de ses usages."
   },
-  "frIkMailLater": {
-    "message": "Mail : plus tard, carte Agenda, avec son propre jeton"
-  },
   "notifyErrRate": {
     "message": "Trop d'envois en peu de temps. Réessaie dans un moment."
   },
@@ -1334,5 +1319,56 @@
   },
   "connexionsUnchecked": {
     "message": "Réglages restaurés. Jetons non vérifiés : colle-les à nouveau dans la carte Agenda."
+  },
+  "frOptMail": {
+    "message": "Et ton mail Infomaniak"
+  },
+  "frOptMailS": {
+    "message": "Prévenir d'un retard, compter tes mails."
+  },
+  "frIkTitleBoth": {
+    "message": "Connecte agenda et mail"
+  },
+  "frIkStep2Both": {
+    "message": "Coche ces deux périmètres et fixe une échéance."
+  },
+  "frIkMail": {
+    "message": "Mail connecté"
+  },
+  "frMailTitle": {
+    "message": "Ton mail"
+  },
+  "frMailFrom": {
+    "message": "Ton adresse"
+  },
+  "frSumMailLater": {
+    "message": "Mail à connecter plus tard, dans Réglages"
+  },
+  "frSumMailBoth": {
+    "message": "Mail : prévenir d'un retard et compter tes mails"
+  },
+  "frSumMailNotify": {
+    "message": "Mail : prévenir d'un retard"
+  },
+  "frSumMailStats": {
+    "message": "Mail : compter tes mails"
+  },
+  "frSumMailOff": {
+    "message": "Mail Infomaniak éteint"
+  },
+  "tokenErrScopeBoth": {
+    "message": "Ce jeton n'ouvre ni workspace:calendar ni workspace:mail."
+  },
+  "stTotalYear": {
+    "message": "Total de l'année"
+  },
+  "stTotalMonth": {
+    "message": "Total du mois"
+  },
+  "stTotalWeek": {
+    "message": "Total de la semaine"
+  },
+  "statsPerMonth": {
+    "message": "Par mois"
   }
 }

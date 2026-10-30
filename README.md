@@ -47,7 +47,7 @@
 
 1. Follow the short tour that opens on install.
 2. Pick your rhythm in **Settings**, and your habits in **Custom**.
-3. Optional, with Infomaniak: in the Manager, create an API token ([how to](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) with **only** the `workspace:calendar` scope and an expiry date, then paste it in the **Infomaniak Calendar** card. For the email features, create a second token with **only** `workspace:mail`.
+3. Optional, with Infomaniak: in the Manager, create an API token ([how to](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) with the `workspace:calendar` scope and an expiry date, then paste it in the **Infomaniak Calendar** card. For the email features, add `workspace:mail` to the same token, or create a second token with only that scope. Any other scope is refused.
 
 ## In the panel
 
