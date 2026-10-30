@@ -1595,9 +1595,10 @@ function showFirstRun(on) {
     // des yeux ; animations coupees, sa version fixe.
     const anime = document.documentElement.classList.contains("anim-on");
     $("frKoala").src = anime ? "images/koala-hello.svg" : "images/koala-hello-still.svg";
-    // Une habitude prereplie, jamais un champ vide, planche N. applyI18n()
-    // a deja pose le placeholder localise, on le reprend comme valeur.
-    if (!$("frHabit").value) $("frHabit").value = $("frHabit").placeholder || "";
+    // Une habitude prereplie a la premiere installation, planche N.
+    // applyI18n() a deja pose le placeholder localise, on le reprend comme
+    // valeur. En revoyant la presentation, frPrepare() laisse le champ vide.
+    if (!$("frHabit").value && CFG.firstRun !== false) $("frHabit").value = $("frHabit").placeholder || "";
     frPrepare();
     frStep(0);
   }
@@ -1620,6 +1621,13 @@ let frMailOk = false;
 // Les adresses du mail, lues une fois connecte, et celle choisie.
 let frMailAdresses = null;
 let frMailChoix = "";
+// Les agendas surveilles, {id, name}, pour les nommer et les changer.
+let frAgendaListe = [];
+// Premiere installation, ou presentation revue (les reglages existent).
+let frPremiere = true;
+// Le rythme n'est enregistre que s'il a ete choisi (ou a la premiere
+// installation) : revoir la presentation ne remplace pas un rythme a 45 min.
+let frRythmeChoisi = false;
 // L'etat de depart des interrupteurs : a la premiere installation, les
 // valeurs par defaut ; quand on revoit la presentation, les reglages actuels.
 let frDepart = { agenda: false, mail: false };
@@ -1631,7 +1639,8 @@ function frParcours() {
     && (n !== "mail" || (frMailVoulu() && frMailOk)));
 }
 function frRythme() {
-  const b = document.querySelector("#frRhythm .seg-b--on") || document.querySelector('#frRhythm [data-min="30"]');
+  const b = document.querySelector("#frRhythm .seg-b--on");
+  if (!b) return { min: clampInt(CFG.intervalMinutes, 1, 240, 30), preset: CFG.preset || "custom" };
   return { min: Number(b.getAttribute("data-min")), preset: b.getAttribute("data-preset") };
 }
 function frPeintRythme(min) {
@@ -1644,30 +1653,42 @@ function frPeintRythme(min) {
 }
 async function frPrepare() {
   const premiere = CFG.firstRun !== false;
+  frPremiere = premiere;
+  frRythmeChoisi = false;
+  // Le jeton ne reste jamais dans le champ d'une presentation a l'autre.
+  $("frToken").value = "";
+  // Revoir la presentation n'ajoute pas d'habitude d'exemple : le champ est
+  // vide, facultatif. A la premiere installation, il est prerempli.
+  $("frHabitLab").textContent = premiere ? msg("frHabitLabel", "Ta première habitude") : msg("frHabitLabelMore", "Une habitude de plus, si tu veux");
+  if (!premiere) $("frHabit").value = "";
   $("frOptHabits").checked = premiere || CFG.remindersEnabled !== false;
   $("frOptPassages").checked = premiere || CFG.passages !== false;
   $("frOptCharacter").checked = premiere || CFG.showCharacter !== false;
   $("frHeroK").classList.toggle("fr-hero--off", !$("frOptCharacter").checked);
+  // Un rythme hors des quatre proposes (45 min) : aucun n'est coche, il est garde.
   const actuel = clampInt(CFG.intervalMinutes, 1, 240, 30);
-  frPeintRythme([25, 30, 52, 90].indexOf(actuel) >= 0 ? actuel : 30);
+  frPeintRythme(premiere ? 30 : actuel);
   // L'agenda : eteint a la premiere installation (il faut un compte
   // Infomaniak) ; allume en revoyant la presentation s'il est connecte et
   // qu'un de ses rappels ou son silence est actif, et alors deja « connecte ».
   // Le mail : propose des que l'agenda s'allume ; en revoyant la
   // presentation, allume s'il sert (Prevenir ou les stats).
   $("frCals").hidden = true; frErreur(""); frMailErreur("");
-  frAgendaOk = false; frMailOk = false; frMailAdresses = null; frMailChoix = "";
+  frAgendaOk = false; frMailOk = false; frMailAdresses = null; frMailChoix = ""; frAgendaListe = [];
   frDepart = { agenda: false, mail: false };
   $("frOptAgenda").checked = false;
   $("frOptMail").checked = true;
   $("frMailNotify").checked = true;
   $("frMailStats").checked = true;
-  if (!premiere) {
-    const st = await sendR("kz-agenda-status");
+  // L'etat reel des connexions, meme a la premiere installation : un popup
+  // ferme en cours de route a pu deja connecter l'agenda ou le mail.
+  const st = await sendR("kz-agenda-status");
+  {
     const connecte = !!(st && st.configured && st.hasToken);
     frDepart.agenda = connecte && (st.warn !== false || st.endWarn !== false || !!st.enabled);
     $("frOptAgenda").checked = frDepart.agenda;
     frAgendaOk = connecte;
+    if (connecte && Array.isArray(st.calendars)) frAgendaListe = st.calendars.slice();
     frMailOk = !!(st && st.notifyHasToken);
     frDepart.mail = frMailOk && !!st.notifyMailboxEmail && !!(st.notifyEnabled || st.mailStatsEnabled);
     // Le mail reprend son etat ; tant que l'agenda n'est pas connecte, il
@@ -1699,7 +1720,8 @@ function frStep(n) {
   $("frStart").hidden = !derniere;
   // A l'etape de l'agenda, avant connexion, Continuer et Passer feraient la
   // meme chose : seul Passer s'affiche, Continuer vient une fois connecte.
-  const ikEnAttente = nom === "agenda" && frIkManque().length > 0;
+  // Pendant le choix des agendas aussi : Continuer perdrait la selection.
+  const ikEnAttente = nom === "agenda" && (frIkManque().length > 0 || !$("frCals").hidden);
   $("frSkip").hidden = !ikEnAttente;
   $("frNext").hidden = derniere || ikEnAttente;
   if (derniere) frResume();
@@ -1724,7 +1746,9 @@ function frResume() {
   else if (mail === "both") lignes.push({ ok: true, t: msg("frSumMailBoth", "Mail : prévenir d'un retard et compter tes mails") });
   else if (mail === "notify") lignes.push({ ok: true, t: msg("frSumMailNotify", "Mail : prévenir d'un retard") });
   else if (mail === "stats") lignes.push({ ok: true, t: msg("frSumMailStats", "Mail : compter tes mails") });
-  else if ($("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumMailOff", "Mail Infomaniak éteint") });
+  // Le mail eteint se dit sous un agenda allume, et aussi quand il servait :
+  // eteindre l'agenda l'eteint avec lui.
+  else if ($("frOptAgenda").checked || frDepart.mail) lignes.push({ ok: false, t: msg("frSumMailOff", "Mail Infomaniak éteint") });
   lignes.push($("frOptPassages").checked ? { ok: true, t: msg("frOptPassages", "Animaux de passage") } : { ok: false, t: msg("frSumPassagesOff", "Animaux de passage éteints") });
   lignes.push($("frOptCharacter").checked ? { ok: true, t: msg("frSumCharacter", "Le koala dans chaque bulle") } : { ok: true, t: msg("frSumCharacterOff", "Style sobre, sans personnage") });
   const host = $("frSummary"); clear(host);
@@ -1750,7 +1774,7 @@ function frMailEtat() {
   return n && s ? "both" : n ? "notify" : s ? "stats" : "off";
 }
 document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
-  b.addEventListener("click", () => frPeintRythme(Number(b.getAttribute("data-min"))));
+  b.addEventListener("click", () => { frRythmeChoisi = true; frPeintRythme(Number(b.getAttribute("data-min"))); });
 });
 // L'apercu de la bulle (2026-10-30) : le rappel d'habitude s'il est allume,
 // sinon celui de l'agenda, avec le koala ou en style sobre selon le choix.
@@ -1827,14 +1851,22 @@ function frIkManque() {
 function frIkPeint() {
   const mail = frMailVoulu();
   const manque = frIkManque();
-  $("frIkTitle").textContent = mail ? msg("frIkTitleBoth", "Connecte agenda et mail") : msg("frIkTitle", "Connecte ton agenda Infomaniak");
+  // Tout connecte, le titre le dit (revoir la presentation, ou juste apres
+  // la connexion) ; « Facultatif » n'a plus lieu d'etre.
+  const fait = !manque.length;
+  $("frIkTitle").textContent = fait
+    ? (mail ? msg("frIkTitleDoneBoth", "Ton agenda et ton mail") : msg("frIkTitleDone", "Ton agenda"))
+    : (mail ? msg("frIkTitleBoth", "Connecte agenda et mail") : msg("frIkTitle", "Connecte ton agenda Infomaniak"));
+  $("frIkSub").hidden = fait;
   $("frScopeCal").hidden = manque.indexOf("calendar") < 0;
   $("frScopeMail").hidden = manque.indexOf("mail") < 0;
   $("frIkStep2").textContent = manque.length > 1
     ? msg("frIkStep2Both", "Coche ces deux périmètres et fixe une échéance.")
     : msg("frIkStep2", "Coche ce seul périmètre et fixe une échéance.");
   const faits = [];
-  if ($("frOptAgenda").checked && frAgendaOk) faits.push({ ok: true, t: msg("frIkAgenda", "Agenda connecté") });
+  // 2026-10-30 : l'agenda connecte dit quels agendas il surveille, et se
+  // change ici, comme l'adresse du mail a l'ecran suivant.
+  if ($("frOptAgenda").checked && frAgendaOk) faits.push({ ok: true, t: frAgendaLibelle(), action: { label: msg("frIkCalChange", "Changer"), run: frAgendasChange } });
   if (mail && frMailOk) faits.push({ ok: true, t: msg("frIkMail", "Mail connecté") });
   if (!manque.length) { frFini(faits); return; }
   // Il reste a connecter : la liste de ce qui l'est deja, puis le formulaire.
@@ -1849,7 +1881,26 @@ function frLigne(l) {
   const row = el("div", "fr-res" + (l.ok ? "" : " fr-res--later"));
   const i = el("span", "fr-res-i"); const ic = svgNode(l.ok ? FR_CHECK : FR_LATER); if (ic) i.appendChild(ic);
   row.appendChild(i); row.appendChild(el("span", "fr-res-t", l.t));
+  if (l.action) {
+    const b = el("button", "tiny fr-res-act", l.action.label); b.type = "button";
+    b.addEventListener("click", l.action.run);
+    row.appendChild(b);
+  }
   return row;
+}
+function frAgendaLibelle() {
+  const noms = frAgendaListe.map((c) => c.name).filter(Boolean);
+  if (!noms.length) return msg("frIkAgenda", "Agenda connecté");
+  return (noms.length > 1 ? msg("agendaConnectedToMany", "Agendas surveillés : {n}") : msg("agendaConnectedTo", "Agenda surveillé : {n}")).replace("{n}", noms.join(", "));
+}
+async function frAgendasChange(e) {
+  const b = e && e.currentTarget; if (b) b.disabled = true;
+  frErreur("");
+  const r = await sendR("kz-agenda-list-calendars");
+  if (b) b.disabled = false;
+  if (!r || !r.ok || !Array.isArray(r.calendars)) { frErreur(ikErrText(r && r.error, "calendar")); return; }
+  $("frIkDone").hidden = true;
+  frAgendas(r.calendars, frAgendaListe.map((c) => c.id));
 }
 // Le resultat de la connexion : un titre, puis une ligne par service, coche
 // verte si c'est fait, gris si c'est pour plus tard.
@@ -1866,18 +1917,20 @@ function frFini(lignes) {
 // Etape de connexion : un jeton saisi, verifie par le fond (il doit lire
 // les agendas, ou les boites mail ; l'agenda et le mail ensemble sont
 // acceptes, kDrive jamais), puis les agendas a cocher.
-function frAgendas(calendars) {
+function frAgendas(calendars, deja) {
   $("frIkForm").hidden = true;
   $("frCals").hidden = false;
   const host = $("frCalList"); clear(host);
   const coches = {};
+  // Ceux deja surveilles, sinon l'agenda par defaut, sinon le seul.
+  const avant = (deja || []).filter((id) => calendars.some((c) => c.id === id));
   calendars.forEach((c) => {
     const row = el("div", "bq bq--pick"); row.setAttribute("role", "checkbox"); row.setAttribute("tabindex", "0");
     row.appendChild(el("span", "bq-ck", "✓"));
     const b = el("div", "bq-b"); b.appendChild(el("div", "bq-t", c.name));
     if (c.isDefault) b.appendChild(el("div", "bq-a", msg("agendaDefaultTag", "Agenda par défaut")));
     row.appendChild(b);
-    if (c.isDefault) coches[c.id] = c.name;
+    if (avant.length ? avant.indexOf(c.id) >= 0 : (c.isDefault || calendars.length === 1)) coches[c.id] = c.name;
     const peint = () => { row.classList.toggle("bq--on", !!coches[c.id]); row.setAttribute("aria-checked", coches[c.id] ? "true" : "false"); $("frCalOk").disabled = !Object.keys(coches).length; };
     const bascule = () => { if (coches[c.id]) delete coches[c.id]; else coches[c.id] = c.name; peint(); };
     row.addEventListener("click", bascule);
@@ -1891,9 +1944,11 @@ function frAgendas(calendars) {
     const c = await sendR("kz-agenda-choose", { calendars: choix });
     if (!c || !c.ok) { $("frCalOk").disabled = false; frErreur(ikErrText(c && c.error, "calendar")); return; }
     frAgendaOk = true;
+    frAgendaListe = choix;
     $("frCals").hidden = true;
     frIkPeint();
   };
+  frStep(frEtape);
 }
 $("frConnect").addEventListener("click", async () => {
   const token = $("frToken").value.trim();
@@ -1923,10 +1978,11 @@ $("frConnect").addEventListener("click", async () => {
     if (r.mailToo) frMailOk = true;
     if (r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return; }
     frAgendaOk = true;
+    frAgendaListe = r.calendarName ? [{ id: 0, name: r.calendarName }] : [];
   } else {
     frMailOk = true;
     if (Array.isArray(r.addresses)) frMailAdresses = r.addresses;
-    if (r.calendarToo) frAgendaOk = await frAgendaApresMail();
+    if (r.calendarToo && !frAgendaOk) frAgendaOk = await frAgendaApresMail();
   }
   frIkPeint();
 });
@@ -1935,6 +1991,7 @@ $("frConnect").addEventListener("click", async () => {
 async function frAgendaApresMail() {
   const r = await sendR("kz-agenda-connect", { token: "" });
   if (r && r.ok && r.needsChoice && Array.isArray(r.calendars)) { frAgendas(r.calendars); return false; }
+  if (r && r.ok && r.calendarName) frAgendaListe = [{ id: 0, name: r.calendarName }];
   return !!(r && r.ok);
 }
 // Ton mail : les adresses de la boite, lues une fois. Une seule, elle est
@@ -1978,19 +2035,20 @@ $("frStart").addEventListener("click", async () => {
   const agenda = $("frOptAgenda").checked;
   const payload = { firstRun: false, remindersEnabled: habitudes, passages: $("frOptPassages").checked, showCharacter: $("frOptCharacter").checked };
   if (habitudes) {
-    const v = String($("frHabit").value || $("frHabit").placeholder || "").trim();
-    if (v && customSport.indexOf(v) === -1) customSport.push(v);
-    payload.customSport = customSport;
-    const r = frRythme();
-    payload.intervalMinutes = r.min;
-    payload.preset = r.preset;
-    if (r.preset === "custom") payload.customInterval = r.min;
+    const v = String($("frHabit").value || (frPremiere ? $("frHabit").placeholder : "") || "").trim();
+    if (v && customSport.indexOf(v) === -1) { customSport.push(v); payload.customSport = customSport; }
+    if (frPremiere || frRythmeChoisi) {
+      const r = frRythme();
+      payload.intervalMinutes = r.min;
+      payload.preset = r.preset;
+      if (r.preset === "custom") payload.customInterval = r.min;
+    }
   }
-  if (agenda !== frDepart.agenda) {
-    payload.agendaWarn = agenda;
-    payload.agendaEndWarn = agenda;
-    if (!agenda) payload.agendaEnabled = false;
-  }
+  // L'agenda allume retrouve ses rappels ; eteint, il coupe rappels et
+  // silence, y compris s'il vient d'etre connecte dans cette presentation.
+  // La connexion, elle, est gardee.
+  if (agenda && !frDepart.agenda) { payload.agendaWarn = true; payload.agendaEndWarn = true; }
+  if (!agenda && (frDepart.agenda || frAgendaOk)) { payload.agendaWarn = false; payload.agendaEndWarn = false; payload.agendaEnabled = false; }
   // Le mail : l'adresse choisie et ses deux usages. Eteint alors qu'il
   // servait, la boite et le jeton du mail sont oublies (le fond le fait
   // quand les stats et Prevenir sont eteints ensemble).
@@ -2000,7 +2058,9 @@ $("frStart").addEventListener("click", async () => {
     await sendR("kz-notify-choose", { mailbox: adresse });
     payload.notifyEnabled = mail === "both" || mail === "notify";
     payload.mailStatsEnabled = mail === "both" || mail === "stats";
-  } else if (mail === "off" && frDepart.mail) {
+  } else if (mail === "off" && (frDepart.mail || frMailOk)) {
+    // Eteint : Prevenir et les stats coupes ensemble, le fond oublie alors la
+    // boite et le jeton du mail (la copie de l'agenda d'un jeton commun reste).
     payload.notifyEnabled = false;
     payload.mailStatsEnabled = false;
   }

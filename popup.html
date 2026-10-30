@@ -294,6 +294,8 @@
     .fr-res-i { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background: var(--gr-150); color: var(--gr-dark); }
     .fr-res-i svg { width: 12px; height: 12px; }
     .fr-res--later { color: var(--g500); }
+    .fr-res-t { flex: 1 1 auto; min-width: 0; }
+    .fr-res-act { flex: 0 0 auto; align-self: center; }
     .fr-res--later .fr-res-i { background: var(--g200); color: var(--g500); }
     .fr-note { display: flex; gap: 10px; align-items: flex-start; text-align: left; font-size: 12px; line-height: 17px; color: var(--g500); }
     .fr-note svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--g400); margin-top: 1px; }
@@ -1319,7 +1321,7 @@
             <p class="fr-s" data-i18n="frHabitSub">Une petite pause pour bouger, jamais pendant une visio.</p>
           </div>
           <div class="card fr-card">
-            <label class="fr-lab" for="frHabit" data-i18n="frHabitLabel">Ta première habitude</label>
+            <label class="fr-lab" for="frHabit" id="frHabitLab" data-i18n="frHabitLabel">Ta première habitude</label>
             <input type="text" class="add-in" id="frHabit" data-i18n-ph="frHabitPh" placeholder="Se lever et bouger deux minutes">
             <div class="fr-lab" id="frRhythmLab" data-i18n="frRhythmLabel">Un rappel toutes les</div>
             <div class="seg" id="frRhythm" role="radiogroup" aria-labelledby="frRhythmLab">
@@ -1336,7 +1338,7 @@
           <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" id="frIkTitle" data-i18n="frIkTitle">Connecte ton agenda Infomaniak</h1>
-            <p class="fr-s" data-i18n="frIkSub">Facultatif. Infomaniak uniquement, pas Google ni Outlook.</p>
+            <p class="fr-s" id="frIkSub" data-i18n="frIkSub">Facultatif. Infomaniak uniquement, pas Google ni Outlook.</p>
           </div>
           <div class="card fr-card">
             <div class="fr-done" id="frIkPart" hidden></div>

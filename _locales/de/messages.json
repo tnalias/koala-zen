@@ -1370,5 +1370,17 @@
   },
   "statsPerMonth": {
     "message": "Pro Monat"
+  },
+  "frIkCalChange": {
+    "message": "Ändern"
+  },
+  "frHabitLabelMore": {
+    "message": "Noch eine Gewohnheit, wenn du willst"
+  },
+  "frIkTitleDoneBoth": {
+    "message": "Dein Kalender und deine Mail"
+  },
+  "frIkTitleDone": {
+    "message": "Dein Kalender"
   }
 }

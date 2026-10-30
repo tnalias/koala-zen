@@ -1370,5 +1370,17 @@
   },
   "statsPerMonth": {
     "message": "Par mois"
+  },
+  "frIkCalChange": {
+    "message": "Changer"
+  },
+  "frHabitLabelMore": {
+    "message": "Une habitude de plus, si tu veux"
+  },
+  "frIkTitleDoneBoth": {
+    "message": "Ton agenda et ton mail"
+  },
+  "frIkTitleDone": {
+    "message": "Ton agenda"
   }
 }

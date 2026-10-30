@@ -1370,5 +1370,17 @@
   },
   "statsPerMonth": {
     "message": "Per month"
+  },
+  "frIkCalChange": {
+    "message": "Change"
+  },
+  "frHabitLabelMore": {
+    "message": "One more habit, if you like"
+  },
+  "frIkTitleDoneBoth": {
+    "message": "Your calendar and mail"
+  },
+  "frIkTitleDone": {
+    "message": "Your calendar"
   }
 }
