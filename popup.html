@@ -204,6 +204,16 @@
     .fr-hero--bl { background: var(--bl-bg); color: var(--bl-mid); }
     .fr-hero--k { width: 148px; height: 148px; background: var(--gr-150); }
     .fr-hero--k img { width: 132px; height: auto; margin-top: 10px; }
+    .fr-hero--sm { width: 64px; height: 64px; transition: opacity .25s ease, filter .25s ease; }
+    .fr-hero--sm img { width: 58px; margin-top: 5px; }
+    .fr-step--choix { gap: 12px; }
+    .fr-opts .fr-opt { gap: 10px; }
+    .fr-opts .fr-ico { width: 28px; height: 28px; border-radius: 8px; }
+    .fr-opts .fr-ico svg { width: 16px; height: 16px; }
+    .fr-hero--off { opacity: .35; filter: grayscale(1); }
+    .fr-opt-b { flex: 1 1 auto; min-width: 0; }
+    .fr-feats.fr-opts { gap: 10px; }
+    .fr-feats .fr-opt + .fr-opt { border-top: 1px solid var(--g200); padding-top: 10px; }
     .fr-head { display: flex; flex-direction: column; gap: 6px; }
     .fr-t { margin: 0; font-size: 20px; line-height: 26px; font-weight: 600; color: var(--g600); }
     .fr-s { margin: 0; font-size: 13px; line-height: 18px; color: var(--g500); }
@@ -1187,47 +1197,55 @@
     </div>
   </div>
 
-  <!-- Module N. Premiere installation, refaite le 2026-09-28 facon app
-       mobile. Quatre etapes, une idee par ecran : la premiere habitude, ce
-       que fait l'extension, la connexion Infomaniak (facultative), la
-       sauvegarde automatique (facultative). Retour et Passer vivent dans la
-       barre du haut, le bouton principal ne bouge jamais. -->
+  <!-- Module N. Premiere installation, refaite le 2026-10-30. Une idee par
+       ecran et un parcours qui suit les choix : ce qui t'aide (quatre
+       interrupteurs), ta pause et son rythme (si les rappels d'habitude sont
+       allumes), l'agenda (s'il est allume), puis le resume. Retour et Passer
+       vivent dans la barre du haut, le bouton principal ne bouge jamais. -->
   <div id="firstRun" hidden>
     <div class="body pane-in fr">
       <div class="fr-top">
         <button type="button" class="fr-icb" id="frBack" data-i18n-aria="notifyBack" aria-label="Retour" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="fr-dots" id="frDots" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"><i></i><i></i><i></i><i></i></div>
+        <div class="fr-dots" id="frDots" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1"></div>
         <button type="button" class="fr-skip" id="frSkip" data-i18n="frSkip" hidden>Passer</button>
       </div>
 
       <div class="fr-main">
-        <section class="fr-step" data-step="0">
-          <div class="fr-hero fr-hero--k"><img id="frKoala" src="images/koala-hello.svg" alt="" width="132" height="114"></div>
+        <section class="fr-step fr-step--choix" data-step="0" data-fr="choix">
+          <div class="fr-hero fr-hero--k fr-hero--sm" id="frHeroK"><img id="frKoala" src="images/koala-hello.svg" alt="" width="132" height="114"></div>
           <div class="fr-head">
-            <h1 class="fr-t" data-i18n="frTitle">Un koala va passer te voir</h1>
-            <p class="fr-s" data-i18n="frSub">De temps en temps, il te propose une petite pause pour bouger.</p>
+            <h1 class="fr-t" data-i18n="frChoiceTitle">Choisis ce qui t'aide</h1>
+            <p class="fr-s" data-i18n="frChoiceSub">Tout se change plus tard, dans Réglages.</p>
+          </div>
+          <div class="card fr-feats fr-opts" role="group" data-i18n-aria="frChoiceTitle">
+            <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptHabits">Rappels d'habitude</div><div class="fr-fs" data-i18n="frOptHabitsS">Une pause pour bouger, à ton rythme.</div></div><label class="sw"><input type="checkbox" id="frOptHabits" checked data-i18n-aria="frOptHabits"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptAgenda">Rappels de rendez-vous</div><div class="fr-fs" data-i18n="frOptAgendaS">Agenda Infomaniak, une bulle 5 min avant.</div></div><label class="sw"><input type="checkbox" id="frOptAgenda" data-i18n-aria="frOptAgenda"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="9" r="1.6"/><circle cx="11" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="19" cy="9" r="1.6"/><path d="M13 12c-3 0-5.5 2.6-5.5 5 0 1.6 1.3 2.5 2.8 2.5 1 0 1.7-.5 2.7-.5s1.7.5 2.7.5c1.5 0 2.8-.9 2.8-2.5 0-2.4-2.5-5-5.5-5z"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptPassages">Animaux de passage</div><div class="fr-fs" data-i18n="frOptPassagesS">Un chat passe dire bonjour, sans rien demander.</div></div><label class="sw"><input type="checkbox" id="frOptPassages" checked data-i18n-aria="frOptPassages"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><span class="fr-ico fr-ico--gy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"/><path d="M9 10h.01M15 10h.01"/></svg></span><div class="fr-opt-b"><div class="fr-ft" data-i18n="frOptCharacter">Personnages</div><div class="fr-fs" data-i18n="frOptCharacterS">Le koala dans les bulles, ou un style sobre.</div></div><label class="sw"><input type="checkbox" id="frOptCharacter" checked data-i18n-aria="frOptCharacter"><span class="sw-t"></span></label></div>
+          </div>
+        </section>
+
+        <section class="fr-step" data-step="1" data-fr="habitude" hidden>
+          <div class="fr-hero fr-hero--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frHabitTitle">Ta pause, à ton rythme</h1>
+            <p class="fr-s" data-i18n="frHabitSub">Une petite pause pour bouger, jamais pendant une visio.</p>
           </div>
           <div class="card fr-card">
             <label class="fr-lab" for="frHabit" data-i18n="frHabitLabel">Ta première habitude</label>
             <input type="text" class="add-in" id="frHabit" data-i18n-ph="frHabitPh" placeholder="Se lever et bouger deux minutes">
+            <div class="fr-lab" id="frRhythmLab" data-i18n="frRhythmLabel">Un rappel toutes les</div>
+            <div class="seg" id="frRhythm" role="radiogroup" aria-labelledby="frRhythmLab">
+              <button type="button" class="seg-b" role="radio" data-min="25" data-preset="pomodoro">25 min</button>
+              <button type="button" class="seg-b seg-b--on" role="radio" data-min="30" data-preset="custom">30 min</button>
+              <button type="button" class="seg-b" role="radio" data-min="52" data-preset="deepwork">52 min</button>
+              <button type="button" class="seg-b" role="radio" data-min="90" data-preset="ultradian">90 min</button>
+            </div>
             <div class="hint" data-i18n="frHabitHint">Tu pourras en ajouter d'autres dans Perso.</div>
           </div>
         </section>
 
-        <section class="fr-step" data-step="1" hidden>
-          <div class="fr-head">
-            <h1 class="fr-t" data-i18n="frFeatTitle">Ce que tu y gagnes</h1>
-          </div>
-          <div class="card fr-feats">
-            <div class="fr-feat"><span class="fr-ico fr-ico--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span><div><div class="fr-ft" data-i18n="frFeat1">Bouger sans y penser</div><div class="fr-fs" data-i18n="frFeat1s">Une pause active à ton rythme, jamais pendant une visio.</div></div></div>
-            <div class="fr-feat"><span class="fr-ico fr-ico--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span><div><div class="fr-ft" data-i18n="frFeat2">Ne plus rater une réunion</div><div class="fr-fs" data-i18n="frFeat2s">Une bulle 5 min avant, avec le lien de la visio.</div></div></div>
-            <div class="fr-feat"><span class="fr-ico fr-ico--am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg></span><div><div class="fr-ft" data-i18n="frFeat5">Finir tes réunions à l'heure</div><div class="fr-fs" data-i18n="frFeat5s">Une bulle 5 min avant la fin, et le silence pendant.</div></div></div>
-            <div class="fr-feat"><span class="fr-ico fr-ico--vi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg></span><div><div class="fr-ft" data-i18n="frFeat6">Prévenir d'un retard en un clic</div><div class="fr-fs" data-i18n="frFeat6s">Le mail aux participants est déjà écrit. Tu relis, tu envoies.</div></div></div>
-            <div class="fr-feat"><span class="fr-ico fr-ico--gy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg></span><div><div class="fr-ft" data-i18n="frFeat3">Voir où passe ton temps</div><div class="fr-fs" data-i18n="frFeat3s">Habitudes, écran, réunions et mails, jour par jour.</div></div></div>
-          </div>
-        </section>
-
-        <section class="fr-step" data-step="2" hidden>
+        <section class="fr-step" data-step="2" data-fr="agenda" hidden>
           <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frIkTitle">Connecte ton agenda Infomaniak</h1>
@@ -1256,17 +1274,14 @@
           </div>
         </section>
 
-        <section class="fr-step" data-step="3" hidden>
-          <div class="fr-hero fr-hero--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></div>
+        <section class="fr-step" data-step="3" data-fr="fin" hidden>
+          <div class="fr-hero fr-hero--gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
           <div class="fr-head">
-            <h1 class="fr-t" data-i18n="frBkTitle">Tes données restent chez toi</h1>
-            <p class="fr-s" data-i18n="frBkSub">Pas de compte, pas de serveur Koala Zen.</p>
+            <h1 class="fr-t" data-i18n="frDoneTitle">C'est prêt</h1>
+            <p class="fr-s" data-i18n="frDoneSub">Tout reste sur cet appareil, sans compte ni serveur Koala Zen.</p>
           </div>
-          <div class="card fr-done">
-            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk1">Tout reste sur cet appareil.</span></div>
-            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk2">Tes jetons sont chiffrés, chacun limité à un usage.</span></div>
-            <div class="fr-res"><span class="fr-res-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span data-i18n="frBk3">Une sauvegarde ? Exporte un fichier depuis Données.</span></div>
-          </div>
+          <div class="card fr-done" id="frSummary" aria-live="polite"></div>
+          <div class="hint" data-i18n="frDoneHint">Tout se change dans Réglages, à tout moment.</div>
         </section>
       </div>
 

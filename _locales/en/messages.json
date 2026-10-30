@@ -807,12 +807,6 @@
   "partStatsShort": {
     "message": "History"
   },
-  "frTitle": {
-    "message": "A koala will drop by"
-  },
-  "frSub": {
-    "message": "Now and then, it suggests a quick movement break."
-  },
   "frHabitLabel": {
     "message": "Your first habit"
   },
@@ -1113,27 +1107,6 @@
   "frReplay": {
     "message": "Replay the tour"
   },
-  "frFeatTitle": {
-    "message": "What you get"
-  },
-  "frFeat1": {
-    "message": "Move without thinking about it"
-  },
-  "frFeat1s": {
-    "message": "An active break at your pace, never during a video call."
-  },
-  "frFeat2": {
-    "message": "Never miss a meeting"
-  },
-  "frFeat2s": {
-    "message": "A bubble 5 min before, with the video call link."
-  },
-  "frFeat3": {
-    "message": "See where your time goes"
-  },
-  "frFeat3s": {
-    "message": "Habits, screen time, meetings and emails, day by day."
-  },
   "frIkTitle": {
     "message": "Connect your Infomaniak Calendar"
   },
@@ -1145,9 +1118,6 @@
   },
   "frIkAgenda": {
     "message": "Calendar connected"
-  },
-  "frBkTitle": {
-    "message": "Your data stays with you"
   },
   "statsMailDone": {
     "message": "Emails handled"
@@ -1164,6 +1134,78 @@
   "frHabitHint": {
     "message": "You can add more in Custom."
   },
+  "frChoiceTitle": {
+    "message": "Pick what helps you"
+  },
+  "frChoiceSub": {
+    "message": "You can change everything later in Settings."
+  },
+  "frOptHabits": {
+    "message": "Habit reminders"
+  },
+  "frOptHabitsS": {
+    "message": "A break to move, at your pace."
+  },
+  "frOptAgenda": {
+    "message": "Meeting reminders"
+  },
+  "frOptAgendaS": {
+    "message": "Infomaniak Calendar, a bubble 5 min before."
+  },
+  "frOptPassages": {
+    "message": "Passing animals"
+  },
+  "frOptPassagesS": {
+    "message": "A cat drops by to say hello, asking nothing."
+  },
+  "frOptCharacter": {
+    "message": "Characters"
+  },
+  "frOptCharacterS": {
+    "message": "The koala in bubbles, or a plain style."
+  },
+  "frHabitTitle": {
+    "message": "Your break, at your pace"
+  },
+  "frHabitSub": {
+    "message": "A short break to move, never during a video call."
+  },
+  "frRhythmLabel": {
+    "message": "A reminder every"
+  },
+  "frDoneTitle": {
+    "message": "You're all set"
+  },
+  "frDoneSub": {
+    "message": "Everything stays on this device, with no account and no Koala Zen server."
+  },
+  "frDoneHint": {
+    "message": "You can change everything in Settings, any time."
+  },
+  "frSumHabits": {
+    "message": "A habit reminder every {n}"
+  },
+  "frSumHabitsOff": {
+    "message": "Habit reminders off"
+  },
+  "frSumAgenda": {
+    "message": "Meeting reminders, 5 min before"
+  },
+  "frSumAgendaOff": {
+    "message": "Meeting reminders off"
+  },
+  "frSumAgendaLater": {
+    "message": "Calendar to connect later, in Settings"
+  },
+  "frSumPassagesOff": {
+    "message": "Passing animals off"
+  },
+  "frSumCharacter": {
+    "message": "The koala in every bubble"
+  },
+  "frSumCharacterOff": {
+    "message": "Plain style, no character"
+  },
   "frIkStep1": {
     "message": "Create a token in the Manager."
   },
@@ -1175,21 +1217,6 @@
   },
   "frIkDoneTitle": {
     "message": "You're connected"
-  },
-  "frBkSub": {
-    "message": "No account, no Koala Zen server."
-  },
-  "frFeat5": {
-    "message": "End your meetings on time"
-  },
-  "frFeat5s": {
-    "message": "A bubble 5 min before the end, and no reminders during it."
-  },
-  "frFeat6": {
-    "message": "Say you're late in one click"
-  },
-  "frFeat6s": {
-    "message": "The email to attendees is already written. Review it, send it."
   },
   "tokenShow": {
     "message": "Show"
@@ -1265,15 +1292,6 @@
   },
   "connexionsOldTokens": {
     "message": "Connection settings restored. Paste new tokens: the ones in this file had too many permissions."
-  },
-  "frBk1": {
-    "message": "Everything stays on this device."
-  },
-  "frBk2": {
-    "message": "Your tokens are encrypted, each limited to one feature."
-  },
-  "frBk3": {
-    "message": "Need a backup? Export a file from Data."
   },
   "tokenErrNotAllowed": {
     "message": "Koala Zen blocked this request: it isn't needed."

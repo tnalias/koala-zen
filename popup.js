@@ -1527,38 +1527,116 @@ function showFirstRun(on) {
     // Une habitude prereplie, jamais un champ vide, planche N. applyI18n()
     // a deja pose le placeholder localise, on le reprend comme valeur.
     if (!$("frHabit").value) $("frHabit").value = $("frHabit").placeholder || "";
+    frPrepare();
     frStep(0);
   }
 }
 
-/* ---------- Onboarding, 2026-09-26 ----------
-   Quatre etapes : la premiere habitude, ce que tu y gagnes, l'agenda
-   (facultatif), tes donnees chez toi. Continuer avance, Retour recule,
-   Passer saute l'etape en cours. 2026-09-29 : l'etape de connexion ne
-   demande plus qu'un jeton limite a workspace:calendar ; kDrive et sa
-   sauvegarde automatique sont retires, le mail se branche dans Reglages
-   avec son propre jeton. */
-const FR_ETAPES = 4;
+/* ---------- Onboarding, refait le 2026-10-30 ----------
+   Un parcours court qui suit les choix (guide Apple : rapide, facultatif,
+   de bons reglages par defaut, la configuration non essentielle remise a
+   plus tard). Ce qui t'aide : quatre interrupteurs. Ta pause et son rythme,
+   seulement si les rappels d'habitude sont allumes. L'agenda, seulement
+   s'il est allume. Le resume pour finir. Continuer avance, Retour recule,
+   Passer saute la connexion de l'agenda. */
+const FR_ORDRE = ["choix", "habitude", "agenda", "fin"];
 let frEtape = 0;
 let frAgendaOk = false;
+// L'etat de depart des interrupteurs : a la premiere installation, les
+// valeurs par defaut ; quand on revoit la presentation, les reglages actuels.
+let frDepart = { agenda: false };
+function frParcours() {
+  return FR_ORDRE.filter((n) => (n !== "habitude" || $("frOptHabits").checked) && (n !== "agenda" || $("frOptAgenda").checked));
+}
+function frRythme() {
+  const b = document.querySelector("#frRhythm .seg-b--on") || document.querySelector('#frRhythm [data-min="30"]');
+  return { min: Number(b.getAttribute("data-min")), preset: b.getAttribute("data-preset") };
+}
+function frPeintRythme(min) {
+  document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
+    const on = Number(b.getAttribute("data-min")) === min;
+    b.classList.toggle("seg-b--on", on);
+    b.setAttribute("aria-checked", on ? "true" : "false");
+    b.textContent = fmtMinutes(Number(b.getAttribute("data-min")));
+  });
+}
+async function frPrepare() {
+  const premiere = CFG.firstRun !== false;
+  $("frOptHabits").checked = premiere || CFG.remindersEnabled !== false;
+  $("frOptPassages").checked = premiere || CFG.passages !== false;
+  $("frOptCharacter").checked = premiere || CFG.showCharacter !== false;
+  $("frHeroK").classList.toggle("fr-hero--off", !$("frOptCharacter").checked);
+  const actuel = clampInt(CFG.intervalMinutes, 1, 240, 30);
+  frPeintRythme([25, 30, 52, 90].indexOf(actuel) >= 0 ? actuel : 30);
+  // L'agenda : eteint a la premiere installation (il faut un compte
+  // Infomaniak) ; allume en revoyant la presentation s'il est connecte et
+  // qu'un de ses rappels ou son silence est actif, et alors deja « connecte ».
+  $("frIkForm").hidden = false; $("frCals").hidden = true; $("frIkDone").hidden = true; frErreur("");
+  frAgendaOk = false;
+  frDepart = { agenda: false };
+  $("frOptAgenda").checked = false;
+  if (!premiere) {
+    const st = await sendR("kz-agenda-status");
+    const connecte = !!(st && st.configured && st.hasToken);
+    frDepart.agenda = connecte && (st.warn !== false || st.endWarn !== false || !!st.enabled);
+    $("frOptAgenda").checked = frDepart.agenda;
+    if (connecte) { frAgendaOk = true; frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }]); }
+  }
+  frStep(frEtape);
+}
 function frStep(n) {
-  frEtape = Math.max(0, Math.min(FR_ETAPES - 1, n));
-  document.querySelectorAll("#firstRun .fr-step").forEach((s) => { s.hidden = Number(s.getAttribute("data-step")) !== frEtape; });
-  document.querySelectorAll("#frDots i").forEach((d, i) => { d.classList.toggle("on", i === frEtape); d.classList.toggle("fait", i < frEtape); });
-  $("frDots").setAttribute("aria-valuenow", String(frEtape + 1));
-  const derniere = frEtape === FR_ETAPES - 1;
+  const parcours = frParcours();
+  frEtape = Math.max(0, Math.min(parcours.length - 1, n));
+  const nom = parcours[frEtape];
+  document.querySelectorAll("#firstRun .fr-step").forEach((s) => { s.hidden = s.getAttribute("data-fr") !== nom; });
+  // Autant de points que d'ecrans dans ce parcours.
+  const dots = $("frDots");
+  while (dots.children.length < parcours.length) dots.appendChild(document.createElement("i"));
+  while (dots.children.length > parcours.length) dots.removeChild(dots.lastChild);
+  Array.prototype.forEach.call(dots.children, (d, i) => { d.classList.toggle("on", i === frEtape); d.classList.toggle("fait", i < frEtape); });
+  dots.setAttribute("aria-valuemax", String(parcours.length));
+  dots.setAttribute("aria-valuenow", String(frEtape + 1));
+  const derniere = nom === "fin";
   $("frBack").hidden = frEtape === 0;
-  $("frNext").hidden = derniere;
   $("frStart").hidden = !derniere;
-  // Passer n'a de sens que sur les etapes facultatives. A l'etape
-  // Infomaniak, avant connexion, Continuer et Passer feraient la meme chose :
-  // seul Passer s'affiche, Continuer vient une fois connecte.
-  const ikEnAttente = frEtape === 2 && $("frIkDone").hidden;
-  $("frSkip").hidden = frEtape < 2 || derniere || !ikEnAttente;
+  // A l'etape de l'agenda, avant connexion, Continuer et Passer feraient la
+  // meme chose : seul Passer s'affiche, Continuer vient une fois connecte.
+  const ikEnAttente = nom === "agenda" && $("frIkDone").hidden;
+  $("frSkip").hidden = !ikEnAttente;
   $("frNext").hidden = derniere || ikEnAttente;
-  const cible = document.querySelector('#firstRun .fr-step[data-step="' + frEtape + '"] input, #firstRun .fr-step[data-step="' + frEtape + '"] button');
+  if (derniere) frResume();
+  const cible = document.querySelector('#firstRun .fr-step[data-fr="' + nom + '"] input:not([type=checkbox]), #firstRun .fr-step[data-fr="' + nom + '"] .btn-main');
   try { if (cible && frEtape > 0) cible.focus(); } catch (e) { /* noop */ }
 }
+// Le resume : une ligne par choix, coche s'il est allume, trait s'il est
+// eteint ou a faire plus tard.
+function frResume() {
+  const lignes = [];
+  // Le nombre et son unite ne se separent jamais en fin de ligne.
+  if ($("frOptHabits").checked) lignes.push({ ok: true, t: msg("frSumHabits", "Un rappel d'habitude toutes les {n}").replace("{n}", fmtMinutes(frRythme().min).replace(" ", "\u00a0")) });
+  else lignes.push({ ok: false, t: msg("frSumHabitsOff", "Rappels d'habitude éteints") });
+  if (!$("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumAgendaOff", "Rappels de rendez-vous éteints") });
+  else if (frAgendaOk) lignes.push({ ok: true, t: msg("frSumAgenda", "Rappels de rendez-vous, 5 min avant") });
+  else lignes.push({ ok: false, t: msg("frSumAgendaLater", "Agenda à connecter plus tard, dans Réglages") });
+  lignes.push($("frOptPassages").checked ? { ok: true, t: msg("frOptPassages", "Animaux de passage") } : { ok: false, t: msg("frSumPassagesOff", "Animaux de passage éteints") });
+  lignes.push($("frOptCharacter").checked ? { ok: true, t: msg("frSumCharacter", "Le koala dans chaque bulle") } : { ok: true, t: msg("frSumCharacterOff", "Style sobre, sans personnage") });
+  const host = $("frSummary"); clear(host);
+  lignes.forEach((l) => {
+    const row = el("div", "fr-res" + (l.ok ? "" : " fr-res--later"));
+    const i = el("span", "fr-res-i"); const ic = svgNode(l.ok ? FR_CHECK : FR_LATER); if (ic) i.appendChild(ic);
+    row.appendChild(i); row.appendChild(el("span", "fr-res-t", l.t));
+    host.appendChild(row);
+  });
+}
+["frOptHabits", "frOptAgenda", "frOptPassages", "frOptCharacter"].forEach((id) => {
+  $(id).addEventListener("change", () => {
+    if (id === "frOptCharacter") $("frHeroK").classList.toggle("fr-hero--off", !$(id).checked);
+    frStep(frEtape);
+  });
+});
+document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
+  b.addEventListener("click", () => frPeintRythme(Number(b.getAttribute("data-min"))));
+});
 $("frNext").addEventListener("click", () => frStep(frEtape + 1));
 $("frBack").addEventListener("click", () => frStep(frEtape - 1));
 $("frSkip").addEventListener("click", () => frStep(frEtape + 1));
@@ -1629,14 +1707,46 @@ $("frConnect").addEventListener("click", async () => {
   frAgendaOk = true;
   frFini([{ ok: true, t: msg("frIkAgenda", "Agenda connecté") }, { ok: false, t: msg("frIkMailLater", "Mail : plus tard, carte Agenda, avec son propre jeton") }]);
 });
+// Commencer enregistre les choix d'un coup, et le popup les montre aussitot.
+// L'agenda n'est touche que si son interrupteur a change : l'eteindre coupe
+// ses rappels et son silence sans oublier la connexion ; le laisser eteint a
+// la premiere installation ne change rien, et le connecter plus tard dans
+// Reglages donne bien les rappels.
 $("frStart").addEventListener("click", async () => {
-  const v = String($("frHabit").value || $("frHabit").placeholder || "").trim();
-  if (v && customSport.indexOf(v) === -1) customSport.push(v);
-  await send("kz-save", { payload: { firstRun: false, customSport: customSport } });
-  CFG.firstRun = false;
+  const habitudes = $("frOptHabits").checked;
+  const agenda = $("frOptAgenda").checked;
+  const payload = { firstRun: false, remindersEnabled: habitudes, passages: $("frOptPassages").checked, showCharacter: $("frOptCharacter").checked };
+  if (habitudes) {
+    const v = String($("frHabit").value || $("frHabit").placeholder || "").trim();
+    if (v && customSport.indexOf(v) === -1) customSport.push(v);
+    payload.customSport = customSport;
+    const r = frRythme();
+    payload.intervalMinutes = r.min;
+    payload.preset = r.preset;
+    if (r.preset === "custom") payload.customInterval = r.min;
+  }
+  if (agenda !== frDepart.agenda) {
+    payload.agendaWarn = agenda;
+    payload.agendaEndWarn = agenda;
+    if (!agenda) payload.agendaEnabled = false;
+  }
+  await send("kz-save", { payload: payload });
+  CFG = Object.assign(CFG, payload);
+  // Le popup reflete les choix sans etre rouvert.
+  $("remindersTgl").checked = habitudes;
+  $("passagesTgl").checked = payload.passages;
+  $("characterTgl").checked = payload.showCharacter;
+  if (habitudes) {
+    if (payload.preset === "custom") customMinutes = payload.intervalMinutes;
+    setInterval2(payload.intervalMinutes, payload.preset);
+  }
   renderSport();
+  paintReminders();
+  paintPassagesFreqWrap();
+  paintCharacter();
   showFirstRun(false);
-  if (frAgendaOk) { try { await agendaRefreshUI(); } catch (e) { /* noop */ } }
+  try { await agendaRefreshUI(); } catch (e) { /* noop */ }
+  await refreshNextVisit();
 });
 $("replayTour").addEventListener("click", () => { showFirstRun(true); });
 

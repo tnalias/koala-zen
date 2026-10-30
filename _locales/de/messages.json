@@ -807,12 +807,6 @@
   "partStatsShort": {
     "message": "Verlauf"
   },
-  "frTitle": {
-    "message": "Ein Koala kommt vorbei"
-  },
-  "frSub": {
-    "message": "Ab und zu schlägt er dir eine kurze Bewegungspause vor."
-  },
   "frHabitLabel": {
     "message": "Deine erste Gewohnheit"
   },
@@ -1113,27 +1107,6 @@
   "frReplay": {
     "message": "Einführung erneut ansehen"
   },
-  "frFeatTitle": {
-    "message": "Was du davon hast"
-  },
-  "frFeat1": {
-    "message": "Bewegen, ohne daran zu denken"
-  },
-  "frFeat1s": {
-    "message": "Eine aktive Pause in deinem Tempo, nie während eines Videocalls."
-  },
-  "frFeat2": {
-    "message": "Kein Meeting mehr verpassen"
-  },
-  "frFeat2s": {
-    "message": "Eine Blase 5 Min vorher, mit dem Link zum Videocall."
-  },
-  "frFeat3": {
-    "message": "Sehen, wohin deine Zeit geht"
-  },
-  "frFeat3s": {
-    "message": "Gewohnheiten, Bildschirmzeit, Meetings und Mails, Tag für Tag."
-  },
   "frIkTitle": {
     "message": "Verbinde deinen Infomaniak-Kalender"
   },
@@ -1145,9 +1118,6 @@
   },
   "frIkAgenda": {
     "message": "Kalender verbunden"
-  },
-  "frBkTitle": {
-    "message": "Deine Daten bleiben bei dir"
   },
   "statsMailDone": {
     "message": "Bearbeitete Mails"
@@ -1164,6 +1134,78 @@
   "frHabitHint": {
     "message": "Weitere kannst du unter Eigenes hinzufügen."
   },
+  "frChoiceTitle": {
+    "message": "Wähle, was dir hilft"
+  },
+  "frChoiceSub": {
+    "message": "Später jederzeit änderbar."
+  },
+  "frOptHabits": {
+    "message": "Gewohnheits-Erinnerungen"
+  },
+  "frOptHabitsS": {
+    "message": "Eine Pause zum Bewegen, in deinem Rhythmus."
+  },
+  "frOptAgenda": {
+    "message": "Meeting-Erinnerungen"
+  },
+  "frOptAgendaS": {
+    "message": "Infomaniak Kalender, eine Blase 5 Min vorher."
+  },
+  "frOptPassages": {
+    "message": "Tiere auf Durchreise"
+  },
+  "frOptPassagesS": {
+    "message": "Eine Katze sagt kurz Hallo, ohne etwas zu wollen."
+  },
+  "frOptCharacter": {
+    "message": "Figuren"
+  },
+  "frOptCharacterS": {
+    "message": "Der Koala in den Blasen, oder schlicht."
+  },
+  "frHabitTitle": {
+    "message": "Deine Pause, in deinem Rhythmus"
+  },
+  "frHabitSub": {
+    "message": "Eine kurze Pause zum Bewegen, nie während eines Videocalls."
+  },
+  "frRhythmLabel": {
+    "message": "Eine Erinnerung alle"
+  },
+  "frDoneTitle": {
+    "message": "Alles bereit"
+  },
+  "frDoneSub": {
+    "message": "Alles bleibt auf diesem Gerät, ohne Konto und ohne Koala-Zen-Server."
+  },
+  "frDoneHint": {
+    "message": "Alles lässt sich jederzeit in den Einstellungen ändern."
+  },
+  "frSumHabits": {
+    "message": "Eine Gewohnheits-Erinnerung alle {n}"
+  },
+  "frSumHabitsOff": {
+    "message": "Gewohnheits-Erinnerungen aus"
+  },
+  "frSumAgenda": {
+    "message": "Meeting-Erinnerungen, 5 Min vorher"
+  },
+  "frSumAgendaOff": {
+    "message": "Meeting-Erinnerungen aus"
+  },
+  "frSumAgendaLater": {
+    "message": "Kalender später in den Einstellungen verbinden"
+  },
+  "frSumPassagesOff": {
+    "message": "Tiere auf Durchreise aus"
+  },
+  "frSumCharacter": {
+    "message": "Der Koala in jeder Blase"
+  },
+  "frSumCharacterOff": {
+    "message": "Schlichter Stil, ohne Figur"
+  },
   "frIkStep1": {
     "message": "Erstelle einen Token im Manager."
   },
@@ -1175,21 +1217,6 @@
   },
   "frIkDoneTitle": {
     "message": "Verbunden"
-  },
-  "frBkSub": {
-    "message": "Kein Konto, kein Koala-Zen-Server."
-  },
-  "frFeat5": {
-    "message": "Meetings pünktlich beenden"
-  },
-  "frFeat5s": {
-    "message": "Eine Blase 5 Min vor Schluss, und Ruhe währenddessen."
-  },
-  "frFeat6": {
-    "message": "Verspätung mit einem Klick melden"
-  },
-  "frFeat6s": {
-    "message": "Die Mail an die Teilnehmenden ist schon geschrieben. Prüfen, senden."
   },
   "tokenShow": {
     "message": "Anzeigen"
@@ -1265,15 +1292,6 @@
   },
   "connexionsOldTokens": {
     "message": "Verbindungseinstellungen wiederhergestellt. Füge neue Token ein: Die aus dieser Datei hatten zu viele Rechte."
-  },
-  "frBk1": {
-    "message": "Alles bleibt auf diesem Gerät."
-  },
-  "frBk2": {
-    "message": "Deine Token sind verschlüsselt, jeder auf eine Funktion begrenzt."
-  },
-  "frBk3": {
-    "message": "Eine Sicherung? Exportiere eine Datei unter Daten."
   },
   "tokenErrNotAllowed": {
     "message": "Koala Zen hat diese Anfrage blockiert: Sie wird nicht benötigt."

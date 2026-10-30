@@ -807,12 +807,6 @@
   "partStatsShort": {
     "message": "Historique"
   },
-  "frTitle": {
-    "message": "Un koala va passer te voir"
-  },
-  "frSub": {
-    "message": "De temps en temps, il te propose une petite pause pour bouger."
-  },
   "frHabitLabel": {
     "message": "Ta première habitude"
   },
@@ -1113,27 +1107,6 @@
   "frReplay": {
     "message": "Revoir la présentation"
   },
-  "frFeatTitle": {
-    "message": "Ce que tu y gagnes"
-  },
-  "frFeat1": {
-    "message": "Bouger sans y penser"
-  },
-  "frFeat1s": {
-    "message": "Une pause active à ton rythme, jamais pendant une visio."
-  },
-  "frFeat2": {
-    "message": "Ne plus rater une réunion"
-  },
-  "frFeat2s": {
-    "message": "Une bulle 5 min avant, avec le lien de la visio."
-  },
-  "frFeat3": {
-    "message": "Voir où passe ton temps"
-  },
-  "frFeat3s": {
-    "message": "Habitudes, écran, réunions et mails, jour par jour."
-  },
   "frIkTitle": {
     "message": "Connecte ton agenda Infomaniak"
   },
@@ -1145,9 +1118,6 @@
   },
   "frIkAgenda": {
     "message": "Agenda connecté"
-  },
-  "frBkTitle": {
-    "message": "Tes données restent chez toi"
   },
   "statsMailDone": {
     "message": "Mails traités"
@@ -1164,6 +1134,78 @@
   "frHabitHint": {
     "message": "Tu pourras en ajouter d'autres dans Perso."
   },
+  "frChoiceTitle": {
+    "message": "Choisis ce qui t'aide"
+  },
+  "frChoiceSub": {
+    "message": "Tout se change plus tard, dans Réglages."
+  },
+  "frOptHabits": {
+    "message": "Rappels d'habitude"
+  },
+  "frOptHabitsS": {
+    "message": "Une pause pour bouger, à ton rythme."
+  },
+  "frOptAgenda": {
+    "message": "Rappels de rendez-vous"
+  },
+  "frOptAgendaS": {
+    "message": "Agenda Infomaniak, une bulle 5 min avant."
+  },
+  "frOptPassages": {
+    "message": "Animaux de passage"
+  },
+  "frOptPassagesS": {
+    "message": "Un chat passe dire bonjour, sans rien demander."
+  },
+  "frOptCharacter": {
+    "message": "Personnages"
+  },
+  "frOptCharacterS": {
+    "message": "Le koala dans les bulles, ou un style sobre."
+  },
+  "frHabitTitle": {
+    "message": "Ta pause, à ton rythme"
+  },
+  "frHabitSub": {
+    "message": "Une petite pause pour bouger, jamais pendant une visio."
+  },
+  "frRhythmLabel": {
+    "message": "Un rappel toutes les"
+  },
+  "frDoneTitle": {
+    "message": "C'est prêt"
+  },
+  "frDoneSub": {
+    "message": "Tout reste sur cet appareil, sans compte ni serveur Koala Zen."
+  },
+  "frDoneHint": {
+    "message": "Tout se change dans Réglages, à tout moment."
+  },
+  "frSumHabits": {
+    "message": "Un rappel d'habitude toutes les {n}"
+  },
+  "frSumHabitsOff": {
+    "message": "Rappels d'habitude éteints"
+  },
+  "frSumAgenda": {
+    "message": "Rappels de rendez-vous, 5 min avant"
+  },
+  "frSumAgendaOff": {
+    "message": "Rappels de rendez-vous éteints"
+  },
+  "frSumAgendaLater": {
+    "message": "Agenda à connecter plus tard, dans Réglages"
+  },
+  "frSumPassagesOff": {
+    "message": "Animaux de passage éteints"
+  },
+  "frSumCharacter": {
+    "message": "Le koala dans chaque bulle"
+  },
+  "frSumCharacterOff": {
+    "message": "Style sobre, sans personnage"
+  },
   "frIkStep1": {
     "message": "Crée un jeton dans le Manager."
   },
@@ -1175,21 +1217,6 @@
   },
   "frIkDoneTitle": {
     "message": "C'est connecté"
-  },
-  "frBkSub": {
-    "message": "Pas de compte, pas de serveur Koala Zen."
-  },
-  "frFeat5": {
-    "message": "Finir tes réunions à l'heure"
-  },
-  "frFeat5s": {
-    "message": "Une bulle 5 min avant la fin, et le silence pendant."
-  },
-  "frFeat6": {
-    "message": "Prévenir d'un retard en un clic"
-  },
-  "frFeat6s": {
-    "message": "Le mail aux participants est déjà écrit. Tu relis, tu envoies."
   },
   "tokenShow": {
     "message": "Afficher"
@@ -1265,15 +1292,6 @@
   },
   "connexionsOldTokens": {
     "message": "Réglages des connexions restaurés. Colle de nouveaux jetons, ceux de ce fichier avaient trop de droits."
-  },
-  "frBk1": {
-    "message": "Tout reste sur cet appareil."
-  },
-  "frBk2": {
-    "message": "Tes jetons sont chiffrés, chacun limité à un usage."
-  },
-  "frBk3": {
-    "message": "Une sauvegarde ? Exporte un fichier depuis Données."
   },
   "tokenErrNotAllowed": {
     "message": "Koala Zen a refusé cet appel : il ne fait pas partie de ses usages."
