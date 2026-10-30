@@ -1371,9 +1371,6 @@
   "statsPerMonth": {
     "message": "Par mois"
   },
-  "frIkCalChange": {
-    "message": "Changer"
-  },
   "frHabitLabelMore": {
     "message": "Une habitude de plus, si tu veux"
   },
@@ -1382,5 +1379,14 @@
   },
   "frIkTitleDone": {
     "message": "Ton agenda"
+  },
+  "frCalTitle": {
+    "message": "Ton agenda"
+  },
+  "frCalDnd": {
+    "message": "Pas de rappel d'habitude en rendez-vous"
+  },
+  "frSumAgendaNoWarn": {
+    "message": "Agenda Infomaniak, sans bulle avant le début"
   }
 }

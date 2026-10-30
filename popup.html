@@ -295,7 +295,6 @@
     .fr-res-i svg { width: 12px; height: 12px; }
     .fr-res--later { color: var(--g500); }
     .fr-res-t { flex: 1 1 auto; min-width: 0; }
-    .fr-res-act { flex: 0 0 auto; align-self: center; }
     .fr-res--later .fr-res-i { background: var(--g200); color: var(--g500); }
     .fr-note { display: flex; gap: 10px; align-items: flex-start; text-align: left; font-size: 12px; line-height: 17px; color: var(--g500); }
     .fr-note svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--g400); margin-top: 1px; }
@@ -1354,20 +1353,35 @@
               </ol>
               <button type="button" class="btn-main" id="frConnect" data-i18n="tokenConnect">Se connecter</button>
             </div>
-            <div id="frCals" class="fr-card" hidden>
-              <div class="fr-lab" data-i18n="agendaPickTitle">Agendas à surveiller</div>
-              <div id="frCalList"></div>
-              <button type="button" class="btn-main" id="frCalOk" data-i18n="agendaPickOk">Surveiller</button>
-            </div>
             <div class="fr-done" id="frIkDone" hidden></div>
             <div class="nf-msg nf-msg--err" id="frIkErr" role="alert" hidden></div>
           </div>
         </section>
 
+        <!-- 2026-10-30 : ton agenda, une fois connecte,
+             symetrique de Ton mail. Les agendas surveilles, toujours listes,
+             et les rappels ; tout s'enregistre avec Commencer. -->
+        <section class="fr-step" data-step="3" data-fr="cal" hidden>
+          <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></div>
+          <div class="fr-head">
+            <h1 class="fr-t" data-i18n="frCalTitle">Ton agenda</h1>
+          </div>
+          <div class="card fr-feats fr-opts" role="group" data-i18n-aria="frCalTitle">
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="agendaWarnLabel">5 min avant le début</div></div><label class="sw"><input type="checkbox" id="frCalWarn" checked data-i18n-aria="agendaWarnLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="agendaEndWarnLabel">5 min avant la fin</div></div><label class="sw"><input type="checkbox" id="frCalEnd" checked data-i18n-aria="agendaEndWarnLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt" id="frCalDndRow"><div class="fr-opt-b"><div class="fr-ft" data-i18n="frCalDnd">Pas de rappel d'habitude en rendez-vous</div></div><label class="sw"><input type="checkbox" id="frCalDnd" checked data-i18n-aria="frCalDnd"><span class="sw-t"></span></label></div>
+          </div>
+          <div class="card fr-card" id="frCalBox" hidden>
+            <div class="fr-lab" id="frCalLab" data-i18n="agendaPickTitle">Agendas à surveiller</div>
+            <div class="fr-mails" id="frCalList" role="group" aria-labelledby="frCalLab"></div>
+          </div>
+          <div class="nf-msg nf-msg--err" id="frCalErr" role="alert" hidden></div>
+        </section>
+
         <!-- 2026-10-30 : le mail, une fois connecte. Les deux usages et
              l'adresse, avec de bons reglages par defaut ; tout s'enregistre
              avec Commencer. -->
-        <section class="fr-step" data-step="3" data-fr="mail" hidden>
+        <section class="fr-step" data-step="4" data-fr="mail" hidden>
           <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frMailTitle">Ton mail</h1>
@@ -1383,7 +1397,7 @@
           <div class="nf-msg nf-msg--err" id="frMailErr" role="alert" hidden></div>
         </section>
 
-        <section class="fr-step fr-step--fin" data-step="4" data-fr="fin" hidden>
+        <section class="fr-step fr-step--fin" data-step="5" data-fr="fin" hidden>
           <div class="fr-hero fr-hero--gr fr-hero--done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="fr-coche" d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frDoneTitle">C'est prêt</h1>

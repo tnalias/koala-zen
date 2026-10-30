@@ -7,7 +7,7 @@
 - **Quotes can be turned off.**
 - **A new welcome tour:** pick what helps you (habit reminders, Infomaniak Calendar and Mail, passing animals, characters), then only the screens you need, and preview the bubble before you start. Replay it any time, it starts from your current settings.
 - **One token for calendar and mail:** a single Infomaniak token with both scopes now works for both. Separate tokens still work. Any other scope is still refused.
-- **Mail in the welcome tour:** connect it with your calendar, pick your address, and choose between notifying attendees and counting your emails. The calendars you watch are named there too, and can be changed.
+- **Mail in the welcome tour:** connect it with your calendar, pick your address, and choose between notifying attendees and counting your emails. A "Your calendar" screen lists all your calendars, with the ones you watch ticked, and sets its reminders.
 - **Clearer settings:** focus break now sits with habit reminders, Pause says what it stops, and your habit list is called Habits. When a feature is off, its options fold away and only its switch remains.
 - **Readable monthly charts:** full dates on the axis, wider bars, and two series drawn one in front of the other.
 - **Clearer stats for each period:** totals named after the period, monthly charts titled per month, averages over the days you actually used, best streaks with their dates, and the selected period stands out in dark mode.

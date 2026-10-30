@@ -1371,9 +1371,6 @@
   "statsPerMonth": {
     "message": "Pro Monat"
   },
-  "frIkCalChange": {
-    "message": "Ändern"
-  },
   "frHabitLabelMore": {
     "message": "Noch eine Gewohnheit, wenn du willst"
   },
@@ -1382,5 +1379,14 @@
   },
   "frIkTitleDone": {
     "message": "Dein Kalender"
+  },
+  "frCalTitle": {
+    "message": "Dein Kalender"
+  },
+  "frCalDnd": {
+    "message": "Keine Gewohnheits-Erinnerung im Termin"
+  },
+  "frSumAgendaNoWarn": {
+    "message": "Infomaniak Kalender, keine Blase vor Beginn"
   }
 }

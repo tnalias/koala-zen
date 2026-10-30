@@ -1371,9 +1371,6 @@
   "statsPerMonth": {
     "message": "Per month"
   },
-  "frIkCalChange": {
-    "message": "Change"
-  },
   "frHabitLabelMore": {
     "message": "One more habit, if you like"
   },
@@ -1382,5 +1379,14 @@
   },
   "frIkTitleDone": {
     "message": "Your calendar"
+  },
+  "frCalTitle": {
+    "message": "Your calendar"
+  },
+  "frCalDnd": {
+    "message": "No habit reminder during a meeting"
+  },
+  "frSumAgendaNoWarn": {
+    "message": "Infomaniak Calendar, no bubble before the start"
   }
 }
