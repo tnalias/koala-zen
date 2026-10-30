@@ -18,7 +18,7 @@ const DEFAULTS = {
   focusMode: false,
   focusSeconds: 30,
   screenTimezone: "Europe/Zurich",
-  animMode: "always",
+  animMode: "auto",
   showCharacter: true,
   quotesEnabled: true,
   passages: true,
@@ -813,6 +813,19 @@ $("passagesTgl").addEventListener("change", paintPassagesFreqWrap);
 $("passagesRandomTgl").addEventListener("change", paintPassagesFreqWrap);
 
 /* Rappels d'habitude, eteints a part depuis le 2026-10-28 */
+// Mettre en pause dit ce qu'il arrete (2026-10-30) : les rappels d'habitude,
+// les animaux, ou les deux. Sans l'un ni l'autre, il n'y a rien a arreter et
+// la carte disparait. L'agenda, lui, n'est jamais mis en pause.
+function paintPause() {
+  const habitudes = habitsOn();
+  const animaux = $("passagesTgl").checked;
+  $("pauseCard").hidden = !habitudes && !animaux;
+  $("pauseHint").textContent = habitudes && animaux
+    ? msg("pauseHintAll", "Coupe les rappels d'habitude et les animaux. Ta série reste intacte.")
+    : (habitudes ? msg("pauseHintHabits", "Coupe les rappels d'habitude. Ta série reste intacte.") : msg("pauseHintAnimals", "Coupe les animaux de passage."));
+}
+$("passagesTgl").addEventListener("change", paintPause);
+
 // Rappels d'habitude eteints (2026-10-28) : leur rythme se grise sous
 // l'interrupteur, et tout ce qui n'existe que pour eux disparait des autres
 // cartes et onglets. La pause focus et le bouton d'essai dans Reglages, les
@@ -821,9 +834,10 @@ $("passagesRandomTgl").addEventListener("change", paintPassagesFreqWrap);
 function habitsOn() { return $("remindersTgl").checked; }
 function paintReminders() {
   const on = habitsOn();
+  // La pause focus vit dans rhythmWrap : elle se grise avec le rythme.
   $("rhythmWrap").classList.toggle("row-dim", !on);
-  $("focusCard").hidden = !on;
   $("now").hidden = !on;
+  paintPause();
   $("sportCard").hidden = !on;
   $("quotesCard").hidden = !on;
   $("persoRemindersNote").hidden = on;
@@ -1605,6 +1619,8 @@ function frStep(n) {
   $("frSkip").hidden = !ikEnAttente;
   $("frNext").hidden = derniere || ikEnAttente;
   if (derniere) frResume();
+  $("frDemoOpen").hidden = !$("frOptHabits").checked && !$("frOptAgenda").checked;
+  if (!derniere && !$("frDemo").hidden) frDemoFerme();
   const cible = document.querySelector('#firstRun .fr-step[data-fr="' + nom + '"] input:not([type=checkbox]), #firstRun .fr-step[data-fr="' + nom + '"] .btn-main');
   try { if (cible && frEtape > 0) cible.focus(); } catch (e) { /* noop */ }
 }
@@ -1615,9 +1631,9 @@ function frResume() {
   // Le nombre et son unite ne se separent jamais en fin de ligne.
   if ($("frOptHabits").checked) lignes.push({ ok: true, t: msg("frSumHabits", "Un rappel d'habitude toutes les {n}").replace("{n}", fmtMinutes(frRythme().min).replace(" ", "\u00a0")) });
   else lignes.push({ ok: false, t: msg("frSumHabitsOff", "Rappels d'habitude éteints") });
-  if (!$("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumAgendaOff", "Rappels de rendez-vous éteints") });
-  else if (frAgendaOk) lignes.push({ ok: true, t: msg("frSumAgenda", "Rappels de rendez-vous, 5 min avant") });
-  else lignes.push({ ok: false, t: msg("frSumAgendaLater", "Agenda à connecter plus tard, dans Réglages") });
+  if (!$("frOptAgenda").checked) lignes.push({ ok: false, t: msg("frSumAgendaOff", "Agenda Infomaniak éteint") });
+  else if (frAgendaOk) lignes.push({ ok: true, t: msg("frSumAgenda", "Agenda Infomaniak, une bulle 5 min avant") });
+  else lignes.push({ ok: false, t: msg("frSumAgendaLater", "Agenda Infomaniak à connecter plus tard, dans Réglages") });
   lignes.push($("frOptPassages").checked ? { ok: true, t: msg("frOptPassages", "Animaux de passage") } : { ok: false, t: msg("frSumPassagesOff", "Animaux de passage éteints") });
   lignes.push($("frOptCharacter").checked ? { ok: true, t: msg("frSumCharacter", "Le koala dans chaque bulle") } : { ok: true, t: msg("frSumCharacterOff", "Style sobre, sans personnage") });
   const host = $("frSummary"); clear(host);
@@ -1637,6 +1653,59 @@ function frResume() {
 document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
   b.addEventListener("click", () => frPeintRythme(Number(b.getAttribute("data-min"))));
 });
+// L'apercu de la bulle (2026-10-30) : le rappel d'habitude s'il est allume,
+// sinon celui de l'agenda, avec le koala ou en style sobre selon le choix.
+// Il reprend la forme et les couleurs des bulles de la page, qui restent
+// claires quel que soit le theme du popup.
+function frDemoRender() {
+  const habitudes = $("frOptHabits").checked;
+  const sobre = !$("frOptCharacter").checked;
+  const zone = $("frDemoZone"); clear(zone);
+  const b = el("div", "demo-b" + (habitudes ? "" : " demo-b--meet") + (sobre ? " demo-b--pro" : ""));
+  b.setAttribute("aria-hidden", "true");
+  const pill = el("div", "demo-pill");
+  pill.appendChild(el("i"));
+  if (habitudes) {
+    pill.appendChild(document.createTextNode(sobre ? msg("proEyebrowHabit", "Pause conseillée") : msg("bubblePillHabit", "Coucou, c'est l'heure")));
+    b.appendChild(pill);
+    b.appendChild(el("div", "demo-lead", String($("frHabit").value || $("frHabit").placeholder || "").trim()));
+    const jour = el("div", "demo-day");
+    for (let i = 0; i < 3; i++) jour.appendChild(el("i", i === 0 ? "on" : ""));
+    b.appendChild(jour);
+  } else {
+    pill.appendChild(document.createTextNode(msg("meetingSoonPill", "Rendez-vous dans {n} min").replace("{n}", "5")));
+    b.appendChild(pill);
+    b.appendChild(el("div", "demo-lead", msg("frDemoMeeting", "Point d'équipe")));
+  }
+  const act = el("div", "demo-act");
+  act.appendChild(el("span", "demo-done", habitudes ? msg("btnDone", "C'est fait") : msg("meetingJoin", "Rejoindre la visio")));
+  act.appendChild(el("span", "demo-later", habitudes ? msg("btnLater", "Plus tard") : msg("meetingClose", "Fermer")));
+  b.appendChild(act);
+  zone.appendChild(b);
+  if (!sobre) {
+    const k = el("img", "demo-k"); k.src = "images/koala-hello-still.svg"; k.alt = "";
+    zone.appendChild(k);
+  }
+  $("frDemoTitle").textContent = habitudes ? msg("frDemoTitle", "Voici ton rappel") : msg("frDemoTitleMeet", "Voici un rappel de rendez-vous");
+  $("frDemoNote").textContent = msg("frDemoNote", "Il arrive en bas à droite de la page et reste jusqu'à ta réponse.");
+}
+let frDemoDesarme = null;
+function frDemoOuvre() {
+  frDemoRender();
+  $("frDemo").hidden = false;
+  try { $("frDemoClose").focus(); } catch (e) { /* noop */ }
+  const h = (e) => { if (e.key === "Escape") { e.preventDefault(); frDemoFerme(); } };
+  document.addEventListener("keydown", h);
+  frDemoDesarme = () => document.removeEventListener("keydown", h);
+}
+function frDemoFerme() {
+  $("frDemo").hidden = true;
+  if (frDemoDesarme) { frDemoDesarme(); frDemoDesarme = null; }
+  try { $("frDemoOpen").focus(); } catch (e) { /* noop */ }
+}
+$("frDemoOpen").addEventListener("click", frDemoOuvre);
+$("frDemoClose").addEventListener("click", frDemoFerme);
+
 $("frNext").addEventListener("click", () => frStep(frEtape + 1));
 $("frBack").addEventListener("click", () => frStep(frEtape - 1));
 $("frSkip").addEventListener("click", () => frStep(frEtape + 1));
@@ -2766,6 +2835,7 @@ async function load() {
   $("passagesMeetingTgl").checked = CFG.passagesMeeting !== false;
   applyPassageFrequency(CFG.passageFrequency);
   paintPassagesFreqWrap();
+  paintPause();
   $("characterTgl").checked = CFG.showCharacter !== false;
   $("quotesTgl").checked = CFG.quotesEnabled !== false;
   paintCharacter();

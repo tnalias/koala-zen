@@ -64,7 +64,10 @@ const DEFAULTS = {
   hiddenQuotes: [],
   habitGoal: 3,
   sportIndex: 0,
-  animMode: "always",
+  // 2026-10-30 : Automatique par defaut, qui suit la reduction des
+  // animations demandee au systeme (guide Apple, Motion et Settings).
+  animMode: "auto",
+  animDefautRevu: false,
   passages: true,
   passageFrequency: "normal",
   // 2026-10-28 : trois sortes de passages, chacune a son interrupteur, sous
@@ -259,6 +262,12 @@ api.runtime.onInstalled.addListener(async (details) => {
   // une mise a jour, sinon un utilisateur de longue date le reverrait au
   // prochain numero de version.
   if (details && details.reason !== "install") base.firstRun = false;
+  // Avant le 2026-10-30, « Toujours » etait enregistre par defaut a
+  // l'installation, sans choix de l'utilisateur, et passait outre la
+  // reduction des animations du systeme. Une seule fois, a la mise a jour,
+  // il redevient Automatique ; un choix fait ensuite est respecte.
+  if (details && details.reason === "update" && !stored.animDefautRevu && base.animMode === "always") base.animMode = "auto";
+  base.animDefautRevu = true;
   await kvSet(base);
   // Le badge du rattrapage n'existe plus (2026-09-16). Une installation qui
   // en gardait un l'efface, sinon un chiffre resterait pour toujours.

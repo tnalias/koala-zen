@@ -35,8 +35,14 @@
   "pauseToday": {
     "message": "Today"
   },
-  "pauseHint": {
-    "message": "Your streak stays intact while paused."
+  "pauseHintAll": {
+    "message": "Stops habit reminders and animals. Your streak stays intact."
+  },
+  "pauseHintHabits": {
+    "message": "Stops habit reminders. Your streak stays intact."
+  },
+  "pauseHintAnimals": {
+    "message": "Stops passing animals."
   },
   "pausedUntilLabel": {
     "message": "Paused until"
@@ -114,16 +120,16 @@
     "message": "updated on"
   },
   "sportLabel": {
-    "message": "Goals"
+    "message": "Habits"
   },
   "sportMeta": {
     "message": "One at a time"
   },
   "sportPlaceholder": {
-    "message": "New goal"
+    "message": "New habit"
   },
   "sportEmpty": {
-    "message": "No goals of your own. The koala picks from the bundled goals."
+    "message": "No habits of your own. The koala picks from the bundled ones."
   },
   "sportFallback": {
     "message": "Move a little"
@@ -333,7 +339,7 @@
     "message": "Settings"
   },
   "partContent": {
-    "message": "Goals and quotes"
+    "message": "Habits and quotes"
   },
   "partStats": {
     "message": "Statistics"
@@ -1147,10 +1153,10 @@
     "message": "A break to move, at your pace."
   },
   "frOptAgenda": {
-    "message": "Meeting reminders"
+    "message": "Infomaniak Calendar"
   },
   "frOptAgendaS": {
-    "message": "Infomaniak Calendar, a bubble 5 min before."
+    "message": "A bubble 5 min before each meeting."
   },
   "frOptPassages": {
     "message": "Passing animals"
@@ -1182,6 +1188,24 @@
   "frDoneHint": {
     "message": "You can change everything in Settings, any time."
   },
+  "frDemoOpen": {
+    "message": "See what it looks like"
+  },
+  "frDemoTitle": {
+    "message": "Here is your reminder"
+  },
+  "frDemoTitleMeet": {
+    "message": "Here is a meeting reminder"
+  },
+  "frDemoNote": {
+    "message": "It shows up at the bottom right of the page and stays until you answer."
+  },
+  "frDemoClose": {
+    "message": "Close"
+  },
+  "frDemoMeeting": {
+    "message": "Team sync"
+  },
   "frSumHabits": {
     "message": "A habit reminder every {n}"
   },
@@ -1189,13 +1213,13 @@
     "message": "Habit reminders off"
   },
   "frSumAgenda": {
-    "message": "Meeting reminders, 5 min before"
+    "message": "Infomaniak Calendar, a bubble 5 min before"
   },
   "frSumAgendaOff": {
-    "message": "Meeting reminders off"
+    "message": "Infomaniak Calendar off"
   },
   "frSumAgendaLater": {
-    "message": "Calendar to connect later, in Settings"
+    "message": "Infomaniak Calendar to connect later, in Settings"
   },
   "frSumPassagesOff": {
     "message": "Passing animals off"

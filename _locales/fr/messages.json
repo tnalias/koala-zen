@@ -35,8 +35,14 @@
   "pauseToday": {
     "message": "Aujourd'hui"
   },
-  "pauseHint": {
-    "message": "Ta série reste intacte pendant la pause."
+  "pauseHintAll": {
+    "message": "Coupe les rappels d'habitude et les animaux. Ta série reste intacte."
+  },
+  "pauseHintHabits": {
+    "message": "Coupe les rappels d'habitude. Ta série reste intacte."
+  },
+  "pauseHintAnimals": {
+    "message": "Coupe les animaux de passage."
   },
   "pausedUntilLabel": {
     "message": "En pause jusqu'à"
@@ -114,16 +120,16 @@
     "message": "mis à jour le"
   },
   "sportLabel": {
-    "message": "Objectifs"
+    "message": "Habitudes"
   },
   "sportMeta": {
-    "message": "Un seul à la fois"
+    "message": "Une seule à la fois"
   },
   "sportPlaceholder": {
-    "message": "Nouvel objectif"
+    "message": "Nouvelle habitude"
   },
   "sportEmpty": {
-    "message": "Aucun objectif à toi. Le koala pioche dans les objectifs fournis."
+    "message": "Aucune habitude à toi. Le koala pioche dans les habitudes fournies."
   },
   "sportFallback": {
     "message": "Bouge un peu"
@@ -333,7 +339,7 @@
     "message": "Réglages"
   },
   "partContent": {
-    "message": "Objectifs et citations"
+    "message": "Habitudes et citations"
   },
   "partStats": {
     "message": "Statistiques"
@@ -790,7 +796,7 @@
     "message": "Une pensée pour souffler, après chaque habitude faite."
   },
   "persoRemindersNote": {
-    "message": "Les objectifs et les citations sont masqués tant que les rappels d'habitude sont éteints."
+    "message": "Les habitudes et les citations sont masquées tant que les rappels d'habitude sont éteints."
   },
   "statsRemindersNote": {
     "message": "Les habitudes et ta série sont masquées tant que les rappels d'habitude sont éteints."
@@ -1147,10 +1153,10 @@
     "message": "Une pause pour bouger, à ton rythme."
   },
   "frOptAgenda": {
-    "message": "Rappels de rendez-vous"
+    "message": "Agenda Infomaniak"
   },
   "frOptAgendaS": {
-    "message": "Agenda Infomaniak, une bulle 5 min avant."
+    "message": "Une bulle 5 min avant chaque rendez-vous."
   },
   "frOptPassages": {
     "message": "Animaux de passage"
@@ -1182,6 +1188,24 @@
   "frDoneHint": {
     "message": "Tout se change dans Réglages, à tout moment."
   },
+  "frDemoOpen": {
+    "message": "Voir à quoi ça ressemble"
+  },
+  "frDemoTitle": {
+    "message": "Voici ton rappel"
+  },
+  "frDemoTitleMeet": {
+    "message": "Voici un rappel de rendez-vous"
+  },
+  "frDemoNote": {
+    "message": "Il arrive en bas à droite de la page et reste jusqu'à ta réponse."
+  },
+  "frDemoClose": {
+    "message": "Fermer"
+  },
+  "frDemoMeeting": {
+    "message": "Point d'équipe"
+  },
   "frSumHabits": {
     "message": "Un rappel d'habitude toutes les {n}"
   },
@@ -1189,13 +1213,13 @@
     "message": "Rappels d'habitude éteints"
   },
   "frSumAgenda": {
-    "message": "Rappels de rendez-vous, 5 min avant"
+    "message": "Agenda Infomaniak, une bulle 5 min avant"
   },
   "frSumAgendaOff": {
-    "message": "Rappels de rendez-vous éteints"
+    "message": "Agenda Infomaniak éteint"
   },
   "frSumAgendaLater": {
-    "message": "Agenda à connecter plus tard, dans Réglages"
+    "message": "Agenda Infomaniak à connecter plus tard, dans Réglages"
   },
   "frSumPassagesOff": {
     "message": "Animaux de passage éteints"

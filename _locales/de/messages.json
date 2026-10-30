@@ -35,8 +35,14 @@
   "pauseToday": {
     "message": "Heute"
   },
-  "pauseHint": {
-    "message": "Deine Serie bleibt während der Pause erhalten."
+  "pauseHintAll": {
+    "message": "Stoppt Gewohnheits-Erinnerungen und Tiere. Deine Serie bleibt erhalten."
+  },
+  "pauseHintHabits": {
+    "message": "Stoppt Gewohnheits-Erinnerungen. Deine Serie bleibt erhalten."
+  },
+  "pauseHintAnimals": {
+    "message": "Stoppt die Tiere auf Durchreise."
   },
   "pausedUntilLabel": {
     "message": "Pausiert bis"
@@ -114,16 +120,16 @@
     "message": "aktualisiert am"
   },
   "sportLabel": {
-    "message": "Ziele"
+    "message": "Gewohnheiten"
   },
   "sportMeta": {
-    "message": "Immer nur eines"
+    "message": "Immer nur eine"
   },
   "sportPlaceholder": {
-    "message": "Neues Ziel"
+    "message": "Neue Gewohnheit"
   },
   "sportEmpty": {
-    "message": "Keine eigenen Ziele. Der Koala wählt aus den mitgelieferten."
+    "message": "Keine eigenen Gewohnheiten. Der Koala wählt aus den mitgelieferten."
   },
   "sportFallback": {
     "message": "Beweg dich kurz"
@@ -333,7 +339,7 @@
     "message": "Einstellungen"
   },
   "partContent": {
-    "message": "Ziele und Zitate"
+    "message": "Gewohnheiten und Zitate"
   },
   "partStats": {
     "message": "Statistik"
@@ -790,7 +796,7 @@
     "message": "Ein kurzer Gedanke zum Durchatmen, nach jeder erledigten Gewohnheit."
   },
   "persoRemindersNote": {
-    "message": "Ziele und Zitate sind ausgeblendet, solange die Gewohnheits-Erinnerungen aus sind."
+    "message": "Gewohnheiten und Zitate sind ausgeblendet, solange die Gewohnheits-Erinnerungen aus sind."
   },
   "statsRemindersNote": {
     "message": "Gewohnheiten und deine Serie sind ausgeblendet, solange die Gewohnheits-Erinnerungen aus sind."
@@ -1147,10 +1153,10 @@
     "message": "Eine Pause zum Bewegen, in deinem Rhythmus."
   },
   "frOptAgenda": {
-    "message": "Meeting-Erinnerungen"
+    "message": "Infomaniak-Kalender"
   },
   "frOptAgendaS": {
-    "message": "Infomaniak Kalender, eine Blase 5 Min vorher."
+    "message": "Eine Blase 5 Min vor jedem Termin."
   },
   "frOptPassages": {
     "message": "Tiere auf Durchreise"
@@ -1182,6 +1188,24 @@
   "frDoneHint": {
     "message": "Alles lässt sich jederzeit in den Einstellungen ändern."
   },
+  "frDemoOpen": {
+    "message": "So sieht es aus"
+  },
+  "frDemoTitle": {
+    "message": "Das ist deine Erinnerung"
+  },
+  "frDemoTitleMeet": {
+    "message": "So sieht eine Meeting-Erinnerung aus"
+  },
+  "frDemoNote": {
+    "message": "Sie erscheint unten rechts auf der Seite und bleibt, bis du antwortest."
+  },
+  "frDemoClose": {
+    "message": "Schliessen"
+  },
+  "frDemoMeeting": {
+    "message": "Team-Meeting"
+  },
   "frSumHabits": {
     "message": "Eine Gewohnheits-Erinnerung alle {n}"
   },
@@ -1189,13 +1213,13 @@
     "message": "Gewohnheits-Erinnerungen aus"
   },
   "frSumAgenda": {
-    "message": "Meeting-Erinnerungen, 5 Min vorher"
+    "message": "Infomaniak-Kalender, eine Blase 5 Min vorher"
   },
   "frSumAgendaOff": {
-    "message": "Meeting-Erinnerungen aus"
+    "message": "Infomaniak-Kalender aus"
   },
   "frSumAgendaLater": {
-    "message": "Kalender später in den Einstellungen verbinden"
+    "message": "Infomaniak-Kalender später in den Einstellungen verbinden"
   },
   "frSumPassagesOff": {
     "message": "Tiere auf Durchreise aus"

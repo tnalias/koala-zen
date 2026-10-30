@@ -5,7 +5,9 @@
 ### New
 - **Habit reminders can be turned off** with one switch at the top of their card: keep only your calendar reminders. Everything that only serves them (focus break, habits, quotes, habit stats and streak) is then hidden, with a note to turn them back on.
 - **Quotes can be turned off.**
-- **A new welcome tour:** pick what helps you (habit reminders, meeting reminders, passing animals, characters), then only the screens you need. Replay it any time, it starts from your current settings.
+- **A new welcome tour:** pick what helps you (habit reminders, Infomaniak Calendar, passing animals, characters), then only the screens you need, and preview the bubble before you start. Replay it any time, it starts from your current settings.
+- **Clearer settings:** focus break now sits with habit reminders, Pause says what it stops, and your habit list is called Habits.
+- **Accessibility:** switches show keyboard focus and are easier to see, small links and buttons are easier to hit, and animations now follow your system's reduced-motion setting by default.
 - **Professional style:** turn characters off for neutral bubbles: a discreet label, ink text, a simple confirmation, no quotes and no celebration.
 - **One bubble at a time, and it follows you:** switch tabs or windows and the waiting reminder moves with you, instead of piling up in every window.
 - **Choose which cats drop by:** during the day, in the evening from 5 pm, or when a video call starts. Each one has its own switch.
