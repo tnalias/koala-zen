@@ -334,12 +334,34 @@ async function ongletEnVisio() {
   } catch (e) { return false; }
 }
 
+// L'anneau de l'en-tete : la part du rythme deja ecoulee avant la prochaine
+// visite. null le cache (rappels eteints, pause, visio, rendez-vous).
+const RING_LONGUEUR = 116.24;
+// Un <svg> n'a pas de propriete hidden : on passe par l'attribut.
+function paintRing(part) {
+  const ring = $("headRing");
+  if (!ring) return;
+  if (part === null || !isFinite(part)) { ring.setAttribute("hidden", ""); return; }
+  const p = Math.max(0, Math.min(1, part));
+  const fill = $("headRingFill");
+  const premier = ring.hasAttribute("hidden");
+  ring.removeAttribute("hidden");
+  const cible = String(Math.round(RING_LONGUEUR * (1 - p) * 100) / 100);
+  if (premier && !REDUCE_MOTION) {
+    // Il part de vide, puis se remplit jusqu'a sa valeur.
+    fill.style.strokeDashoffset = String(RING_LONGUEUR);
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.strokeDashoffset = cible; }));
+  } else {
+    fill.style.strokeDashoffset = cible;
+  }
+}
 async function refreshNextVisit() {
   const node = $("nextVisit");
   if (!node) return;
   // Module B. La visio passe avant tout le reste, y compris la pause.
   if (await ongletEnVisio()) {
     node.textContent = msg("statusCall", "En silence, visio en cours");
+    paintRing(null);
     return;
   }
   // Un rendez-vous de l'agenda en cours vaut une visio, avant la pause.
@@ -347,21 +369,26 @@ async function refreshNextVisit() {
   const ag = (await getLocal(["agendaEnabled"])).agendaEnabled ? await sendR("kz-agenda-status") : null;
   if (ag && ag.enabled && Number(ag.inUntil) > Date.now()) {
     node.textContent = msg("statusMeeting", "Rendez-vous en cours, rappels en pause");
+    paintRing(null);
     return;
   }
   const r = await getLocal(["pausedUntil", "remindersEnabled"]);
   if (r.remindersEnabled === false) {
     node.textContent = msg("statusRemindersOff", "Rappels d'habitude éteints");
+    paintRing(null);
     return;
   }
   const until = Number(r.pausedUntil) || 0;
   if (until > Date.now()) {
     const t = new Date(until);
     node.textContent = msg("pausedUntilLabel", "En pause jusqu'à") + " " + pad2(t.getHours()) + ":" + pad2(t.getMinutes());
+    paintRing(null);
     return;
   }
   const al = await getAlarm(ALARM);
-  if (!al || !al.scheduledTime) { node.textContent = msg("nextVisitSoon", "Prochaine visite bientôt"); return; }
+  if (!al || !al.scheduledTime) { node.textContent = msg("nextVisitSoon", "Prochaine visite bientôt"); paintRing(null); return; }
+  const periode = (Number(al.periodInMinutes) || currentInterval()) * 60000;
+  paintRing(1 - (al.scheduledTime - Date.now()) / periode);
   const mins = Math.round((al.scheduledTime - Date.now()) / 60000);
   if (mins <= 0) { node.textContent = msg("nextVisitNow", "Prochaine visite d'un instant à l'autre"); return; }
   const key = hasHistory() ? "nextVisitIn" : "firstVisitIn";
@@ -837,6 +864,8 @@ function paintReminders() {
   // La pause focus vit dans rhythmWrap : elle se grise avec le rythme.
   $("rhythmWrap").classList.toggle("row-dim", !on);
   $("now").hidden = !on;
+  // Sans rappels, plus de visite a attendre : l'anneau part tout de suite.
+  if (!on) paintRing(null);
   paintPause();
   $("sportCard").hidden = !on;
   $("quotesCard").hidden = !on;
@@ -1971,7 +2000,7 @@ function drawColumns(host, buckets, series, maxVal, targets) {
       const bar = el("div", "col-b " + (v > 0 ? s.cls : "col-b--zero"));
       bar.style.height = (v > 0 ? Math.max(3, Math.round((v / max) * PLOT_H)) : 2) + "px";
       bar.title = s.label(v);
-      if (v > 0 && !REDUCE_MOTION) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 18 + k * 8) + "ms"; targets.push(bar); }
+      if (v > 0 && !REDUCE_MOTION && !barresMontees) { bar.style.transform = "scaleY(0)"; bar.style.transitionDelay = (i * 18 + k * 8) + "ms"; targets.push(bar); }
       col.appendChild(bar);
     });
     host.appendChild(col);
@@ -1979,6 +2008,7 @@ function drawColumns(host, buckets, series, maxVal, targets) {
 }
 function maxDe(buckets, fns) { return Math.max.apply(null, [0].concat(buckets.map((b) => Math.max.apply(null, fns.map((f) => Number(f(b)) || 0))))); }
 
+let barresMontees = false;
 function renderTrend(period, range) {
   // Une seule journee, un graphe par jour n'aurait qu'une colonne.
   const single = (period === "day");
@@ -2046,6 +2076,10 @@ function renderTrend(period, range) {
   if (!REDUCE_MOTION && targets.length) {
     requestAnimationFrame(() => requestAnimationFrame(() => targets.forEach((n) => { n.style.transform = "scaleY(1)"; })));
   }
+  // 2026-10-30 : les barres montent une seule fois, la premiere fois qu'elles
+  // apparaissent (la vue Jour n'en montre pas). Changer de periode ensuite les
+  // montre aussitot (guide Apple : pas de mouvement sur ce qu'on refait souvent).
+  if (targets.length) barresMontees = true;
 }
 function fillAxis(host, buckets) {
   clear(host);
@@ -2947,4 +2981,10 @@ applyI18n();
 fillHeadMark();
 setVersionLine();
 showTab("settings");
-load();
+// Une fois le popup rempli, les fondus des options s'allument (kz-pret) : ils
+// ne jouent qu'aux vrais changements, jamais a l'ouverture. L'en-tete et son
+// anneau se tiennent a jour tant que le popup reste ouvert.
+Promise.resolve(load()).then(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add("kz-pret")));
+}, () => {});
+setInterval(() => { refreshNextVisit().catch(() => {}); }, 30000);
