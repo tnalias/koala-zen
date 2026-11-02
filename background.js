@@ -1307,7 +1307,8 @@ function verdictSonde(extras, permis) {
 // ===========================================================================
 
 const ALARM_AGENDA_WARN = "kz-agenda-warn";
-// 2026-09-21 : seconde alarme, cinq minutes avant la FIN d'un rendez-vous,
+// 2026-09-21 : seconde alarme, avant la FIN d'un rendez-vous (six minutes
+// depuis le 2026-11-02, voir AGENDA_END_BEFORE_MS),
 // pour tenir la duree prevue. Meme mecanique que le rappel du debut, sa
 // propre liste des fins deja annoncees, sa propre couleur cote page.
 const ALARM_AGENDA_END = "kz-agenda-end";
@@ -1317,7 +1318,20 @@ const AGENDA_WINDOW_AFTER_MS = 36 * 60 * 60 * 1000;
 // 2026-10-29 : cinq minutes avant le debut, le temps de finir ce qu'on fait et de rejoindre.
 const AGENDA_WARN_BEFORE_MS = 5 * 60 * 1000;
 const AGENDA_MAX_PAGES = 10;
-const AGENDA_END_BEFORE_MS = 5 * 60 * 1000;
+// 2026-11-02 : six minutes avant la fin, une de plus que le rappel du debut.
+// Deux rendez-vous qui s'enchainent (13:00-13:30 puis 13:30) faisaient
+// sonner la fin du premier et le debut du second a la meme seconde, et la
+// fin prenait la place du debut : un rappel de debut a ete perdu. Desormais
+// la fin passe d'abord, le debut une minute plus tard prend la place.
+const AGENDA_END_BEFORE_MS = 6 * 60 * 1000;
+// Les rappels d'agenda passent un par un, jamais en meme temps : deux
+// alarmes simultanees lisaient la meme bulle ouverte et s'ecrasaient.
+let agendaFile = Promise.resolve();
+function agendaNotifyEnFile(m, nowMs, kind) {
+  const p = agendaFile.then(() => agendaNotify(m, nowMs, kind));
+  agendaFile = p.catch(() => {});
+  return p;
+}
 // 2026-09-23 : les rappels de debut et de fin ne se posent que sur une machine
 // eveillee. Ecran verrouille, ou aucune activite depuis dix minutes (ecran
 // endormi, poste quitte) : rien ne s'affiche, et on reessaie une minute plus
@@ -1716,7 +1730,7 @@ async function agendaWarnFire() {
   let deja = Array.isArray(r.agendaWarned) ? r.agendaWarned : [];
   const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_WARN_BEFORE_MS <= now + 15000 && deja.indexOf(agendaKey(m)) < 0);
   for (let i = 0; i < dus.length; i++) {
-    await agendaNotify(dus[i], now);
+    await agendaNotifyEnFile(dus[i], now);
     deja.push(agendaKey(dus[i]));
   }
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
@@ -1760,7 +1774,7 @@ async function agendaEndFire() {
   // Une fin deja passee n'est plus annoncee : prevenir apres coup ne sert a rien.
   const dus = (cache.events || []).filter((m) => m.end > m.start && m.end > now && m.end - AGENDA_END_BEFORE_MS <= now + 15000 && deja.indexOf(agendaKey(m)) < 0);
   for (let i = 0; i < dus.length; i++) {
-    await agendaNotify(dus[i], now, "end");
+    await agendaNotifyEnFile(dus[i], now, "end");
     deja.push(agendaKey(dus[i]));
   }
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
@@ -1797,6 +1811,13 @@ async function agendaNotify(m, nowMs, kind) {
   // bulle d'agenda ouverte cede la place a la nouvelle, avec le rappel
   // qu'elle gardait de cote.
   const ouverte = await bubbleOpen();
+  // 2026-11-02 : un rappel de fin ne remplace jamais un rappel de debut
+  // encore ouvert, dont le rendez-vous n'a pas commence : le debut compte
+  // plus. La fin part alors en notification du systeme, jamais en silence.
+  if (fin && ouverte && ouverte.payload && ouverte.payload.type === "kz-meeting-soon" && Number(ouverte.payload.start) > nowMs) {
+    await agendaSystemNotification(m, minutes, kind);
+    return "notification";
+  }
   const peutAfficher = !!tab && !enVisio;
   let garee = ouverte ? (ouverte.parked || null) : null;
   if (ouverte && peutAfficher) {

@@ -907,7 +907,7 @@
     "message": "Pour ne plus rater le début. Bulle bleue, à fermer toi-même."
   },
   "agendaEndWarnLabel": {
-    "message": "5 min avant la fin"
+    "message": "6 min avant la fin"
   },
   "agendaEndWarnHint": {
     "message": "Pour finir à l'heure, même seul. Bulle ambre."

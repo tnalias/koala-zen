@@ -907,7 +907,7 @@
     "message": "Never miss the start. Blue bubble, stays until you close it."
   },
   "agendaEndWarnLabel": {
-    "message": "5 min before the end"
+    "message": "6 min before the end"
   },
   "agendaEndWarnHint": {
     "message": "Finish on time, even solo events. Amber bubble."

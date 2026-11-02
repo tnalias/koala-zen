@@ -21,6 +21,7 @@
 
 ### Fixed
 - **Meeting reminders now come 5 minutes before the start**, instead of 3.
+- **Back-to-back meetings no longer lose their start reminder.** When one meeting ended as the next began, both reminders rang at the same second and the end one could replace the start one. The end reminder now comes 6 minutes before the end, and never replaces the reminder of a meeting that has not started yet: it then shows as a system notification.
 - The calendar reminder before the start now covers every timed event, not only meetings with attendees, including events with no duration and long calendars.
 - A meeting reminder now takes priority over a waiting habit reminder, which comes back once you close it.
 - Clicking Close in a bubble no longer closes a window open on the page, such as a Trello card.

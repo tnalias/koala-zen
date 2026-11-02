@@ -9,7 +9,7 @@
 **A friendly koala for your workday.** It reminds you to take small breaks, keeps you on time for your meetings, and shows you where your time goes. For **Chrome and Firefox**, free and open source.
 
 - **A gentle nudge, never a guilt trip.** Every 5 to 240 minutes, a koala suggests one small thing: stand up, drink some water, look away from the screen. Never during a video call.
-- **Never miss a meeting.** A bubble 5 minutes before, with the video link one click away, and a heads-up 5 minutes before the end.
+- **Never miss a meeting.** A bubble 5 minutes before, with the video link one click away, and a heads-up 6 minutes before the end.
 - **Running late? Let them know in one click.** A ready-made email to the attendees. You reread it, you send it.
 - **See where your time goes.** Habits, screen time, meetings and emails, day by day.
 - **Make the koala yours.** Your own images or animated GIFs, your own habits and quotes. Or hide it for a sober, professional style.

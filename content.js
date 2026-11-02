@@ -1225,7 +1225,8 @@ if (globalThis.__kzLoaded !== true) {
     // 2026-09-21 : deux sortes de bulles d'agenda, meme squelette.
     //  - "soon", bleue, cinq minutes avant le debut, bouton Rejoindre s'il y a
     //    un lien ;
-    //  - "end", ambre, cinq minutes avant la fin, pour tenir la duree prevue.
+    //  - "end", ambre, six minutes avant la fin (2026-11-02), pour tenir la
+    //    duree prevue.
     // Toutes deux portent un compte a rebours qui tourne a la seconde et un
     // bouton Fermer : rien ne les efface tant qu'on n'a pas ferme, la
     // demande est explicite. Passe l'echeance, le compte continue en
