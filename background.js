@@ -1320,11 +1320,11 @@ const ALARM_AGENDA_WARN = "kz-agenda-warn";
 // pour tenir la duree prevue. Meme mecanique que le rappel du debut, sa
 // propre liste des fins deja annoncees, sa propre couleur cote page.
 const ALARM_AGENDA_END = "kz-agenda-end";
-// 2026-11-03 : un dernier avertissement, rouge, quinze secondes avant le
+// 2026-11-03 : un dernier avertissement, rouge, vingt secondes avant le
 // debut, meme si la bulle des cinq minutes a ete fermee. Il s'efface seul
 // trois secondes avant le debut. Lie a l'interrupteur du rappel du debut.
 const ALARM_AGENDA_LAST = "kz-agenda-last";
-const AGENDA_LAST_BEFORE_MS = 15 * 1000;
+const AGENDA_LAST_BEFORE_MS = 20 * 1000;
 const AGENDA_LAST_MIN_MS = 4 * 1000;
 const AGENDA_REFRESH_MS = 5 * 60 * 1000;
 const AGENDA_WINDOW_BEFORE_MS = 12 * 60 * 60 * 1000;
@@ -1815,7 +1815,7 @@ async function agendaWarnFire() {
   await agendaScheduleWarn(cache, now);
 }
 
-// Le dernier avertissement : le prochain debut pas encore averti, a quinze
+// Le dernier avertissement : le prochain debut pas encore averti, a vingt
 // secondes. Un debut a moins de quatre secondes n'est plus averti.
 async function agendaScheduleLast(cache, nowMs) {
   try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }

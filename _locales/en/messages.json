@@ -904,7 +904,7 @@
     "message": "5 min before the start"
   },
   "agendaWarnHint": {
-    "message": "Never miss the start. Blue bubble, then a red alert at 15 s."
+    "message": "Never miss the start. Blue bubble, then a red alert at 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min before the end"

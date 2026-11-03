@@ -904,7 +904,7 @@
     "message": "5 min avant le début"
   },
   "agendaWarnHint": {
-    "message": "Pour ne plus rater le début. Bulle bleue, puis alerte rouge à 15 s."
+    "message": "Pour ne plus rater le début. Bulle bleue, puis alerte rouge à 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min avant la fin"

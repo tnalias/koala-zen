@@ -904,7 +904,7 @@
     "message": "5 Min vor Beginn"
   },
   "agendaWarnHint": {
-    "message": "Nie den Beginn verpassen. Blaue Blase, dann rote Warnung bei 15 s."
+    "message": "Nie den Beginn verpassen. Blaue Blase, dann rote Warnung bei 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 Min vor dem Ende"

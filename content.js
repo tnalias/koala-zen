@@ -224,13 +224,15 @@ if (globalThis.__kzLoaded !== true) {
 .kz-btn--notify:hover { color: #1B4A7A; }
 .kz-btn--notify[disabled] { color: #666666; cursor: default; }
 .kz-hide { display: none !important; }
-/* 2026-11-03 : le dernier avertissement, quinze secondes avant le debut. Hors
-   de la bulle, en haut au centre, rouge plein. Il part seul trois secondes
-   avant le debut : il se contracte, monte et se floute. */
-.kz-last { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #A82722; color: #FFFFFF; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 19px; box-shadow: 0 8px 24px rgba(16,24,40,0.24); cursor: pointer; pointer-events: auto; animation: kzLastIn 320ms cubic-bezier(0.2,0,0,1) both; }
-.kz-last svg { display: block; flex: 0 0 auto; width: 16px; height: 16px; }
-.kz-last-t { font-weight: 600; min-width: 0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.kz-last-c { flex: 0 0 auto; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 2026-11-03 : le dernier avertissement, vingt secondes avant le debut. Hors
+   de la bulle, en haut au centre, rouge plein, en grand : le titre puis le
+   compte. Il part seul trois secondes avant le debut : il se contracte, monte
+   et se floute. */
+.kz-last { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); min-width: min(400px, calc(100vw - 32px)); max-width: calc(100vw - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 16px; padding: 20px 32px 20px 24px; border-radius: 18px; background: #A82722; color: #FFFFFF; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; box-shadow: 0 10px 28px rgba(16,24,40,0.28); cursor: pointer; pointer-events: auto; animation: kzLastIn 320ms cubic-bezier(0.2,0,0,1) both; }
+.kz-last svg { display: block; flex: 0 0 auto; width: 40px; height: 40px; }
+.kz-last-b { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kz-last-t { font-size: 24px; line-height: 28px; font-weight: 600; max-width: 560px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kz-last-c { font-size: 20px; line-height: 26px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .kz-last--pulse .kz-last-c { animation: kzUrgent 1s ease-in-out infinite; }
 .kz-last--out { animation: kzLastOut 600ms cubic-bezier(0.4,0,1,1) both; }
 @keyframes kzLastIn { from { opacity: 0; transform: translate(-50%, -16px) scale(.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
@@ -1553,8 +1555,11 @@ if (globalThis.__kzLoaded !== true) {
       titre.textContent = String(info.title || "").trim() || kzMsg("meetingUntitled", "Sans titre");
       const compte = document.createElement("span");
       compte.className = "kz-last-c";
-      w.appendChild(titre);
-      w.appendChild(compte);
+      const corps = document.createElement("div");
+      corps.className = "kz-last-b";
+      corps.appendChild(titre);
+      corps.appendChild(compte);
+      w.appendChild(corps);
       let parti = false;
       let minuteur = null;
       const part = () => {
