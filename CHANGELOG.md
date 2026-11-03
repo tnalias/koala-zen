@@ -17,7 +17,8 @@
 - **Professional style:** turn characters off for neutral bubbles: a discreet label, ink text, a simple confirmation, no quotes and no celebration.
 - **One bubble at a time, and it follows you:** switch tabs or windows and the waiting reminder moves with you, instead of piling up in every window.
 - **Choose which cats drop by:** during the day, in the evening from 5 pm, or when a video call starts. Each one has its own switch.
-- **A last call 20 seconds before a meeting:** a large red banner at the top of the page counts down, even if you closed the 5-minute bubble, and slips away on its own 3 seconds before the start.
+- **A last call 20 seconds before a meeting:** a large red banner at the top of the page counts down, even if you closed the 5-minute bubble, and slips away on its own 3 seconds before the start. A 5-minute bubble you forgot to close leaves when it appears.
+- **The room is shown** in meeting reminders and in the red last call: the booked room, or the location you typed.
 - **The end bubble turns red** for the last 2 minutes of a meeting.
 - **"Didn't happen"** in the end bubble takes the meeting out of your stats, with Undo. Telling attendees you will be absent does the same. Either way, the koala no longer stays quiet for that meeting.
 - These new switches apply as soon as you click them.

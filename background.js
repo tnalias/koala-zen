@@ -1130,7 +1130,7 @@ async function securityMigrateV3() {
 // Les stats (nombres seulement) restent dans storage.local, le popup les lit
 // directement.
 // ===========================================================================
-const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
+const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "agendaRooms", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
 function estCoffre(k) { return VAULT_KEYS.indexOf(k) >= 0; }
 async function vaultRead(cles) {
   const out = {};
@@ -1190,6 +1190,8 @@ const IK_ALLOWED = [
   { base: IK_API, method: "GET", path: /^\/1\/calendar\/pim\/calendar$/ },
   { base: IK_API, method: "GET", path: /^\/1\/calendar\/pim\/event$/ },
   { base: IK_API, method: "GET", path: /^\/1\/calendar\/pim\/event\/[A-Za-z0-9_.%-]+$/ },
+  // Les noms des salles reservables, en lecture seule (2026-11-03).
+  { base: IK_API, method: "GET", path: /^\/1\/calendar\/pim\/bookable-resources\/all$/ },
   { base: IK_API, method: "GET", path: /^\/2\/profile$/ },
   { base: IK_API, method: "GET", path: /^\/1\/mail_hostings\/\d+\/mailboxes\/[A-Za-z0-9_.%-]+\/signatures$/ },
   // Sonde de perimetre seulement : jamais un autre appel kDrive.
@@ -1502,7 +1504,43 @@ function agendaIsTimed(e, me) {
 
 function agendaKey(m) { return String(m.id) + "@" + String(m.start); }
 
-function agendaNormalize(e, me) {
+// 2026-11-03 : la salle du rendez-vous, dans les rappels et l'alerte. Un
+// rendez-vous porte l'identifiant de sa salle reservee (bookable_resource_id),
+// dont le nom vient de la liste des salles (circuit du serveur MCP agenda
+// officiel). Sans salle reservee, le lieu saisi a la main, sauf un lien.
+const AGENDA_ROOMS_MS = 24 * 60 * 60 * 1000;
+const AGENDA_ROOM_MAX = 80;
+function agendaRoom(e, rooms) {
+  const id = e && e.bookable_resource_id ? String(e.bookable_resource_id) : "";
+  const nom = id && rooms && typeof rooms[id] === "string" ? rooms[id].trim() : "";
+  if (nom) return nom.slice(0, AGENDA_ROOM_MAX);
+  const lieu = (e && typeof e.location === "string") ? e.location.replace(/\s+/g, " ").trim() : "";
+  if (!lieu || /:\/\//.test(lieu)) return "";
+  return lieu.slice(0, AGENDA_ROOM_MAX);
+}
+// Les noms des salles, gardes dans le coffre. Relus une fois par jour, ou
+// quand une salle encore inconnue apparait, jamais plus d'une fois par
+// rafraichissement. Un refus (perimetre, reseau) laisse le lieu saisi.
+async function agendaRoomNames(token, events, nowMs) {
+  const ids = (Array.isArray(events) ? events : []).map((e) => (e && e.bookable_resource_id ? String(e.bookable_resource_id) : "")).filter(Boolean);
+  const r = await kvGet(["agendaRooms"]);
+  const memo = (r.agendaRooms && typeof r.agendaRooms === "object") ? r.agendaRooms : {};
+  const noms = (memo.names && typeof memo.names === "object") ? memo.names : {};
+  if (!ids.length) return noms;
+  const age = nowMs - (Number(memo.at) || 0);
+  const inconnue = ids.some((id) => !(id in noms));
+  if (!(age >= AGENDA_ROOMS_MS || (inconnue && age >= AGENDA_REFRESH_MS))) return noms;
+  const res = await ikFetch(token, "/1/calendar/pim/bookable-resources/all");
+  if (!res.ok) { await kvSet({ agendaRooms: { at: nowMs, names: noms } }); return noms; }
+  const neufs = {};
+  (Array.isArray(res.data) ? res.data : []).forEach((x) => {
+    if (x && x.uuid && typeof x.name === "string" && x.name.trim()) neufs[String(x.uuid)] = x.name.trim().slice(0, AGENDA_ROOM_MAX);
+  });
+  await kvSet({ agendaRooms: { at: nowMs, names: neufs } });
+  return neufs;
+}
+
+function agendaNormalize(e, me, rooms) {
   let url = String(e.meet_room_url || "");
   if (!url && Array.isArray(e.external_meet_room_urls) && e.external_meet_room_urls.length) url = String(e.external_meet_room_urls[0] || "");
   if (!/^https?:\/\//i.test(url)) url = "";
@@ -1516,6 +1554,7 @@ function agendaNormalize(e, me) {
     end: Math.max(start, agendaParseTs(e.end) || start),
     url: url,
     people: Array.isArray(e.attendees) ? e.attendees.length : 0,
+    room: agendaRoom(e, rooms),
     meeting: agendaIsMeeting(e, me || {})
   };
 }
@@ -1523,11 +1562,11 @@ function agendaNormalize(e, me) {
 // Le cache garde tous les evenements a horaire, chacun avec son marqueur
 // `meeting`. Un cache d'avant le 2026-09-21 n'a pas ce marqueur : ses
 // entrees etaient toutes des reunions, elles sont lues comme telles.
-function agendaEventsFrom(events, me) {
+function agendaEventsFrom(events, me, rooms) {
   const vus = {};
   return (Array.isArray(events) ? events : [])
     .filter((e) => agendaIsTimed(e, me))
-    .map((e) => agendaNormalize(e, me))
+    .map((e) => agendaNormalize(e, me, rooms))
     .filter((m) => m.start && m.end >= m.start)
     // Le meme evenement present dans deux agendas surveilles ne compte qu'une fois.
     .filter((m) => { const k = agendaKey(m); if (vus[k]) return false; vus[k] = true; return true; })
@@ -1720,7 +1759,8 @@ async function agendaRefresh(opts) {
   const ev = await agendaFetchAll(token, agendaIds(r), now - AGENDA_WINDOW_BEFORE_MS, now + AGENDA_WINDOW_AFTER_MS);
   if (!ev.ok) { await agendaRememberError(ev.error); return ev; }
   const me = { userId: Number(r.agendaMyUserId) || 0, email: String(r.agendaMyEmail || "").toLowerCase() };
-  const cache = agendaMarkSkipped({ at: now, events: agendaEventsFrom(ev.events, me) }, (await kvGet(["meetingSkipped"])).meetingSkipped);
+  const salles = await agendaRoomNames(token, ev.events, now);
+  const cache = agendaMarkSkipped({ at: now, events: agendaEventsFrom(ev.events, me, salles) }, (await kvGet(["meetingSkipped"])).meetingSkipped);
   await kvSet({ agendaCache: cache, agendaLastError: "" });
   await agendaUpdateState(cache, now);
   await agendaAccrueMeetings(cache, now);
@@ -1851,10 +1891,13 @@ async function agendaLastFire() {
 // capable de l'afficher, une notification du systeme, retiree a trois
 // secondes du debut.
 async function agendaLastCall(m, nowMs) {
+  // 2026-11-03 : la bulle du debut oubliee a l'ecran part d'elle-meme,
+  // l'alerte rouge prend le relais. Sur une page de visio aussi.
+  await agendaCloseStartBubble(m);
   const tab = await targetTab();
   const cfg = { ...DEFAULTS, ...(await kvGet(["muteInCalls", "mutedPatterns"])) };
   if (tab && cfg.muteInCalls && matchesMuted(tab.url, cfg.mutedPatterns)) return "visio";
-  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start };
+  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, room: m.room || "" };
   if (tab && (await bubbleSendToTab(tab, payload))) return "tab";
   if (!api.notifications || !api.notifications.create) return "none";
   const id = "kz-agenda-last-" + agendaKey(m);
@@ -1863,11 +1906,23 @@ async function agendaLastCall(m, nowMs) {
       type: "basic",
       iconUrl: api.runtime.getURL("icons/icon-128.png"),
       title: bgMsg("meetingLastNotif", "Commence dans {s} s").replace("{s}", Math.round((m.start - nowMs) / 1000)),
-      message: m.title || bgMsg("meetingUntitled", "Sans titre")
+      message: (m.title || bgMsg("meetingUntitled", "Sans titre")) + (m.room ? " · " + m.room : "")
     });
     setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
   } catch (e) { /* noop */ }
   return "notification";
+}
+
+// La bulle du debut de CE rendez-vous (meme heure de debut, un doublon vu
+// dans un autre agenda compte), fermee par sa page avec sa sortie habituelle.
+// Une page qui ecrit dans Prevenir la garde ouverte.
+async function agendaCloseStartBubble(m) {
+  const st = await bubbleGet();
+  if (!st || !st.payload || st.payload.type !== "kz-meeting-soon" || Number(st.payload.start) !== Number(m.start)) return false;
+  try {
+    const r = await api.tabs.sendMessage(st.tabId, { type: "kz-meeting-close", bubbleId: st.id });
+    return !!(r && r.closed);
+  } catch (e) { return false; }
 }
 
 // L'alarme de fin : l'evenement dont la fin moins cinq minutes est la plus
@@ -1926,7 +1981,7 @@ function agendaHeure(ts) {
 async function agendaNotify(m, nowMs, kind) {
   const fin = kind === "end";
   const minutes = Math.max(1, Math.round(((fin ? m.end : m.start) - nowMs) / 60000));
-  const payload = { type: fin ? "kz-meeting-end" : "kz-meeting-soon", id: m.id, title: m.title, start: m.start, end: m.end, minutes: minutes, url: m.url || "", people: m.people || 0 };
+  const payload = { type: fin ? "kz-meeting-end" : "kz-meeting-soon", id: m.id, title: m.title, start: m.start, end: m.end, minutes: minutes, url: m.url || "", people: m.people || 0, room: m.room || "" };
   const tab = await targetTab();
   // Sur une page de visio (kMeet, Teams...), pas de bulle : l'utilisateur est
   // peut-etre deja en appel, et injecter les scripts dans cet onglet ferait
@@ -1985,7 +2040,7 @@ async function agendaSystemNotification(m, minutes, kind) {
       type: "basic",
       iconUrl: api.runtime.getURL("icons/icon-128.png"),
       title: titre,
-      message: nom + " · " + (fin ? bgMsg("meetingUntil", "jusqu'à {h}").replace("{h}", agendaHeure(m.end)) : agendaHeure(m.start))
+      message: nom + " · " + (fin ? bgMsg("meetingUntil", "jusqu'à {h}").replace("{h}", agendaHeure(m.end)) : agendaHeure(m.start)) + (m.room ? " · " + m.room : "")
     });
     return true;
   } catch (e) { return false; }
@@ -2138,6 +2193,7 @@ async function agendaDisconnect() {
     agendaCache: null,
     agendaWarned: [],
     agendaEndWarned: [],
+    agendaRooms: null,
     agendaLastError: "",
     agendaState: { inUntil: 0, inTitle: "", nextStart: 0, nextTitle: "" },
     notifyEnabled: false,
