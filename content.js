@@ -174,6 +174,8 @@ if (globalThis.__kzLoaded !== true) {
   .kz-exit-faint, .kz-exit-moon { animation: none !important; }
   .kz-bubble, .kz-bar-f { transition: opacity 120ms linear !important; }
   .kz-bubble.kz-show { transform: none !important; }
+  .kz-urgent-pulse .kz-meet-count, .kz-last--pulse .kz-last-c, .kz-last, .kz-last--out { animation: none !important; }
+  .kz-last--out { opacity: 0; transition: opacity 300ms linear !important; }
 }
 
 .kz-actions { display: flex; gap: 8px; }
@@ -206,10 +208,35 @@ if (globalThis.__kzLoaded !== true) {
 .kz-bubble--meetend .kz-btn--close { flex: 1 1 0; padding: 0; background: #8A5108; color: #FFFFFF; }
 .kz-bubble--meetend .kz-btn--close:hover { color: #FFFFFF; filter: brightness(1.07); }
 .kz-pill--meetend { background: #F5C877; color: #8A5108; }
+/* 2026-11-03 : deux minutes avant la fin, la bulle de fin passe au rouge et
+   son compte a rebours bat doucement, moins de un battement par seconde. */
+.kz-bubble--meetend .kz-btn--skip { color: #8A5108; }
+.kz-bubble--meetend .kz-btn--skip:hover { color: #7A4E08; }
+.kz-bubble--meetend.kz-bubble--urgent { background: #FDF2F2; border-color: #F2C9C7; }
+.kz-bubble--meetend.kz-bubble--urgent::after { background: #FDF2F2; border-top-color: #F2C9C7; border-right-color: #F2C9C7; }
+.kz-koala--land .kz-bubble--meetend.kz-bubble--urgent::after { background: #FDF2F2; border-right-color: #F2C9C7; border-bottom-color: #F2C9C7; }
+.kz-bubble--urgent .kz-pill--meetend { background: #F2C9C7; color: #8F2723; }
+.kz-bubble--meetend.kz-bubble--urgent .kz-meet-title, .kz-bubble--meetend.kz-bubble--urgent .kz-meet-count, .kz-bubble--meetend.kz-bubble--urgent .kz-btn--skip { color: #A82722; }
+.kz-bubble--meetend.kz-bubble--urgent .kz-btn--close { background: #A82722; }
+.kz-urgent-pulse .kz-meet-count { animation: kzUrgent 1.4s ease-in-out infinite; }
+@keyframes kzUrgent { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .kz-btn--notify { flex: 0 0 auto; padding: 0 4px; background: none; color: #1F63A8; font-weight: 500; }
 .kz-btn--notify:hover { color: #1B4A7A; }
 .kz-btn--notify[disabled] { color: #666666; cursor: default; }
 .kz-hide { display: none !important; }
+/* 2026-11-03 : le dernier avertissement, quinze secondes avant le debut. Hors
+   de la bulle, en haut au centre, rouge plein. Il part seul trois secondes
+   avant le debut : il se contracte, monte et se floute. */
+.kz-last { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #A82722; color: #FFFFFF; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 19px; box-shadow: 0 8px 24px rgba(16,24,40,0.24); cursor: pointer; pointer-events: auto; animation: kzLastIn 320ms cubic-bezier(0.2,0,0,1) both; }
+.kz-last svg { display: block; flex: 0 0 auto; width: 16px; height: 16px; }
+.kz-last-t { font-weight: 600; min-width: 0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kz-last-c { flex: 0 0 auto; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kz-last--pulse .kz-last-c { animation: kzUrgent 1s ease-in-out infinite; }
+.kz-last--out { animation: kzLastOut 600ms cubic-bezier(0.4,0,1,1) both; }
+@keyframes kzLastIn { from { opacity: 0; transform: translate(-50%, -16px) scale(.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+@keyframes kzLastOut { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); filter: blur(0); } 30% { opacity: 1; transform: translate(-50%, 3px) scale(1.04); filter: blur(0); } 100% { opacity: 0; transform: translate(-50%, -28px) scale(.6); filter: blur(6px); } }
+.kz-last--calme, .kz-last--calme.kz-last--out { animation: none; transition: opacity 300ms linear; }
+.kz-last--calme.kz-last--out { opacity: 0; }
 .kz-notify { display: flex; flex-direction: column; gap: 10px; }
 .kz-notify-kinds { display: flex; gap: 6px; }
 .kz-kind { flex: 1 1 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; height: 34px; padding: 0 6px; border-radius: 9px; border: 1px solid #CFE0F3; background: #FFFFFF; color: #1B4A7A; cursor: pointer; }
@@ -278,6 +305,10 @@ if (globalThis.__kzLoaded !== true) {
 .kz-pro .kz-meet-when { color: #666666; }
 .kz-pro .kz-bubble--meetend .kz-btn--close { background: #2E3338; color: #FFFFFF; }
 .kz-pro .kz-bubble--meetend .kz-btn--close:hover { background: #3A3F43; filter: none; }
+.kz-pro .kz-bubble--meetend .kz-btn--skip { color: #666666; }
+.kz-pro .kz-bubble--meetend .kz-btn--skip:hover { color: #333333; }
+.kz-pro .kz-bubble--meetend.kz-bubble--urgent { background: #FFFFFF; border-color: #E0E0E0; border-left-color: #A82722; }
+.kz-pro .kz-bubble--urgent .kz-pill--meetend, .kz-pro .kz-bubble--meetend.kz-bubble--urgent .kz-meet-count { background: none; color: #A82722; }
 .kz-pro .kz-rocket { display: none; }
 .kz-pro .kz-bubble--win { flex-direction: row; align-items: center; gap: 12px; }
 .kz-done-ic { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9999px; background: #F1F1F1; display: flex; align-items: center; justify-content: center; }
@@ -1231,6 +1262,10 @@ if (globalThis.__kzLoaded !== true) {
     // bouton Fermer : rien ne les efface tant qu'on n'a pas ferme, la
     // demande est explicite. Passe l'echeance, le compte continue en
     // "depuis", jamais un zero fige.
+    // 2026-11-03 : la bulle de fin passe au rouge a deux minutes de la fin et
+    // le reste une fois la fin passee. Elle porte aussi "N'a pas eu lieu",
+    // qui retire la reunion des statistiques, et son Annuler.
+    const MEET_URGENT_MS = 2 * 60 * 1000;
     function buildMeetingBubble(info, kind, onJoin, onClose) {
       const fin = kind === "end";
       const b = document.createElement("div");
@@ -1254,8 +1289,15 @@ if (globalThis.__kzLoaded !== true) {
         : meetingWhenLine(info.start, Number(info.people) || 0);
       b.appendChild(quand);
       const echeance = Number(fin ? info.end : info.start) || 0;
+      let sautee = fin && !!info.skipped;
       const tick = () => {
+        if (sautee) return;
         const reste = echeance - Date.now();
+        if (fin) {
+          const urgent = reste <= MEET_URGENT_MS;
+          b.classList.toggle("kz-bubble--urgent", urgent);
+          b.classList.toggle("kz-urgent-pulse", urgent && !reduceMotion());
+        }
         if (reste >= 0) {
           compte.textContent = (fin ? kzMsg("meetingEndCountdown", "Se termine dans {t}") : kzMsg("meetingCountdown", "Commence dans {t}")).replace("{t}", fmtCount(reste));
         } else {
@@ -1283,6 +1325,29 @@ if (globalThis.__kzLoaded !== true) {
         prev.type = "button"; prev.className = "kz-btn kz-btn--notify"; prev.textContent = kzMsg("notifyButtonShort", "Prévenir");
         prev.addEventListener("click", (e) => { e.stopPropagation(); openNotifyPanel(b, info, onClose); });
         actions.appendChild(prev);
+      }
+      if (fin && info.bubbleId) {
+        const saut = document.createElement("button");
+        saut.type = "button"; saut.className = "kz-btn kz-btn--notify kz-btn--skip";
+        const peint = () => {
+          saut.textContent = sautee ? kzMsg("meetingUndo", "Annuler") : kzMsg("meetingSkip", "N'a pas eu lieu");
+          quand.classList.toggle("kz-hide", sautee);
+          if (sautee) {
+            compte.textContent = kzMsg("meetingSkipped", "Retirée de tes statistiques");
+            b.classList.remove("kz-bubble--urgent", "kz-urgent-pulse");
+          } else tick();
+        };
+        peint();
+        saut.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (saut.disabled) return;
+          saut.disabled = true;
+          const voulu = !sautee;
+          let envoi = null;
+          try { envoi = api.runtime.sendMessage({ type: voulu ? "kz-meeting-skip" : "kz-meeting-unskip", bubbleId: info.bubbleId }); } catch (err) { envoi = null; }
+          Promise.resolve(envoi).then((r) => { if (r && r.ok) { sautee = voulu; peint(); } }).catch(() => {}).then(() => { saut.disabled = false; });
+        });
+        actions.appendChild(saut);
       }
       const close = document.createElement("button");
       close.type = "button"; close.className = "kz-btn kz-btn--close"; close.textContent = kzMsg("meetingClose", "Fermer");
@@ -1467,6 +1532,51 @@ if (globalThis.__kzLoaded !== true) {
     // avec shown a faux si quoi que ce soit echoue avant : background.js ne
     // bascule sur la notification du systeme que sur une reponse honnete,
     // jamais sur une promesse d'affichage qui aurait pu echouer ensuite.
+    // Le dernier avertissement, 2026-11-03. Il ne passe pas par la bulle
+    // unique : il s'ajoute a ce qui est a l'ecran, ou a rien, et part seul
+    // trois secondes avant le debut. Un clic le renvoie plus tot.
+    const LAST_GONE_MS = 3000;
+    const LAST_GLYPH = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="9" r="5.5"/><path d="M8 6.5V9l1.6 1.2M6.5 1.8h3"/></svg>';
+    function showLastCall(info) {
+      const shadow = ensureShadow();
+      shadow.querySelectorAll(".kz-last").forEach((n) => n.remove());
+      const debut = Number(info.start) || 0;
+      if (debut - Date.now() <= LAST_GONE_MS) return false;
+      const calme = reduceMotion();
+      const w = document.createElement("div");
+      w.className = "kz-last" + (calme ? " kz-last--calme" : " kz-last--pulse");
+      w.setAttribute("role", "alert");
+      const horloge = svgFromString(LAST_GLYPH);
+      if (horloge) w.appendChild(horloge);
+      const titre = document.createElement("span");
+      titre.className = "kz-last-t";
+      titre.textContent = String(info.title || "").trim() || kzMsg("meetingUntitled", "Sans titre");
+      const compte = document.createElement("span");
+      compte.className = "kz-last-c";
+      w.appendChild(titre);
+      w.appendChild(compte);
+      let parti = false;
+      let minuteur = null;
+      const part = () => {
+        if (parti) return;
+        parti = true;
+        clearInterval(minuteur);
+        w.classList.add("kz-last--out");
+        setTimeout(() => w.remove(), calme ? 320 : 620);
+      };
+      const tick = () => {
+        const reste = debut - Date.now();
+        // Il part sur "3 s", le chiffre qu'il annonce en partant.
+        compte.textContent = kzMsg("meetingLastCount", "commence dans {s} s").replace("{s}", Math.max(3, Math.ceil(reste / 1000)));
+        if (reste <= LAST_GONE_MS) part();
+      };
+      tick();
+      minuteur = setInterval(tick, 200);
+      w.addEventListener("click", (e) => { e.stopPropagation(); part(); });
+      shadow.appendChild(w);
+      return true;
+    }
+
     async function runMeeting(info, kind, repondre) {
       running = true;
       let k = null;
@@ -1561,6 +1671,15 @@ if (globalThis.__kzLoaded !== true) {
         if (bulleOuverte && msg.bubbleId && bulleOuverte.id === msg.bubbleId) { retraitRecent = true; bulleOuverte.retirer(); }
         try { sendResponse({ ok: true }); } catch (e) { /* noop */ }
         return;
+      }
+      if (msg.type === "kz-meeting-last") {
+        // Les reglages d'abord : le mouvement suit le reglage Animations.
+        loadSettings().catch(() => {}).then(() => {
+          let ok = false;
+          try { ok = showLastCall(msg); } catch (e) { ok = false; }
+          try { if (typeof sendResponse === "function") sendResponse({ shown: ok }); } catch (e) { /* noop */ }
+        });
+        return true;
       }
       if (msg.type === "kz-meeting-soon" || msg.type === "kz-meeting-end") {
         // Si un rappel d'habitude est deja a l'ecran, la page decline tout de

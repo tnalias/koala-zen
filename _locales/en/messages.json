@@ -904,13 +904,13 @@
     "message": "5 min before the start"
   },
   "agendaWarnHint": {
-    "message": "Never miss the start. Blue bubble, stays until you close it."
+    "message": "Never miss the start. Blue bubble, then a red alert at 15 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min before the end"
   },
   "agendaEndWarnHint": {
-    "message": "Finish on time, even solo events. Amber bubble."
+    "message": "Finish on time, even solo events. Amber bubble, red at 2 min."
   },
   "notifyLabel": {
     "message": "Notify attendees"
@@ -1064,6 +1064,21 @@
   },
   "meetingEndCountdown": {
     "message": "Ends in {t}"
+  },
+  "meetingSkip": {
+    "message": "Didn't happen"
+  },
+  "meetingSkipped": {
+    "message": "Removed from your stats"
+  },
+  "meetingUndo": {
+    "message": "Undo"
+  },
+  "meetingLastCount": {
+    "message": "starts in {s} s"
+  },
+  "meetingLastNotif": {
+    "message": "Starts in {s} s"
   },
   "meetingEnded": {
     "message": "Ended {t} ago"

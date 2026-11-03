@@ -904,13 +904,13 @@
     "message": "5 Min vor Beginn"
   },
   "agendaWarnHint": {
-    "message": "Nie den Beginn verpassen. Blaue Blase, bleibt, bis du sie schliesst."
+    "message": "Nie den Beginn verpassen. Blaue Blase, dann rote Warnung bei 15 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 Min vor dem Ende"
   },
   "agendaEndWarnHint": {
-    "message": "Pünktlich fertig, auch ohne Teilnehmende. Bernsteinfarbene Blase."
+    "message": "Pünktlich fertig, auch ohne Teilnehmende. Bernsteinfarbene Blase, rot ab 2 Min."
   },
   "notifyLabel": {
     "message": "Teilnehmende informieren"
@@ -1064,6 +1064,21 @@
   },
   "meetingEndCountdown": {
     "message": "Endet in {t}"
+  },
+  "meetingSkip": {
+    "message": "Fand nicht statt"
+  },
+  "meetingSkipped": {
+    "message": "Aus deiner Statistik entfernt"
+  },
+  "meetingUndo": {
+    "message": "Rückgängig"
+  },
+  "meetingLastCount": {
+    "message": "beginnt in {s} s"
+  },
+  "meetingLastNotif": {
+    "message": "Beginnt in {s} s"
   },
   "meetingEnded": {
     "message": "Seit {t} vorbei"

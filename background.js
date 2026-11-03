@@ -296,6 +296,7 @@ api.alarms.onAlarm.addListener((alarm) => {
   else if (alarm.name === TICK) { accrueScreen(); agendaTick().catch(() => {}); eveningTick().catch(() => {}); mailStatsRefresh().catch(() => {}); }
   else if (alarm.name === ALARM_AGENDA_WARN) agendaWarnFire().catch(() => {});
   else if (alarm.name === ALARM_AGENDA_END) agendaEndFire().catch(() => {});
+  else if (alarm.name === ALARM_AGENDA_LAST) agendaLastFire().catch(() => {});
   else if (alarm.name === ALARM_PASSAGE) {
     // Le creneau est replanifie quoi qu'il arrive, meme si le passage est refuse.
     triggerPassage().then(schedulePassage, schedulePassage);
@@ -305,7 +306,7 @@ api.alarms.onAlarm.addListener((alarm) => {
 // Les messages qu'une page (content.js) a le droit d'envoyer. Tout le reste
 // (jetons, connexions, reglages, sauvegardes) ne s'accepte que d'une page de
 // l'extension (popup).
-const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed"];
+const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed", "kz-meeting-skip", "kz-meeting-unskip"];
 function depuisExtension(sender) {
   // Refus par defaut : seule une page de l'extension (adresse sous sa
   // racine) est de confiance.
@@ -457,6 +458,13 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === "kz-connexions-import") {
     connexionsImport(msg.blob, msg.passphrase).then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
+    return true;
+  }
+  if (msg.type === "kz-meeting-skip" || msg.type === "kz-meeting-unskip") {
+    // N'a pas eu lieu, depuis la bulle de fin, ou son Annuler.
+    const sauter = msg.type === "kz-meeting-skip";
+    meetingSkipCible(msg, sender).then((c) => (c.ok ? meetingSkipSet(c.id, c.start, sauter, c.bubble) : c))
+      .then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
     return true;
   }
   if (msg.type === "kz-open-url") {
@@ -1122,7 +1130,7 @@ async function securityMigrateV3() {
 // Les stats (nombres seulement) restent dans storage.local, le popup les lit
 // directement.
 // ===========================================================================
-const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
+const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
 function estCoffre(k) { return VAULT_KEYS.indexOf(k) >= 0; }
 async function vaultRead(cles) {
   const out = {};
@@ -1312,6 +1320,12 @@ const ALARM_AGENDA_WARN = "kz-agenda-warn";
 // pour tenir la duree prevue. Meme mecanique que le rappel du debut, sa
 // propre liste des fins deja annoncees, sa propre couleur cote page.
 const ALARM_AGENDA_END = "kz-agenda-end";
+// 2026-11-03 : un dernier avertissement, rouge, quinze secondes avant le
+// debut, meme si la bulle des cinq minutes a ete fermee. Il s'efface seul
+// trois secondes avant le debut. Lie a l'interrupteur du rappel du debut.
+const ALARM_AGENDA_LAST = "kz-agenda-last";
+const AGENDA_LAST_BEFORE_MS = 15 * 1000;
+const AGENDA_LAST_MIN_MS = 4 * 1000;
 const AGENDA_REFRESH_MS = 5 * 60 * 1000;
 const AGENDA_WINDOW_BEFORE_MS = 12 * 60 * 60 * 1000;
 const AGENDA_WINDOW_AFTER_MS = 36 * 60 * 60 * 1000;
@@ -1525,9 +1539,69 @@ function agendaMeetingsFrom(events, me) {
 function agendaMeetings(cache) {
   return agendaTimed(cache).filter((m) => m.meeting !== false);
 }
-// Tous les evenements a horaire du cache, reunions comme blocs solo.
+// Tous les evenements a horaire du cache, reunions comme blocs solo. Un
+// rendez-vous marque "n'a pas eu lieu" n'y est plus : ni silence, ni rappel,
+// ni minutes dans les statistiques.
 function agendaTimed(cache) {
-  return (cache && Array.isArray(cache.events)) ? cache.events : [];
+  return (cache && Array.isArray(cache.events)) ? cache.events.filter((m) => !m.skipped) : [];
+}
+
+// 2026-11-03 : une reunion qui n'a pas eu lieu (bouton de la bulle de fin) ou
+// a laquelle on a prevenu de son absence sort des statistiques, du silence
+// et du rappel de fin. Les cles id@debut sont gardees dans le coffre, les
+// plus recentes seulement, et chaque cache relu est marque a nouveau.
+const MEETING_SKIPPED_MAX = 400;
+function agendaMarkSkipped(cache, sautes) {
+  const liste = Array.isArray(sautes) ? sautes : [];
+  ((cache && cache.events) || []).forEach((m) => {
+    if (liste.indexOf(agendaKey(m)) >= 0) m.skipped = true;
+    else delete m.skipped;
+  });
+  return cache;
+}
+// La meme reunion vue dans deux agendas surveilles porte deux identifiants :
+// meme titre, meme debut, meme fin, elle sort des deux.
+function agendaSameMeeting(evs, cle) {
+  const m = evs.find((x) => agendaKey(x) === cle);
+  if (!m) return [cle];
+  return evs.filter((x) => x.start === m.start && x.end === m.end && x.title === m.title).map(agendaKey);
+}
+async function meetingSkipSet(id, start, sauter, bulle) {
+  const now = Date.now();
+  const r = await kvGet(["meetingSkipped", "meetingDaily", "agendaCache"]);
+  const cache = r.agendaCache || null;
+  const cles = agendaSameMeeting((cache && Array.isArray(cache.events)) ? cache.events : [], agendaKey({ id: id, start: Number(start) || 0 }));
+  let liste = Array.isArray(r.meetingSkipped) ? r.meetingSkipped.map(String) : [];
+  if (sauter) cles.forEach((k) => { if (liste.indexOf(k) < 0) liste.push(k); });
+  else liste = liste.filter((k) => cles.indexOf(k) < 0);
+  if (liste.length > MEETING_SKIPPED_MAX) liste = liste.slice(-MEETING_SKIPPED_MAX);
+  const patch = { meetingSkipped: liste };
+  if (sauter) {
+    const daily = (r.meetingDaily && typeof r.meetingDaily === "object") ? r.meetingDaily : {};
+    Object.keys(daily).forEach((j) => { if (daily[j] && typeof daily[j] === "object") cles.forEach((k) => { delete daily[j][k]; }); });
+    patch.meetingDaily = daily;
+  }
+  if (cache) patch.agendaCache = agendaMarkSkipped(cache, liste);
+  await kvSet(patch);
+  // Annuler rend ses minutes a la reunion, le silence et le rappel de fin.
+  if (cache) {
+    if (!sauter) await agendaAccrueMeetings(cache, now);
+    await agendaUpdateState(cache, now);
+    await agendaScheduleLast(cache, now);
+    await agendaScheduleEnd(cache, now);
+  }
+  // La bulle qui suit l'utilisateur d'un onglet a l'autre garde son etat.
+  if (bulle) await bubbleWrite(Object.assign({}, bulle, { payload: Object.assign({}, bulle.payload, { skipped: sauter }) }));
+  return { ok: true, skipped: sauter };
+}
+// Une page ne vise que le rendez-vous de SA bulle de fin ouverte, relu dans
+// l'etat de la bulle, jamais un identifiant qu'elle fournirait.
+async function meetingSkipCible(msg, sender) {
+  if (depuisExtension(sender)) return { ok: true, id: msg.id, start: Number(msg.start) || 0, bubble: null };
+  const st = await bubbleGet();
+  const tabId = sender && sender.tab ? sender.tab.id : -1;
+  if (!st || st.id !== msg.bubbleId || st.tabId !== tabId || !st.payload || st.payload.type !== "kz-meeting-end") return { ok: false, error: "not_allowed" };
+  return { ok: true, id: st.payload.id, start: Number(st.payload.start) || 0, bubble: st };
 }
 
 function agendaBusyAt(cache, nowMs) {
@@ -1580,10 +1654,12 @@ function agendaAccrueInto(daily, cache, nowMs, tz) {
   return daily;
 }
 async function agendaAccrueMeetings(cache, nowMs) {
-  const r = await kvGet(["meetingDaily", "screenTimezone"]);
+  const r = await kvGet(["meetingDaily", "screenTimezone", "meetingSkipped"]);
   const daily = (r.meetingDaily && typeof r.meetingDaily === "object") ? r.meetingDaily : {};
   const avant = JSON.stringify(daily);
-  agendaAccrueInto(daily, cache, nowMs, r.screenTimezone);
+  // La liste relue ici fait foi : un cache lu juste avant un "n'a pas eu
+  // lieu" ne rend pas ses minutes a la reunion.
+  agendaAccrueInto(daily, agendaMarkSkipped(cache, r.meetingSkipped), nowMs, r.screenTimezone);
   if (JSON.stringify(daily) !== avant) await kvSet({ meetingDaily: daily });
   return daily;
 }
@@ -1598,7 +1674,7 @@ async function agendaBackfill(nowMs) {
   const ev = await agendaFetchAll(token, agendaIds(r), nowMs - AGENDA_BACKFILL_DAYS * 24 * 60 * 60 * 1000, nowMs);
   if (!ev.ok) return ev;
   const me = { userId: Number(r.agendaMyUserId) || 0, email: String(r.agendaMyEmail || "").toLowerCase() };
-  const passe = { at: nowMs, events: agendaEventsFrom(ev.events, me) };
+  const passe = agendaMarkSkipped({ at: nowMs, events: agendaEventsFrom(ev.events, me) }, (await kvGet(["meetingSkipped"])).meetingSkipped);
   await agendaAccrueMeetings(passe, nowMs);
   return { ok: true, count: passe.events.length };
 }
@@ -1644,11 +1720,12 @@ async function agendaRefresh(opts) {
   const ev = await agendaFetchAll(token, agendaIds(r), now - AGENDA_WINDOW_BEFORE_MS, now + AGENDA_WINDOW_AFTER_MS);
   if (!ev.ok) { await agendaRememberError(ev.error); return ev; }
   const me = { userId: Number(r.agendaMyUserId) || 0, email: String(r.agendaMyEmail || "").toLowerCase() };
-  const cache = { at: now, events: agendaEventsFrom(ev.events, me) };
+  const cache = agendaMarkSkipped({ at: now, events: agendaEventsFrom(ev.events, me) }, (await kvGet(["meetingSkipped"])).meetingSkipped);
   await kvSet({ agendaCache: cache, agendaLastError: "" });
   await agendaUpdateState(cache, now);
   await agendaAccrueMeetings(cache, now);
   await agendaScheduleWarn(cache, now);
+  await agendaScheduleLast(cache, now);
   await agendaScheduleEnd(cache, now);
   return { ok: true, count: cache.events.length };
 }
@@ -1738,6 +1815,61 @@ async function agendaWarnFire() {
   await agendaScheduleWarn(cache, now);
 }
 
+// Le dernier avertissement : le prochain debut pas encore averti, a quinze
+// secondes. Un debut a moins de quatre secondes n'est plus averti.
+async function agendaScheduleLast(cache, nowMs) {
+  try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
+  const r = await kvGet(["agendaWarn", "agendaLastWarned"]);
+  if (r.agendaWarn === false) return null;
+  const deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
+  const prochain = agendaTimed(cache).find((m) => m.start > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
+  if (!prochain) return null;
+  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_BEFORE_MS);
+  try { api.alarms.create(ALARM_AGENDA_LAST, { when: when }); } catch (e) { /* noop */ }
+  return when;
+}
+
+async function agendaLastFire() {
+  const now = Date.now();
+  const r = await kvGet(["agendaCalendarId", "agendaWarn", "agendaCache", "agendaLastWarned"]);
+  if (!r.agendaCalendarId || r.agendaWarn === false) return;
+  const cache = r.agendaCache || { events: [] };
+  let deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
+  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_BEFORE_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
+  // Un seul avertissement a la fois : le premier debut. Une machine en veille
+  // ou une alarme trop en retard n'avertit plus, l'instant est passe.
+  const m = dus[0];
+  if (m && m.start - now >= AGENDA_LAST_MIN_MS && (await machineEveillee())) await agendaLastCall(m, now);
+  dus.forEach((x) => deja.push(agendaKey(x)));
+  if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
+  await kvSet({ agendaLastWarned: deja });
+  await agendaScheduleLast(cache, now);
+}
+
+// Hors de la bulle unique : l'avertissement ne prend la place de rien et
+// part tout seul. Sur une page de visio, rien, on y est deja. Sans page
+// capable de l'afficher, une notification du systeme, retiree a trois
+// secondes du debut.
+async function agendaLastCall(m, nowMs) {
+  const tab = await targetTab();
+  const cfg = { ...DEFAULTS, ...(await kvGet(["muteInCalls", "mutedPatterns"])) };
+  if (tab && cfg.muteInCalls && matchesMuted(tab.url, cfg.mutedPatterns)) return "visio";
+  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start };
+  if (tab && (await bubbleSendToTab(tab, payload))) return "tab";
+  if (!api.notifications || !api.notifications.create) return "none";
+  const id = "kz-agenda-last-" + agendaKey(m);
+  try {
+    await api.notifications.create(id, {
+      type: "basic",
+      iconUrl: api.runtime.getURL("icons/icon-128.png"),
+      title: bgMsg("meetingLastNotif", "Commence dans {s} s").replace("{s}", Math.round((m.start - nowMs) / 1000)),
+      message: m.title || bgMsg("meetingUntitled", "Sans titre")
+    });
+    setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
+  } catch (e) { /* noop */ }
+  return "notification";
+}
+
 // L'alarme de fin : l'evenement dont la fin moins cinq minutes est la plus
 // proche et pas encore annoncee. Un evenement deja en cours compte, c'est
 // meme le cas le plus frequent. TOUS les evenements a horaire, reunions
@@ -1747,7 +1879,7 @@ async function agendaScheduleEnd(cache, nowMs) {
   const r = await kvGet(["agendaEndWarn", "agendaEndWarned"]);
   if (r.agendaEndWarn === false) return null;
   const deja = Array.isArray(r.agendaEndWarned) ? r.agendaEndWarned : [];
-  const evs = (cache && Array.isArray(cache.events)) ? cache.events : [];
+  const evs = agendaTimed(cache);
   let prochain = null;
   evs.forEach((m) => {
     // Sans duree, pas de fin a annoncer.
@@ -1772,7 +1904,7 @@ async function agendaEndFire() {
   const cache = r.agendaCache || { events: [] };
   let deja = Array.isArray(r.agendaEndWarned) ? r.agendaEndWarned : [];
   // Une fin deja passee n'est plus annoncee : prevenir apres coup ne sert a rien.
-  const dus = (cache.events || []).filter((m) => m.end > m.start && m.end > now && m.end - AGENDA_END_BEFORE_MS <= now + 15000 && deja.indexOf(agendaKey(m)) < 0);
+  const dus = agendaTimed(cache).filter((m) => m.end > m.start && m.end > now && m.end - AGENDA_END_BEFORE_MS <= now + 15000 && deja.indexOf(agendaKey(m)) < 0);
   for (let i = 0; i < dus.length; i++) {
     await agendaNotifyEnFile(dus[i], now, "end");
     deja.push(agendaKey(dus[i]));
@@ -1982,17 +2114,19 @@ async function agendaAfterSave(payload, avant) {
   if (actifAvant && !actifApres) {
     try { await api.alarms.clear(ALARM_AGENDA_WARN); } catch (e) { /* noop */ }
     try { await api.alarms.clear(ALARM_AGENDA_END); } catch (e) { /* noop */ }
+    try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
     await kvSet({ agendaState: { inUntil: 0, inTitle: "", nextStart: 0, nextTitle: "" } });
     return;
   }
   if (!actifAvant && actifApres) { await agendaRefresh({ force: true }); return; }
-  if (warnAvant !== warnApres) await agendaScheduleWarn(r.agendaCache, Date.now());
+  if (warnAvant !== warnApres) { await agendaScheduleWarn(r.agendaCache, Date.now()); await agendaScheduleLast(r.agendaCache, Date.now()); }
   if (finAvant !== finApres) await agendaScheduleEnd(r.agendaCache, Date.now());
 }
 
 async function agendaDisconnect() {
   try { await api.alarms.clear(ALARM_AGENDA_WARN); } catch (e) { /* noop */ }
   try { await api.alarms.clear(ALARM_AGENDA_END); } catch (e) { /* noop */ }
+  try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
   const patch = {
     agendaEnabled: false,
     agendaTokenEnc: null,
@@ -2314,7 +2448,10 @@ async function notifySendVerrouille(p, kind, uniques, corpsLibre, r, cle, deja) 
   const cles = Object.keys(sent);
   while (cles.length > NOTIFY_SENT_MAX) delete sent[cles.shift()];
   await kvSet({ notifySent: sent, notifyRate: quota.liste.concat([Date.now()]) });
-  return { ok: true, count: uniques.length };
+  // Prevenir de son absence : la reunion n'aura pas lieu pour soi, elle sort
+  // des statistiques comme avec "N'a pas eu lieu".
+  if (kind === "absent") await meetingSkipSet(p.id, p.start, true, null);
+  return { ok: true, count: uniques.length, skipped: kind === "absent" };
 }
 
 // ===========================================================================

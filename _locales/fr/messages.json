@@ -904,13 +904,13 @@
     "message": "5 min avant le début"
   },
   "agendaWarnHint": {
-    "message": "Pour ne plus rater le début. Bulle bleue, à fermer toi-même."
+    "message": "Pour ne plus rater le début. Bulle bleue, puis alerte rouge à 15 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min avant la fin"
   },
   "agendaEndWarnHint": {
-    "message": "Pour finir à l'heure, même seul. Bulle ambre."
+    "message": "Pour finir à l'heure, même seul. Bulle ambre, rouge à 2 min."
   },
   "notifyLabel": {
     "message": "Prévenir les participants"
@@ -1064,6 +1064,21 @@
   },
   "meetingEndCountdown": {
     "message": "Se termine dans {t}"
+  },
+  "meetingSkip": {
+    "message": "N'a pas eu lieu"
+  },
+  "meetingSkipped": {
+    "message": "Retirée de tes statistiques"
+  },
+  "meetingUndo": {
+    "message": "Annuler"
+  },
+  "meetingLastCount": {
+    "message": "commence dans {s} s"
+  },
+  "meetingLastNotif": {
+    "message": "Commence dans {s} s"
   },
   "meetingEnded": {
     "message": "Terminé depuis {t}"
