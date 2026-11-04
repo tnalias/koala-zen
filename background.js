@@ -1327,6 +1327,12 @@ const ALARM_AGENDA_END = "kz-agenda-end";
 const ALARM_AGENDA_LAST = "kz-agenda-last";
 const AGENDA_LAST_BEFORE_MS = 20 * 1000;
 const AGENDA_LAST_MIN_MS = 4 * 1000;
+// 2026-11-04 : l'alerte arrivait en retard et repartait aussitot. Une alarme
+// peut etre retardee d'une duree arbitraire (documentation de Chrome), et
+// chaque seconde de retard etait retiree de l'affichage. L'alarme sonne
+// maintenant une minute avant le debut ; les pages programment elles-memes
+// l'affichage a vingt secondes, avec leur propre minuterie.
+const AGENDA_LAST_ARM_MS = 60 * 1000;
 const AGENDA_REFRESH_MS = 5 * 60 * 1000;
 const AGENDA_WINDOW_BEFORE_MS = 12 * 60 * 60 * 1000;
 const AGENDA_WINDOW_AFTER_MS = 36 * 60 * 60 * 1000;
@@ -1858,7 +1864,7 @@ async function agendaScheduleLast(cache, nowMs) {
   const deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
   const prochain = agendaTimed(cache).find((m) => m.start > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
   if (!prochain) return null;
-  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_BEFORE_MS);
+  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_ARM_MS);
   try { api.alarms.create(ALARM_AGENDA_LAST, { when: when }); } catch (e) { /* noop */ }
   return when;
 }
@@ -1869,7 +1875,7 @@ async function agendaLastFire() {
   if (!r.agendaCalendarId || r.agendaWarn === false) return;
   const cache = r.agendaCache || { events: [] };
   let deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
-  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_BEFORE_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
+  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_ARM_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
   // Un seul avertissement a la fois : le premier debut. Une machine en veille
   // ou une alarme trop en retard n'avertit plus, l'instant est passe.
   const m = dus[0];
@@ -1881,18 +1887,27 @@ async function agendaLastFire() {
 }
 
 // Hors de la bulle unique : l'avertissement ne prend la place de rien et
-// part tout seul. Sur une page de visio, rien, on y est deja. Sans page
-// capable de l'afficher, une notification du systeme, retiree a trois
-// secondes du debut.
+// part tout seul. Il est confie a tous les onglets web ouverts, sauf ceux de
+// visio : chaque page l'arme et ne l'affiche, a vingt secondes, que si elle
+// est a l'ecran. Changer d'onglet pendant le compte le fait suivre. Sur une
+// page de visio au premier plan, rien, on y est deja. Sans page web au
+// premier plan, une notification du systeme, retiree a trois secondes du
+// debut. La page qui l'affiche ferme la bulle du debut restee ouverte.
 async function agendaLastCall(m, nowMs) {
-  // 2026-11-03 : la bulle du debut oubliee a l'ecran part d'elle-meme,
-  // l'alerte rouge prend le relais. Sur une page de visio aussi.
-  await agendaCloseStartBubble(m);
   const tab = await targetTab();
   const cfg = { ...DEFAULTS, ...(await kvGet(["muteInCalls", "mutedPatterns"])) };
-  if (tab && cfg.muteInCalls && matchesMuted(tab.url, cfg.mutedPatterns)) return "visio";
-  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, room: m.room || "" };
-  if (tab && (await bubbleSendToTab(tab, payload))) return "tab";
+  const visio = (t) => !!(t && cfg.muteInCalls && matchesMuted(t.url, cfg.mutedPatterns));
+  if (visio(tab)) return "visio";
+  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, showAt: m.start - AGENDA_LAST_BEFORE_MS, room: m.room || "" };
+  let armee = false;
+  if (tab) armee = await bubbleSendToTab(tab, payload);
+  let tous = [];
+  try { tous = await api.tabs.query({}); } catch (e) { tous = []; }
+  for (const t of (Array.isArray(tous) ? tous : [])) {
+    if (!t || (tab && t.id === tab.id) || !/^https?:/.test(t.url || "") || visio(t)) continue;
+    try { await api.tabs.sendMessage(t.id, payload); } catch (e) { /* page sans script, ignoree */ }
+  }
+  if (armee) return "tab";
   if (!api.notifications || !api.notifications.create) return "none";
   const id = "kz-agenda-last-" + agendaKey(m);
   try {
@@ -1905,18 +1920,6 @@ async function agendaLastCall(m, nowMs) {
     setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
   } catch (e) { /* noop */ }
   return "notification";
-}
-
-// La bulle du debut de CE rendez-vous (meme heure de debut, un doublon vu
-// dans un autre agenda compte), fermee par sa page avec sa sortie habituelle.
-// Une page qui ecrit dans Prevenir la garde ouverte.
-async function agendaCloseStartBubble(m) {
-  const st = await bubbleGet();
-  if (!st || !st.payload || st.payload.type !== "kz-meeting-soon" || Number(st.payload.start) !== Number(m.start)) return false;
-  try {
-    const r = await api.tabs.sendMessage(st.tabId, { type: "kz-meeting-close", bubbleId: st.id });
-    return !!(r && r.closed);
-  } catch (e) { return false; }
 }
 
 // L'alarme de fin : l'evenement dont la fin moins cinq minutes est la plus

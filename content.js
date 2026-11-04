@@ -1564,7 +1564,45 @@ if (globalThis.__kzLoaded !== true) {
     // trois secondes avant le debut. Un clic le renvoie plus tot.
     const LAST_GONE_MS = 3000;
     const LAST_GLYPH = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="9" r="5.5"/><path d="M8 6.5V9l1.6 1.2M6.5 1.8h3"/></svg>';
+    // 2026-11-04 : l'alerte est armee une minute avant le debut et s'affiche a
+    // l'heure dite (showAt) par la minuterie de la page, pas a l'arrivee du
+    // message. Seule la page a l'ecran l'affiche ; une page cachee attend
+    // d'etre montree, jusqu'a trois secondes du debut.
+    let lastArmed = null;
+    function armLastCall(info) {
+      if (lastArmed) lastArmed.annule();
+      const debut = Number(info.start) || 0;
+      if (debut - Date.now() <= LAST_GONE_MS) return false;
+      let minuteur = null;
+      let fini = false;
+      const surVisibilite = () => { if (document.visibilityState === "visible") essaie(); };
+      const annule = () => {
+        fini = true;
+        clearTimeout(minuteur);
+        document.removeEventListener("visibilitychange", surVisibilite);
+        if (lastArmed && lastArmed.annule === annule) lastArmed = null;
+      };
+      // showLastCall refuse elle-meme un debut a moins de trois secondes.
+      const essaie = () => {
+        if (fini || document.visibilityState === "hidden") return;
+        annule();
+        showLastCall(info);
+      };
+      lastArmed = { annule: annule };
+      document.addEventListener("visibilitychange", surVisibilite);
+      // Abandon a trois secondes du debut si la page n'a jamais ete montree.
+      setTimeout(() => { if (!fini) annule(); }, Math.max(0, debut - LAST_GONE_MS - Date.now()));
+      const attente = (Number(info.showAt) || 0) - Date.now();
+      if (attente > 0) minuteur = setTimeout(essaie, attente);
+      else essaie();
+      return true;
+    }
+
     function showLastCall(info) {
+      // La bulle du debut de ce rendez-vous, oubliee a l'ecran, part : l'alerte
+      // prend le relais. Sauf si l'on ecrit aux participants.
+      const m = meetingActive;
+      if (m && m.kind === "soon" && m.start === (Number(info.start) || 0) && !m.occupe()) m.close();
       const shadow = ensureShadow();
       shadow.querySelectorAll(".kz-last").forEach((n) => n.remove());
       const debut = Number(info.start) || 0;
@@ -1636,7 +1674,7 @@ if (globalThis.__kzLoaded !== true) {
         // rearme pour que l'Echap suivant ferme bien la bulle.
         const fermer = () => { if (b && b.kzPanelClose) { b.kzPanelClose(); desarme = armEscape(fermer); return; } fini = true; };
         let retiree = false;
-        meetingActive = { bubbleId: info.bubbleId, kind: kind, occupe: () => !!(b && b.kzPanelClose), close: () => { fini = true; } };
+        meetingActive = { bubbleId: info.bubbleId, kind: kind, start: Number(info.start) || 0, occupe: () => !!(b && b.kzPanelClose), close: () => { fini = true; } };
         k.addEventListener("click", fermer);
         if (!info.instant) { playEnter(k); await sleep(arrivalMs(k)); }
         b = buildMeetingBubble(info, kind, () => {
@@ -1713,20 +1751,11 @@ if (globalThis.__kzLoaded !== true) {
         try { sendResponse({ ok: true }); } catch (e) { /* noop */ }
         return;
       }
-      // L'alerte des vingt secondes ferme la bulle du debut restee ouverte,
-      // sauf si l'on est en train d'ecrire aux participants.
-      if (msg.type === "kz-meeting-close") {
-        const m = meetingActive;
-        const ok = !!(m && msg.bubbleId && m.bubbleId === msg.bubbleId && m.kind === "soon" && !m.occupe());
-        if (ok) m.close();
-        try { if (typeof sendResponse === "function") sendResponse({ closed: ok }); } catch (e) { /* noop */ }
-        return;
-      }
       if (msg.type === "kz-meeting-last") {
         // Les reglages d'abord : le mouvement suit le reglage Animations.
         loadSettings().catch(() => {}).then(() => {
           let ok = false;
-          try { ok = showLastCall(msg); } catch (e) { ok = false; }
+          try { ok = armLastCall(msg); } catch (e) { ok = false; }
           try { if (typeof sendResponse === "function") sendResponse({ shown: ok }); } catch (e) { /* noop */ }
         });
         return true;
