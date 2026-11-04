@@ -297,6 +297,7 @@ api.alarms.onAlarm.addListener((alarm) => {
   else if (alarm.name === ALARM_AGENDA_WARN) agendaWarnFire().catch(() => {});
   else if (alarm.name === ALARM_AGENDA_END) agendaEndFire().catch(() => {});
   else if (alarm.name === ALARM_AGENDA_LAST) agendaLastFire().catch(() => {});
+  else if (alarm.name === ALARM_AGENDA_LAST_OUT) agendaLastOutFire().catch(() => {});
   else if (alarm.name === ALARM_PASSAGE) {
     // Le creneau est replanifie quoi qu'il arrive, meme si le passage est refuse.
     triggerPassage().then(schedulePassage, schedulePassage);
@@ -1129,7 +1130,7 @@ async function securityMigrateV3() {
 // Les stats (nombres seulement) restent dans storage.local, le popup les lit
 // directement.
 // ===========================================================================
-const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "agendaRooms", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
+const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "agendaLastOutWarned", "agendaRooms", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
 function estCoffre(k) { return VAULT_KEYS.indexOf(k) >= 0; }
 async function vaultRead(cles) {
   const out = {};
@@ -1333,6 +1334,11 @@ const AGENDA_LAST_MIN_MS = 4 * 1000;
 // maintenant une minute avant le debut ; les pages programment elles-memes
 // l'affichage a vingt secondes, avec leur propre minuterie.
 const AGENDA_LAST_ARM_MS = 60 * 1000;
+// 2026-11-04 : hors du navigateur. Quand une autre app est au premier plan,
+// les rappels de reunion partent aussi en notification du systeme, qui
+// s'affiche par-dessus tout. Pour l'alerte des vingt secondes, une seconde
+// alarme regarde, a l'heure dite, si le navigateur est devant.
+const ALARM_AGENDA_LAST_OUT = "kz-agenda-last-out";
 const AGENDA_REFRESH_MS = 5 * 60 * 1000;
 const AGENDA_WINDOW_BEFORE_MS = 12 * 60 * 60 * 1000;
 const AGENDA_WINDOW_AFTER_MS = 36 * 60 * 60 * 1000;
@@ -1858,6 +1864,7 @@ async function agendaWarnFire() {
 // Le dernier avertissement : le prochain debut pas encore averti, a vingt
 // secondes. Un debut a moins de quatre secondes n'est plus averti.
 async function agendaScheduleLast(cache, nowMs) {
+  await agendaScheduleLastOut(cache, nowMs);
   try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
   const r = await kvGet(["agendaWarn", "agendaLastWarned"]);
   if (r.agendaWarn === false) return null;
@@ -1867,6 +1874,35 @@ async function agendaScheduleLast(cache, nowMs) {
   const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_ARM_MS);
   try { api.alarms.create(ALARM_AGENDA_LAST, { when: when }); } catch (e) { /* noop */ }
   return when;
+}
+
+async function agendaScheduleLastOut(cache, nowMs) {
+  try { await api.alarms.clear(ALARM_AGENDA_LAST_OUT); } catch (e) { /* noop */ }
+  const r = await kvGet(["agendaWarn", "agendaLastOutWarned"]);
+  if (r.agendaWarn === false) return null;
+  const deja = Array.isArray(r.agendaLastOutWarned) ? r.agendaLastOutWarned : [];
+  const prochain = agendaTimed(cache).find((m) => m.start > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
+  if (!prochain) return null;
+  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_BEFORE_MS);
+  try { api.alarms.create(ALARM_AGENDA_LAST_OUT, { when: when }); } catch (e) { /* noop */ }
+  return when;
+}
+
+// A vingt secondes : si une autre app est devant, l'alerte part aussi en
+// notification du systeme. Navigateur devant, la page s'en charge seule.
+async function agendaLastOutFire() {
+  const now = Date.now();
+  const r = await kvGet(["agendaCalendarId", "agendaWarn", "agendaCache", "agendaLastOutWarned"]);
+  if (!r.agendaCalendarId || r.agendaWarn === false) return;
+  const cache = r.agendaCache || { events: [] };
+  let deja = Array.isArray(r.agendaLastOutWarned) ? r.agendaLastOutWarned : [];
+  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_BEFORE_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
+  const m = dus[0];
+  if (m && m.start - now >= AGENDA_LAST_MIN_MS && !(await navigateurDevant()) && (await machineEveillee())) await agendaLastNotification(m, now);
+  dus.forEach((x) => deja.push(agendaKey(x)));
+  if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
+  await kvSet({ agendaLastOutWarned: deja });
+  await agendaScheduleLastOut(cache, now);
 }
 
 async function agendaLastFire() {
@@ -1908,18 +1944,20 @@ async function agendaLastCall(m, nowMs) {
     try { await api.tabs.sendMessage(t.id, payload); } catch (e) { /* page sans script, ignoree */ }
   }
   if (armee) return "tab";
-  if (!api.notifications || !api.notifications.create) return "none";
+  return (await agendaLastNotification(m, nowMs)) ? "notification" : "none";
+}
+
+// L'alerte en notification du systeme, retiree a trois secondes du debut.
+async function agendaLastNotification(m, nowMs) {
   const id = "kz-agenda-last-" + agendaKey(m);
-  try {
-    await api.notifications.create(id, {
-      type: "basic",
-      iconUrl: api.runtime.getURL("icons/icon-128.png"),
-      title: bgMsg("meetingLastNotif", "Commence dans {s} s").replace("{s}", Math.round((m.start - nowMs) / 1000)),
-      message: (m.title || bgMsg("meetingUntitled", "Sans titre")) + (m.room ? " · " + m.room : "")
-    });
-    setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
-  } catch (e) { /* noop */ }
-  return "notification";
+  const ok = await notificationSysteme(id, {
+    type: "basic",
+    iconUrl: api.runtime.getURL("icons/icon-128.png"),
+    title: bgMsg("meetingLastNotif", "Commence dans {s} s").replace("{s}", Math.round((m.start - nowMs) / 1000)),
+    message: (m.title || bgMsg("meetingUntitled", "Sans titre")) + (m.room ? " · " + m.room : "")
+  });
+  if (ok) setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
+  return ok;
 }
 
 // L'alarme de fin : l'evenement dont la fin moins cinq minutes est la plus
@@ -2015,6 +2053,9 @@ async function agendaNotify(m, nowMs, kind) {
   if (payload.canNotify && peutAfficher) payload.notifyNonce = await notifyNonceCreate(tab.id, m);
   if (peutAfficher && (await agendaSendToTab(tab, payload))) {
     await bubbleRemember(tab.id, payload, garee);
+    // Une autre app au premier plan : la bulle attend dans la page, la
+    // notification du systeme previent tout de suite.
+    if (!(await navigateurDevant())) { await agendaSystemNotification(m, minutes, kind); return "tab+notification"; }
     return "tab";
   }
   // La page n'a rien pu afficher : la bulle retiree revient a sa place.
@@ -2025,6 +2066,26 @@ async function agendaNotify(m, nowMs, kind) {
 
 function agendaSendToTab(tab, payload) { return bubbleSendToTab(tab, payload); }
 
+// Le navigateur est-il l'app au premier plan ? Sans reponse claire, oui :
+// on garde alors le comportement d'avant, la bulle dans la page.
+async function navigateurDevant() {
+  try {
+    if (!api.windows || !api.windows.getLastFocused) return true;
+    const w = await api.windows.getLastFocused();
+    return !w || w.focused !== false;
+  } catch (e) { return true; }
+}
+
+// Une notification qui reste a l'ecran jusqu'a ce qu'on la ferme. Firefox
+// refuse requireInteraction : elle repart alors sans.
+async function notificationSysteme(id, opts) {
+  if (!api.notifications || !api.notifications.create) return false;
+  try { await api.notifications.create(id, Object.assign({}, opts, { requireInteraction: true })); return true; }
+  catch (e) {
+    try { await api.notifications.create(id, opts); return true; } catch (_) { return false; }
+  }
+}
+
 async function agendaSystemNotification(m, minutes, kind) {
   if (!api.notifications || !api.notifications.create) return false;
   const fin = kind === "end";
@@ -2032,15 +2093,12 @@ async function agendaSystemNotification(m, minutes, kind) {
     ? bgMsg("meetingEndPill", "Fin dans {n} min").replace("{n}", minutes)
     : bgMsg("meetingSoonPill", "Rendez-vous dans {n} min").replace("{n}", minutes);
   const nom = m.title || bgMsg("meetingUntitled", "Sans titre");
-  try {
-    await api.notifications.create("kz-agenda-" + (fin ? "end-" : "") + agendaKey(m), {
-      type: "basic",
-      iconUrl: api.runtime.getURL("icons/icon-128.png"),
-      title: titre,
-      message: nom + " · " + (fin ? bgMsg("meetingUntil", "jusqu'à {h}").replace("{h}", agendaHeure(m.end)) : agendaHeure(m.start)) + (m.room ? " · " + m.room : "")
-    });
-    return true;
-  } catch (e) { return false; }
+  return notificationSysteme("kz-agenda-" + (fin ? "end-" : "") + agendaKey(m), {
+    type: "basic",
+    iconUrl: api.runtime.getURL("icons/icon-128.png"),
+    title: titre,
+    message: nom + " · " + (fin ? bgMsg("meetingUntil", "jusqu'à {h}").replace("{h}", agendaHeure(m.end)) : agendaHeure(m.start)) + (m.room ? " · " + m.room : "")
+  });
 }
 
 async function agendaOpenUrl(url) {
@@ -2167,6 +2225,7 @@ async function agendaAfterSave(payload, avant) {
     try { await api.alarms.clear(ALARM_AGENDA_WARN); } catch (e) { /* noop */ }
     try { await api.alarms.clear(ALARM_AGENDA_END); } catch (e) { /* noop */ }
     try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
+    try { await api.alarms.clear(ALARM_AGENDA_LAST_OUT); } catch (e) { /* noop */ }
     await kvSet({ agendaState: { inUntil: 0, inTitle: "", nextStart: 0, nextTitle: "" } });
     return;
   }
@@ -2179,6 +2238,7 @@ async function agendaDisconnect() {
   try { await api.alarms.clear(ALARM_AGENDA_WARN); } catch (e) { /* noop */ }
   try { await api.alarms.clear(ALARM_AGENDA_END); } catch (e) { /* noop */ }
   try { await api.alarms.clear(ALARM_AGENDA_LAST); } catch (e) { /* noop */ }
+  try { await api.alarms.clear(ALARM_AGENDA_LAST_OUT); } catch (e) { /* noop */ }
   const patch = {
     agendaEnabled: false,
     agendaTokenEnc: null,

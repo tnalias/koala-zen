@@ -48,6 +48,7 @@
 1. Suis la courte présentation qui s'ouvre à l'installation.
 2. Choisis ton rythme dans **Réglages**, et tes habitudes dans **Perso**.
 3. Facultatif, avec Infomaniak : dans le Manager, crée un jeton d'API ([la marche à suivre](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) avec le périmètre `workspace:calendar` et une date d'expiration, puis colle-le dans la carte **Agenda Infomaniak**. Pour les fonctions mail, ajoute `workspace:mail` au même jeton, ou crée un second jeton avec ce seul périmètre. Tout autre périmètre est refusé.
+4. Quand une autre app est au premier plan, les rappels de réunion arrivent aussi en notification du système. Sur macOS, règle ton navigateur sur **Alertes** dans Réglages Système > Notifications pour qu'elles restent à l'écran jusqu'à ce que tu les fermes.
 
 ## Dans le panneau
 
