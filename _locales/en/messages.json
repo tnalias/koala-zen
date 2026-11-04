@@ -1071,8 +1071,8 @@
   "meetingSkipped": {
     "message": "Removed from your stats"
   },
-  "meetingUndo": {
-    "message": "Undo"
+  "meetingSkipSoon": {
+    "message": "Won't happen"
   },
   "meetingLastCount": {
     "message": "starts in {s} s"

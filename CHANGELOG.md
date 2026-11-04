@@ -20,7 +20,7 @@
 - **A last call 20 seconds before a meeting:** a large red banner at the top of the page counts down, even if you closed the 5-minute bubble, and slips away on its own 3 seconds before the start. A 5-minute bubble you forgot to close leaves when it appears.
 - **The room is shown** in meeting reminders and in the red last call: the booked room, or the location you typed.
 - **The end bubble turns red** for the last 2 minutes of a meeting.
-- **"Didn't happen"** in the end bubble takes the meeting out of your stats, with Undo. Telling attendees you will be absent does the same. Either way, the koala no longer stays quiet for that meeting.
+- **"Won't happen" and "Didn't happen":** one click in the start or end bubble takes the meeting out of your stats, then the bubble closes on its own. Telling attendees you will be absent does the same. Either way, the koala no longer stays quiet for that meeting and its remaining reminders are cancelled.
 - These new switches apply as soon as you click them.
 
 ### Fixed

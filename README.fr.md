@@ -9,7 +9,7 @@
 **Un koala bienveillant pour ta journée de travail.** Il te rappelle de faire de petites pauses, te garde à l'heure pour tes réunions, et te montre où passe ton temps. Pour **Chrome et Firefox**, gratuit et open source.
 
 - **Un coup de pouce, jamais de culpabilité.** Toutes les 5 à 240 minutes, un koala te propose une petite chose : te lever, boire un verre d'eau, regarder au loin. Jamais pendant une visio.
-- **Ne rate plus une réunion.** Une bulle 5 minutes avant, avec le lien de la visio à un clic, une alerte rouge 20 secondes avant, et un rappel 6 minutes avant la fin qui passe au rouge les 2 dernières minutes. Une réunion qui n'a pas eu lieu sort de tes stats en un clic.
+- **Ne rate plus une réunion.** Une bulle 5 minutes avant, avec le lien de la visio à un clic, une alerte rouge 20 secondes avant, et un rappel 6 minutes avant la fin qui passe au rouge les 2 dernières minutes. Une réunion qui n'aura pas lieu, ou qui n'a pas eu lieu, sort de tes stats en un clic.
 - **En retard ? Préviens en un clic.** Un mail déjà écrit pour les participants. Tu relis, tu envoies.
 - **Vois où passe ton temps.** Habitudes, écran, réunions et mails, jour par jour.
 - **Ton koala à toi.** Tes propres images ou GIF animés, tes habitudes et tes citations. Ou aucun personnage, pour un style sobre et pro.

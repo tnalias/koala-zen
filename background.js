@@ -306,7 +306,7 @@ api.alarms.onAlarm.addListener((alarm) => {
 // Les messages qu'une page (content.js) a le droit d'envoyer. Tout le reste
 // (jetons, connexions, reglages, sauvegardes) ne s'accepte que d'une page de
 // l'extension (popup).
-const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed", "kz-meeting-skip", "kz-meeting-unskip"];
+const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed", "kz-meeting-skip"];
 function depuisExtension(sender) {
   // Refus par defaut : seule une page de l'extension (adresse sous sa
   // racine) est de confiance.
@@ -460,10 +460,9 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     connexionsImport(msg.blob, msg.passphrase).then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
     return true;
   }
-  if (msg.type === "kz-meeting-skip" || msg.type === "kz-meeting-unskip") {
-    // N'a pas eu lieu, depuis la bulle de fin, ou son Annuler.
-    const sauter = msg.type === "kz-meeting-skip";
-    meetingSkipCible(msg, sender).then((c) => (c.ok ? meetingSkipSet(c.id, c.start, sauter, c.bubble) : c))
+  if (msg.type === "kz-meeting-skip") {
+    // N'aura pas lieu (bulle du debut) ou N'a pas eu lieu (bulle de fin).
+    meetingSkipCible(msg, sender).then((c) => (c.ok ? meetingSkip(c.id, c.start) : c))
       .then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
     return true;
   }
@@ -1585,9 +1584,10 @@ function agendaTimed(cache) {
   return (cache && Array.isArray(cache.events)) ? cache.events.filter((m) => !m.skipped) : [];
 }
 
-// 2026-11-03 : une reunion qui n'a pas eu lieu (bouton de la bulle de fin) ou
-// a laquelle on a prevenu de son absence sort des statistiques, du silence
-// et du rappel de fin. Les cles id@debut sont gardees dans le coffre, les
+// 2026-11-03 : une reunion qui n'aura pas lieu (bulle du debut), qui n'a pas
+// eu lieu (bulle de fin) ou a laquelle on a prevenu de son absence sort des
+// statistiques, du silence et des rappels qui restent. 2026-11-04 : la bulle
+// se ferme d'elle-meme apres le clic, plus d'Annuler. Les cles id@debut sont gardees dans le coffre, les
 // plus recentes seulement, et chaque cache relu est marque a nouveau.
 const MEETING_SKIPPED_MAX = 400;
 function agendaMarkSkipped(cache, sautes) {
@@ -1605,42 +1605,36 @@ function agendaSameMeeting(evs, cle) {
   if (!m) return [cle];
   return evs.filter((x) => x.start === m.start && x.end === m.end && x.title === m.title).map(agendaKey);
 }
-async function meetingSkipSet(id, start, sauter, bulle) {
+async function meetingSkip(id, start) {
   const now = Date.now();
   const r = await kvGet(["meetingSkipped", "meetingDaily", "agendaCache"]);
   const cache = r.agendaCache || null;
   const cles = agendaSameMeeting((cache && Array.isArray(cache.events)) ? cache.events : [], agendaKey({ id: id, start: Number(start) || 0 }));
   let liste = Array.isArray(r.meetingSkipped) ? r.meetingSkipped.map(String) : [];
-  if (sauter) cles.forEach((k) => { if (liste.indexOf(k) < 0) liste.push(k); });
-  else liste = liste.filter((k) => cles.indexOf(k) < 0);
+  cles.forEach((k) => { if (liste.indexOf(k) < 0) liste.push(k); });
   if (liste.length > MEETING_SKIPPED_MAX) liste = liste.slice(-MEETING_SKIPPED_MAX);
-  const patch = { meetingSkipped: liste };
-  if (sauter) {
-    const daily = (r.meetingDaily && typeof r.meetingDaily === "object") ? r.meetingDaily : {};
-    Object.keys(daily).forEach((j) => { if (daily[j] && typeof daily[j] === "object") cles.forEach((k) => { delete daily[j][k]; }); });
-    patch.meetingDaily = daily;
-  }
+  const daily = (r.meetingDaily && typeof r.meetingDaily === "object") ? r.meetingDaily : {};
+  Object.keys(daily).forEach((j) => { if (daily[j] && typeof daily[j] === "object") cles.forEach((k) => { delete daily[j][k]; }); });
+  const patch = { meetingSkipped: liste, meetingDaily: daily };
   if (cache) patch.agendaCache = agendaMarkSkipped(cache, liste);
   await kvSet(patch);
-  // Annuler rend ses minutes a la reunion, le silence et le rappel de fin.
   if (cache) {
-    if (!sauter) await agendaAccrueMeetings(cache, now);
     await agendaUpdateState(cache, now);
     await agendaScheduleLast(cache, now);
     await agendaScheduleEnd(cache, now);
   }
-  // La bulle qui suit l'utilisateur d'un onglet a l'autre garde son etat.
-  if (bulle) await bubbleWrite(Object.assign({}, bulle, { payload: Object.assign({}, bulle.payload, { skipped: sauter }) }));
-  return { ok: true, skipped: sauter };
+  return { ok: true, skipped: true };
 }
-// Une page ne vise que le rendez-vous de SA bulle de fin ouverte, relu dans
-// l'etat de la bulle, jamais un identifiant qu'elle fournirait.
+// Une page ne vise que le rendez-vous de SA bulle d'agenda ouverte, debut
+// ou fin, relu dans l'etat de la bulle, jamais un identifiant qu'elle
+// fournirait.
 async function meetingSkipCible(msg, sender) {
-  if (depuisExtension(sender)) return { ok: true, id: msg.id, start: Number(msg.start) || 0, bubble: null };
+  if (depuisExtension(sender)) return { ok: true, id: msg.id, start: Number(msg.start) || 0 };
   const st = await bubbleGet();
   const tabId = sender && sender.tab ? sender.tab.id : -1;
-  if (!st || st.id !== msg.bubbleId || st.tabId !== tabId || !st.payload || st.payload.type !== "kz-meeting-end") return { ok: false, error: "not_allowed" };
-  return { ok: true, id: st.payload.id, start: Number(st.payload.start) || 0, bubble: st };
+  const type = st && st.payload ? st.payload.type : "";
+  if (!st || st.id !== msg.bubbleId || st.tabId !== tabId || (type !== "kz-meeting-end" && type !== "kz-meeting-soon")) return { ok: false, error: "not_allowed" };
+  return { ok: true, id: st.payload.id, start: Number(st.payload.start) || 0 };
 }
 
 function agendaBusyAt(cache, nowMs) {
@@ -2506,7 +2500,7 @@ async function notifySendVerrouille(p, kind, uniques, corpsLibre, r, cle, deja) 
   await kvSet({ notifySent: sent, notifyRate: quota.liste.concat([Date.now()]) });
   // Prevenir de son absence : la reunion n'aura pas lieu pour soi, elle sort
   // des statistiques comme avec "N'a pas eu lieu".
-  if (kind === "absent") await meetingSkipSet(p.id, p.start, true, null);
+  if (kind === "absent") await meetingSkip(p.id, p.start);
   return { ok: true, count: uniques.length, skipped: kind === "absent" };
 }
 

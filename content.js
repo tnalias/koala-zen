@@ -195,6 +195,11 @@ if (globalThis.__kzLoaded !== true) {
 .kz-pill--meet svg { display: block; width: 12px; height: 12px; }
 .kz-btn--join { flex: 1 1 0; background: #1F63A8; color: #FFFFFF; }
 .kz-btn--join:hover { filter: brightness(1.07); }
+/* 2026-11-04 : jusqu'a quatre actions dans une bulle d'agenda. Rejoindre
+   prend toute sa ligne, les liens viennent dessous, Fermer cale a droite. */
+.kz-actions--meet { flex-wrap: wrap; }
+.kz-actions--meet .kz-btn--join { flex: 1 0 100%; }
+.kz-actions--meet .kz-btn--close { margin-left: auto; }
 .kz-meet-title { font-size: 16px; line-height: 22px; font-weight: 600; color: #1B4A7A; overflow-wrap: anywhere; }
 .kz-meet-when { font-size: 13px; line-height: 18px; color: #666666; }
 .kz-meet-room { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; font-weight: 600; color: #333333; overflow-wrap: anywhere; }
@@ -1269,9 +1274,11 @@ if (globalThis.__kzLoaded !== true) {
     // demande est explicite. Passe l'echeance, le compte continue en
     // "depuis", jamais un zero fige.
     // 2026-11-03 : la bulle de fin passe au rouge a deux minutes de la fin et
-    // le reste une fois la fin passee. Elle porte aussi "N'a pas eu lieu",
-    // qui retire la reunion des statistiques, et son Annuler.
+    // le reste une fois la fin passee. 2026-11-04 : les deux bulles portent
+    // un bouton qui retire la reunion des statistiques, "N'aura pas lieu"
+    // avant, "N'a pas eu lieu" a la fin ; la bulle le confirme puis se ferme.
     const MEET_URGENT_MS = 2 * 60 * 1000;
+    const MEET_SKIP_CLOSE_MS = 1500;
     // La porte de la salle, 2026-11-03.
     const ROOM_GLYPH = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 14.5h11M4.5 14.5V2h7v12.5"/><circle cx="9.4" cy="8.5" r=".7" fill="currentColor" stroke="none"/></svg>';
     function mkRoom(nom, classe) {
@@ -1310,9 +1317,7 @@ if (globalThis.__kzLoaded !== true) {
       const ligneSalle = salle ? mkRoom(salle, "kz-meet-room") : null;
       if (ligneSalle) b.appendChild(ligneSalle);
       const echeance = Number(fin ? info.end : info.start) || 0;
-      let sautee = fin && !!info.skipped;
       const tick = () => {
-        if (sautee) return;
         const reste = echeance - Date.now();
         if (fin) {
           const urgent = reste <= MEET_URGENT_MS;
@@ -1328,7 +1333,7 @@ if (globalThis.__kzLoaded !== true) {
       tick();
       b.kzTimer = setInterval(tick, 1000);
       const actions = document.createElement("div");
-      actions.className = "kz-actions";
+      actions.className = "kz-actions kz-actions--meet";
       if (!fin && info.url && /^https?:\/\//i.test(String(info.url))) {
         const join = document.createElement("button");
         join.type = "button"; join.className = "kz-btn kz-btn--join"; join.textContent = kzMsg("meetingJoin", "Rejoindre la visio");
@@ -1347,27 +1352,27 @@ if (globalThis.__kzLoaded !== true) {
         prev.addEventListener("click", (e) => { e.stopPropagation(); openNotifyPanel(b, info, onClose); });
         actions.appendChild(prev);
       }
-      if (fin && info.bubbleId) {
+      if (info.bubbleId) {
         const saut = document.createElement("button");
         saut.type = "button"; saut.className = "kz-btn kz-btn--notify kz-btn--skip";
-        const peint = () => {
-          saut.textContent = sautee ? kzMsg("meetingUndo", "Annuler") : kzMsg("meetingSkip", "N'a pas eu lieu");
-          quand.classList.toggle("kz-hide", sautee);
-          if (ligneSalle) ligneSalle.classList.toggle("kz-hide", sautee);
-          if (sautee) {
-            compte.textContent = kzMsg("meetingSkipped", "Retirée de tes statistiques");
-            b.classList.remove("kz-bubble--urgent", "kz-urgent-pulse");
-          } else tick();
-        };
-        peint();
+        saut.textContent = fin ? kzMsg("meetingSkip", "N'a pas eu lieu") : kzMsg("meetingSkipSoon", "N'aura pas lieu");
         saut.addEventListener("click", (e) => {
           e.stopPropagation();
           if (saut.disabled) return;
-          saut.disabled = true;
-          const voulu = !sautee;
+          const boutons = Array.prototype.slice.call(actions.querySelectorAll("button"));
+          boutons.forEach((x) => { x.disabled = true; });
           let envoi = null;
-          try { envoi = api.runtime.sendMessage({ type: voulu ? "kz-meeting-skip" : "kz-meeting-unskip", bubbleId: info.bubbleId }); } catch (err) { envoi = null; }
-          Promise.resolve(envoi).then((r) => { if (r && r.ok) { sautee = voulu; peint(); } }).catch(() => {}).then(() => { saut.disabled = false; });
+          try { envoi = api.runtime.sendMessage({ type: "kz-meeting-skip", bubbleId: info.bubbleId }); } catch (err) { envoi = null; }
+          Promise.resolve(envoi).then((r) => {
+            if (!(r && r.ok)) { boutons.forEach((x) => { x.disabled = false; }); return; }
+            // Retiree : la bulle le dit, puis se ferme d'elle-meme.
+            clearInterval(b.kzTimer);
+            b.classList.remove("kz-bubble--urgent", "kz-urgent-pulse");
+            compte.textContent = kzMsg("meetingSkipped", "Retirée de tes statistiques");
+            quand.classList.add("kz-hide");
+            if (ligneSalle) ligneSalle.classList.add("kz-hide");
+            setTimeout(onClose, MEET_SKIP_CLOSE_MS);
+          }).catch(() => { boutons.forEach((x) => { x.disabled = false; }); });
         });
         actions.appendChild(saut);
       }
