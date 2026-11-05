@@ -1537,6 +1537,15 @@ if (globalThis.__kzLoaded !== true) {
         const anime = !reduceMotion();
         if (anime) panel.appendChild(mkRocket());
         panel.appendChild(ok);
+        // 2026-11-05 : prevenir de son absence retire la reunion des stats
+        // (fait par le fond) ; la bulle le dit, puis se ferme d'elle-meme.
+        if (r.skipped) {
+          const retiree = document.createElement("div"); retiree.className = "kz-notify-msg";
+          retiree.textContent = kzMsg("meetingSkipped", "Retirée de tes statistiques");
+          panel.appendChild(retiree);
+          setTimeout(() => { if (panel.parentNode) fermerPanel(); onClose(); }, anime ? 2600 : 1800);
+          return;
+        }
         setTimeout(() => { if (panel.parentNode) fermerPanel(); }, anime ? 2600 : 1800);
       });
       retour.addEventListener("click", (e) => { e.stopPropagation(); fermerPanel(); });
@@ -1749,6 +1758,14 @@ if (globalThis.__kzLoaded !== true) {
       if (msg.type === "kz-bubble-withdraw") {
         if (bulleOuverte && msg.bubbleId && bulleOuverte.id === msg.bubbleId) { retraitRecent = true; bulleOuverte.retirer(); }
         try { sendResponse({ ok: true }); } catch (e) { /* noop */ }
+        return;
+      }
+      // L'absence prevenue depuis le popup : la bulle de ce rendez-vous se ferme.
+      if (msg.type === "kz-meeting-close") {
+        const m = meetingActive;
+        const ok = !!(m && msg.bubbleId && m.bubbleId === msg.bubbleId && !m.occupe());
+        if (ok) m.close();
+        try { if (typeof sendResponse === "function") sendResponse({ closed: ok }); } catch (e) { /* noop */ }
         return;
       }
       if (msg.type === "kz-meeting-last") {

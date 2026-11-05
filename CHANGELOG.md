@@ -21,7 +21,7 @@
 - **Meeting reminders reach you outside the browser:** when another app is in front, the start reminder, the red last call and the end reminder also arrive as system notifications, which stay until you close them.
 - **The room is shown** in meeting reminders and in the red last call: the booked room, or the location you typed.
 - **The end bubble turns red** for the last 2 minutes of a meeting.
-- **"Won't happen" and "Didn't happen":** one click in the start or end bubble takes the meeting out of your stats, then the bubble closes on its own. Telling attendees you will be absent does the same. Either way, the koala no longer stays quiet for that meeting and its remaining reminders are cancelled.
+- **"Won't happen" and "Didn't happen":** one click in the start or end bubble takes the meeting out of your stats, then the bubble closes on its own. Telling attendees you will be absent does the same, and closes the bubble too. Either way, the koala no longer stays quiet for that meeting and its remaining reminders are cancelled.
 - These new switches apply as soon as you click them.
 
 ### Fixed

@@ -449,7 +449,7 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === "kz-notify-send") {
-    notifyCible(msg, sender).then((c) => (c.ok ? notifySend(Object.assign({}, msg, { id: c.id, start: c.start }), c) : c))
+    notifyCible(msg, sender).then((c) => (c.ok ? notifySend(Object.assign({}, msg, { id: c.id, start: c.start, depuisPage: !!c.page }), c) : c))
       .then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
     return true;
   }
@@ -1637,6 +1637,17 @@ async function meetingSkip(id, start) {
   }
   return { ok: true, skipped: true };
 }
+// La bulle d'agenda ouverte de ce rendez-vous (meme heure de debut), fermee
+// par sa page avec sa sortie habituelle.
+async function agendaCloseBubbleOf(startMs) {
+  const st = await bubbleGet();
+  const type = st && st.payload ? st.payload.type : "";
+  if (!st || (type !== "kz-meeting-soon" && type !== "kz-meeting-end") || Number(st.payload.start) !== Number(startMs)) return false;
+  try {
+    const r = await api.tabs.sendMessage(st.tabId, { type: "kz-meeting-close", bubbleId: st.id });
+    return !!(r && r.closed);
+  } catch (e) { return false; }
+}
 // Une page ne vise que le rendez-vous de SA bulle d'agenda ouverte, debut
 // ou fin, relu dans l'etat de la bulle, jamais un identifiant qu'elle
 // fournirait.
@@ -2563,7 +2574,12 @@ async function notifySendVerrouille(p, kind, uniques, corpsLibre, r, cle, deja) 
   await kvSet({ notifySent: sent, notifyRate: quota.liste.concat([Date.now()]) });
   // Prevenir de son absence : la reunion n'aura pas lieu pour soi, elle sort
   // des statistiques comme avec "N'a pas eu lieu".
-  if (kind === "absent") await meetingSkip(p.id, p.start);
+  if (kind === "absent") {
+    await meetingSkip(p.id, p.start);
+    // Envoyee depuis le popup : la bulle de ce rendez-vous, ouverte dans une
+    // page, se ferme. Depuis la bulle, c'est elle qui se ferme apres l'avoir dit.
+    if (!p.depuisPage) await agendaCloseBubbleOf(p.start);
+  }
   return { ok: true, count: uniques.length, skipped: kind === "absent" };
 }
 
