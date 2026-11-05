@@ -19,6 +19,10 @@
 - **Choose which cats drop by:** during the day, in the evening from 5 pm, or when a video call starts. Each one has its own switch.
 - **A last call 20 seconds before a meeting:** a large red banner at the top of the page counts down, even if you closed the 5-minute bubble, and slips away on its own 3 seconds before the start. A 5-minute bubble you forgot to close leaves when it appears. It follows you if you switch tabs, and it no longer shows up late or leaves too early when the browser is slow to wake.
 - **Meeting reminders reach you outside the browser:** when another app is in front, the start reminder, the red last call and the end reminder also arrive as system notifications, which stay until you close them.
+- **Under the hood:** the background code is split into one file per area, and meeting decisions now live in a single record per meeting. Nothing changes for you.
+- **In-person meetings:** for a meeting in a room with no video link, the start reminder comes 10 minutes before, to give you time to get there.
+- **Your week:** a weekly report in Stats (habits, screen time, meetings, including those taken out, finished early or joined late, and emails). Turn it on to receive it every Monday at 8 am, by email from your mailbox to one of its own addresses: a readable page with each topic compared with the week before and the highlights of your week.
+- **Try a meeting:** a button in the Calendar card plays the whole sequence in 3 minutes on a test meeting, without touching your stats.
 - **A discreet meeting bar:** close a meeting bubble while the meeting is on, and a small bar stays at the bottom of the page with the time left, **Finish** (the meeting then counts only until your click) and **Didn't happen**.
 - **Running late?** After you tell attendees, the bubble closes and the red last call moves to your announced arrival time.
 - **Reminders keep up with you:** joining from the bubble, a meeting cancelled or moved in your calendar, or one you took out of your stats no longer leaves a red last call, a bubble or a system notification behind. System notifications also leave once the meeting has started or ended.

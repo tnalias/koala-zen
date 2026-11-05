@@ -444,6 +444,8 @@ async function refreshStatus() {
   const r = await getLocal(["pausedUntil"]);
   const until = Number(r.pausedUntil) || 0;
   const paused = until > Date.now();
+  pauseEnCours = paused;
+  paintPause();
   $("quickActions").hidden = paused;
   $("pausedNotice").hidden = !paused;
   if (paused) {
@@ -843,12 +845,15 @@ $("passagesRandomTgl").addEventListener("change", paintPassagesFreqWrap);
 
 /* Rappels d'habitude, eteints a part depuis le 2026-10-28 */
 // Mettre en pause dit ce qu'il arrete (2026-10-30) : les rappels d'habitude,
-// les animaux, ou les deux. Sans l'un ni l'autre, il n'y a rien a arreter et
-// la carte disparait. L'agenda, lui, n'est jamais mis en pause.
+// les animaux, ou les deux. L'agenda, lui, n'est jamais mis en pause.
+// 2026-11-05 : sans rappels d'habitude, la carte disparait, les animaux ont
+// leurs propres interrupteurs. Sauf une pause en cours : elle reste, avec
+// Reprendre, pour pouvoir la lever.
+let pauseEnCours = false;
 function paintPause() {
   const habitudes = habitsOn();
   const animaux = $("passagesTgl").checked;
-  $("pauseCard").hidden = !habitudes && !animaux;
+  $("pauseCard").hidden = !habitudes && !pauseEnCours;
   $("pauseHint").textContent = habitudes && animaux
     ? msg("pauseHintAll", "Coupe les rappels d'habitude et les animaux. Ta série reste intacte.")
     : (habitudes ? msg("pauseHintHabits", "Coupe les rappels d'habitude. Ta série reste intacte.") : msg("pauseHintAnimals", "Coupe les animaux de passage."));
@@ -2116,7 +2121,53 @@ $("replayTour").addEventListener("click", () => { showFirstRun(true); });
 function hasOtherHistory() {
   return Object.keys(SCREEN).some((k) => Number(SCREEN[k]) > 0) || hasMeetings() || hasMail();
 }
+// 2026-11-05 : le bilan de la semaine. Les lignes viennent du fond, qui
+// calcule aussi celui envoye par mail le lundi ; l'adresse est une adresse
+// de la boite choisie, relue a l'envoi.
+async function bilanPeint() {
+  const lignes = $("bilanLines");
+  const b = await sendR("kz-bilan", { decalage: 0 });
+  clear(lignes);
+  ((b && b.ok && Array.isArray(b.lignes)) ? b.lignes : []).forEach((l) => lignes.appendChild(el("li", "", l)));
+  const st = await sendR("kz-bilan-state");
+  const pret = !!(st && st.ok && st.mailReady);
+  $("bilanTgl").checked = pret && !!st.enabled;
+  $("bilanTgl").disabled = !pret;
+  $("bilanMailSub").textContent = pret ? msg("bilanMailHint", "Chaque lundi à 8 h, la semaine écoulée, à une adresse de ta boîte.") : msg("bilanNeedMail", "Connecte ton mail dans Réglages pour le recevoir.");
+  $("bilanMailBox").hidden = !pret || !st.enabled;
+  if (!pret || !st.enabled) return;
+  await bilanAdresses(st.email);
+}
+async function bilanAdresses(choisie) {
+  const sel = $("bilanEmail");
+  const r = await sendR("kz-notify-mailboxes");
+  clear(sel);
+  ((r && r.ok && Array.isArray(r.addresses)) ? r.addresses : []).forEach((a) => {
+    const o = el("option", "", a.email);
+    o.value = a.email;
+    if (a.email === choisie) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+function bilanErreur(code) {
+  return code === "bad_recipients" ? msg("bilanErrAddress", "Cette adresse n'est pas une adresse de ta boîte.") : ikErrText(code, "mail");
+}
+async function bilanRegle() {
+  const allume = $("bilanTgl").checked;
+  $("bilanMsg").textContent = "";
+  if (allume && !$("bilanEmail").options.length) await bilanAdresses("");
+  const r = await sendR("kz-bilan-set", { enabled: allume, email: $("bilanEmail").value });
+  if (!(r && r.ok)) {
+    $("bilanTgl").checked = false;
+    $("bilanMailBox").hidden = false;
+    $("bilanMsg").textContent = bilanErreur(r && r.error);
+    return;
+  }
+  $("bilanMailBox").hidden = !allume;
+}
+
 function renderStats() {
+  bilanPeint().catch(() => {});
   const habitudes = habitsOn();
   const empty = habitudes ? !hasHistory() : !hasOtherHistory();
   $("statsBlank").hidden = !empty;
@@ -3240,6 +3291,22 @@ async function save() {
 $("save").addEventListener("click", save);
 $("savePerso").addEventListener("click", save);
 $("now").addEventListener("click", () => { send("kz-trigger-now"); });
+// 2026-11-05 : le mode essai. Un faux rendez-vous joue toute la sequence
+// dans la page au premier plan ; le popup se ferme pour la laisser voir.
+$("bilanTgl").addEventListener("change", () => { bilanRegle().catch(() => {}); });
+$("bilanEmail").addEventListener("change", () => { bilanRegle().catch(() => {}); });
+$("bilanSendNow").addEventListener("click", async () => {
+  $("bilanSendNow").disabled = true;
+  $("bilanMsg").textContent = msg("notifySending", "Envoi…");
+  const r = await sendR("kz-bilan-send");
+  $("bilanSendNow").disabled = false;
+  $("bilanMsg").textContent = (r && r.ok) ? msg("bilanSent", "Envoyé à {a}.").replace("{a}", r.sentTo || "") : bilanErreur(r && r.error);
+});
+$("agendaDemo").addEventListener("click", async () => {
+  const r = await sendR("kz-demo-meeting");
+  if (r && r.ok) { window.close(); return; }
+  $("agendaDemoHint").textContent = msg("agendaDemoNoTab", "Ouvre une page web, puis relance l'essai.");
+});
 $("blankNow").addEventListener("click", () => { send("kz-trigger-now"); window.close(); });
 
 bindCheck("includeDefault", () => CFG.includeDefaultKoalas, (v) => { CFG.includeDefaultKoalas = v; });

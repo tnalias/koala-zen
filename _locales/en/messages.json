@@ -904,7 +904,7 @@
     "message": "5 min before the start"
   },
   "agendaWarnHint": {
-    "message": "Never miss the start. Blue bubble, then a red alert at 20 s."
+    "message": "Never miss the start: 10 min ahead for a room, red alert at 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min before the end"
@@ -1097,6 +1097,156 @@
   },
   "meetingFinishedAt": {
     "message": "Finished at {h}"
+  },
+  "agendaDemo": {
+    "message": "Try a meeting"
+  },
+  "agendaDemoHint": {
+    "message": "A fake meeting in 3 min, your stats untouched."
+  },
+  "agendaDemoNoTab": {
+    "message": "Open a web page, then try again."
+  },
+  "demoMeetingTitle": {
+    "message": "Test meeting"
+  },
+  "demoMeetingRoom": {
+    "message": "Test room"
+  },
+  "bilanTitle": {
+    "message": "Your week"
+  },
+  "bilanMailLabel": {
+    "message": "Weekly report by email"
+  },
+  "bilanMailHint": {
+    "message": "Every Monday at 8 am, the past week, to an address of your mailbox."
+  },
+  "bilanNeedMail": {
+    "message": "Connect your mail in Settings to receive it."
+  },
+  "bilanSendNow": {
+    "message": "Send last week's report"
+  },
+  "bilanSent": {
+    "message": "Sent to {a}."
+  },
+  "bilanEmpty": {
+    "message": "Nothing measured this week."
+  },
+  "bilanSubject": {
+    "message": "Koala Zen · your week from {d} to {f}"
+  },
+  "bilanFooter": {
+    "message": "Sent by Koala Zen from your mailbox, at your request. To stop it: Stats, Your week."
+  },
+  "bilanErrAddress": {
+    "message": "This address does not belong to your mailbox."
+  },
+  "bilanSame": {
+    "message": "same as the week before"
+  },
+  "bilanDelta": {
+    "message": "{d} compared with the week before"
+  },
+  "bilanPhraseRegular": {
+    "message": "Nicely steady: you reached your goal {j} days out of 7."
+  },
+  "bilanPhraseSaved": {
+    "message": "By finishing early, you gave {t} back to your week."
+  },
+  "bilanPhraseBusier": {
+    "message": "A busier week of meetings than the last one. Keep a few breaks for yourself."
+  },
+  "bilanPhraseLighter": {
+    "message": "Fewer meetings than the week before: time for you."
+  },
+  "bilanPhraseCalm": {
+    "message": "A quiet week, nothing to report."
+  },
+  "bilanPhraseDefault": {
+    "message": "Here is your week in a few numbers."
+  },
+  "bilanSecHabits": {
+    "message": "Habits"
+  },
+  "bilanHabitsBig": {
+    "message": "{n} done"
+  },
+  "bilanHabitsDetail": {
+    "message": "goal reached {j} days out of 7"
+  },
+  "bilanSecScreen": {
+    "message": "Screen time"
+  },
+  "bilanScreenDetail": {
+    "message": "{m} a day on average"
+  },
+  "bilanSecMeetings": {
+    "message": "Meetings"
+  },
+  "bilanMeetingsDetail": {
+    "message": "{n} meetings"
+  },
+  "bilanMeetSkipped": {
+    "message": "{n} taken out of stats"
+  },
+  "bilanMeetEarly": {
+    "message": "{n} finished early"
+  },
+  "bilanMeetLate": {
+    "message": "{n} late arrivals announced"
+  },
+  "bilanSecMail": {
+    "message": "Emails"
+  },
+  "bilanMailBig": {
+    "message": "{n} handled"
+  },
+  "bilanMailDetail": {
+    "message": "{n} sent"
+  },
+  "bilanHighlights": {
+    "message": "Highlights"
+  },
+  "bilanBestDay": {
+    "message": "Your best day: {j}, {n} habits done"
+  },
+  "bilanBusiestDay": {
+    "message": "Busiest day: {j}, {t} of meetings"
+  },
+  "bilanSavedTime": {
+    "message": "Time saved by finishing early: {t}"
+  },
+  "bilanMailTitle": {
+    "message": "Your week from {d} to {f}"
+  },
+  "bilanHabitsBigOne": {
+    "message": "1 done"
+  },
+  "bilanHabitsDetailOne": {
+    "message": "goal reached 1 day out of 7"
+  },
+  "bilanMeetingsDetailOne": {
+    "message": "1 meeting"
+  },
+  "bilanMeetSkippedOne": {
+    "message": "1 taken out of stats"
+  },
+  "bilanMeetEarlyOne": {
+    "message": "1 finished early"
+  },
+  "bilanMeetLateOne": {
+    "message": "1 late arrival announced"
+  },
+  "bilanMailBigOne": {
+    "message": "1 handled"
+  },
+  "bilanMailDetailOne": {
+    "message": "1 sent"
+  },
+  "bilanBestDayOne": {
+    "message": "Your best day: {j}, 1 habit done"
   },
   "meetingEnded": {
     "message": "Ended {t} ago"

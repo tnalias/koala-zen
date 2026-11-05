@@ -9,9 +9,9 @@
 **A friendly koala for your workday.** It reminds you to take small breaks, keeps you on time for your meetings, and shows you where your time goes. For **Chrome and Firefox**, free and open source.
 
 - **A gentle nudge, never a guilt trip.** Every 5 to 240 minutes, a koala suggests one small thing: stand up, drink some water, look away from the screen. Never during a video call.
-- **Never miss a meeting.** A bubble 5 minutes before, with the video link one click away, a red last call 20 seconds before, and a heads-up 6 minutes before the end that turns red for the last 2 minutes. A meeting that won't happen, or didn't, comes out of your stats in one click, and one that ends early counts only until you click Finish.
+- **Never miss a meeting.** A bubble 5 minutes before (10 for an in-person room), with the video link one click away, a red last call 20 seconds before, and a heads-up 6 minutes before the end that turns red for the last 2 minutes. A meeting that won't happen, or didn't, comes out of your stats in one click, and one that ends early counts only until you click Finish. Running late? Tell the attendees in one click and the red last call moves to your arrival time. A test button plays the whole sequence in 3 minutes.
 - **Running late? Let them know in one click.** A ready-made email to the attendees. You reread it, you send it.
-- **See where your time goes.** Habits, screen time, meetings and emails, day by day.
+- **See where your time goes.** Habits, screen time, meetings and emails, day by day, and a weekly report in your own mailbox every Monday if you want it.
 - **Make the koala yours.** Your own images or animated GIFs, your own habits and quotes. Or hide it for a sober, professional style.
 - **And sometimes, the cats chat.** From 5 pm, they remind you it's time to stop.
 
@@ -54,13 +54,13 @@
 
 - **Settings:** rhythm, pause, focus break, do not disturb, passing animals, and your Infomaniak calendar.
 - **Custom:** habits and daily target, quotes, your own koala, theme.
-- **Stats:** habits, screen time, meetings and emails, with your streak and record.
+- **Stats:** habits, screen time, meetings and emails, with your streak and record, and Your week, which can be emailed to you every Monday.
 - **Data:** export or import a backup file, erase your data.
 
 ## Privacy
 
 - Everything stays in your browser.
-- The Infomaniak features are optional, use your own tokens, and talk only to Infomaniak. Nothing is sent without a click from you.
+- The Infomaniak features are optional, use your own tokens, and talk only to Infomaniak. No email leaves without a click from you, except the weekly report you turn on, which goes only to an address of your own mailbox.
 - To cut access at any time, revoke your token in the Infomaniak Manager.
 - Found a security issue? Report it privately, see [SECURITY.md](SECURITY.md).
 

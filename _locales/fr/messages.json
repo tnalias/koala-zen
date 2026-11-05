@@ -904,7 +904,7 @@
     "message": "5 min avant le début"
   },
   "agendaWarnHint": {
-    "message": "Pour ne plus rater le début. Bulle bleue, puis alerte rouge à 20 s."
+    "message": "Ne rate plus le début : 10 min avant pour une salle, alerte à 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 min avant la fin"
@@ -1097,6 +1097,156 @@
   },
   "meetingFinishedAt": {
     "message": "Terminée à {h}"
+  },
+  "agendaDemo": {
+    "message": "Tester un rendez-vous"
+  },
+  "agendaDemoHint": {
+    "message": "Un faux rendez-vous en 3 min, sans toucher à tes stats."
+  },
+  "agendaDemoNoTab": {
+    "message": "Ouvre une page web, puis relance l'essai."
+  },
+  "demoMeetingTitle": {
+    "message": "Rendez-vous d'essai"
+  },
+  "demoMeetingRoom": {
+    "message": "Salle d'essai"
+  },
+  "bilanTitle": {
+    "message": "Ta semaine"
+  },
+  "bilanMailLabel": {
+    "message": "Le bilan par mail"
+  },
+  "bilanMailHint": {
+    "message": "Chaque lundi à 8 h, la semaine écoulée, à une adresse de ta boîte."
+  },
+  "bilanNeedMail": {
+    "message": "Connecte ton mail dans Réglages pour le recevoir."
+  },
+  "bilanSendNow": {
+    "message": "Envoyer celui de la semaine passée"
+  },
+  "bilanSent": {
+    "message": "Envoyé à {a}."
+  },
+  "bilanEmpty": {
+    "message": "Rien de mesuré cette semaine."
+  },
+  "bilanSubject": {
+    "message": "Koala Zen · ta semaine du {d} au {f}"
+  },
+  "bilanFooter": {
+    "message": "Envoyé par Koala Zen depuis ta boîte, à ta demande. Pour l'arrêter : Stats, Ta semaine."
+  },
+  "bilanErrAddress": {
+    "message": "Cette adresse n'est pas une adresse de ta boîte."
+  },
+  "bilanSame": {
+    "message": "comme la semaine d'avant"
+  },
+  "bilanDelta": {
+    "message": "{d} par rapport à la semaine d'avant"
+  },
+  "bilanPhraseRegular": {
+    "message": "Belle régularité : ton objectif atteint {j} jours sur 7."
+  },
+  "bilanPhraseSaved": {
+    "message": "En terminant plus tôt, tu as rendu {t} à ta semaine."
+  },
+  "bilanPhraseBusier": {
+    "message": "Une semaine plus chargée en réunions que la précédente. Garde-toi quelques pauses."
+  },
+  "bilanPhraseLighter": {
+    "message": "Moins de réunions que la semaine d'avant : du temps pour toi."
+  },
+  "bilanPhraseCalm": {
+    "message": "Une semaine calme, rien à signaler."
+  },
+  "bilanPhraseDefault": {
+    "message": "Voici ta semaine en quelques chiffres."
+  },
+  "bilanSecHabits": {
+    "message": "Habitudes"
+  },
+  "bilanHabitsBig": {
+    "message": "{n} faites"
+  },
+  "bilanHabitsDetail": {
+    "message": "objectif atteint {j} jours sur 7"
+  },
+  "bilanSecScreen": {
+    "message": "Temps d'écran"
+  },
+  "bilanScreenDetail": {
+    "message": "{m} par jour en moyenne"
+  },
+  "bilanSecMeetings": {
+    "message": "Réunions"
+  },
+  "bilanMeetingsDetail": {
+    "message": "{n} réunions"
+  },
+  "bilanMeetSkipped": {
+    "message": "{n} retirées des stats"
+  },
+  "bilanMeetEarly": {
+    "message": "{n} terminées plus tôt"
+  },
+  "bilanMeetLate": {
+    "message": "{n} retards annoncés"
+  },
+  "bilanSecMail": {
+    "message": "Mails"
+  },
+  "bilanMailBig": {
+    "message": "{n} traités"
+  },
+  "bilanMailDetail": {
+    "message": "{n} envoyés"
+  },
+  "bilanHighlights": {
+    "message": "Moments forts"
+  },
+  "bilanBestDay": {
+    "message": "Ton meilleur jour : {j}, {n} habitudes faites"
+  },
+  "bilanBusiestDay": {
+    "message": "Jour le plus chargé : {j}, {t} de réunions"
+  },
+  "bilanSavedTime": {
+    "message": "Temps gagné en terminant plus tôt : {t}"
+  },
+  "bilanMailTitle": {
+    "message": "Ta semaine du {d} au {f}"
+  },
+  "bilanHabitsBigOne": {
+    "message": "1 faite"
+  },
+  "bilanHabitsDetailOne": {
+    "message": "objectif atteint 1 jour sur 7"
+  },
+  "bilanMeetingsDetailOne": {
+    "message": "1 réunion"
+  },
+  "bilanMeetSkippedOne": {
+    "message": "1 retirée des stats"
+  },
+  "bilanMeetEarlyOne": {
+    "message": "1 terminée plus tôt"
+  },
+  "bilanMeetLateOne": {
+    "message": "1 retard annoncé"
+  },
+  "bilanMailBigOne": {
+    "message": "1 traité"
+  },
+  "bilanMailDetailOne": {
+    "message": "1 envoyé"
+  },
+  "bilanBestDayOne": {
+    "message": "Ton meilleur jour : {j}, 1 habitude faite"
   },
   "meetingEnded": {
     "message": "Terminé depuis {t}"

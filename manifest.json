@@ -21,6 +21,15 @@
   "background": {
     "service_worker": "background.js",
     "scripts": [
+      "fond/base.js",
+      "fond/animaux.js",
+      "fond/bulle.js",
+      "fond/securite.js",
+      "fond/agenda.js",
+      "fond/reunions.js",
+      "fond/mail.js",
+      "fond/stats-mail.js",
+      "fond/bilan.js",
       "background.js"
     ]
   },

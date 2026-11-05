@@ -904,7 +904,7 @@
     "message": "5 Min vor Beginn"
   },
   "agendaWarnHint": {
-    "message": "Nie den Beginn verpassen. Blaue Blase, dann rote Warnung bei 20 s."
+    "message": "Nie den Beginn verpassen: 10 Min. vorher für einen Raum, Warnung bei 20 s."
   },
   "agendaEndWarnLabel": {
     "message": "6 Min vor dem Ende"
@@ -1097,6 +1097,156 @@
   },
   "meetingFinishedAt": {
     "message": "Beendet um {h}"
+  },
+  "agendaDemo": {
+    "message": "Termin testen"
+  },
+  "agendaDemoHint": {
+    "message": "Ein Testtermin in 3 Min., deine Statistik bleibt unberührt."
+  },
+  "agendaDemoNoTab": {
+    "message": "Öffne eine Webseite und starte den Test erneut."
+  },
+  "demoMeetingTitle": {
+    "message": "Testtermin"
+  },
+  "demoMeetingRoom": {
+    "message": "Testraum"
+  },
+  "bilanTitle": {
+    "message": "Deine Woche"
+  },
+  "bilanMailLabel": {
+    "message": "Wochenbericht per Mail"
+  },
+  "bilanMailHint": {
+    "message": "Jeden Montag um 8 Uhr, die vergangene Woche, an eine Adresse deines Postfachs."
+  },
+  "bilanNeedMail": {
+    "message": "Verbinde deine Mail in den Einstellungen, um ihn zu erhalten."
+  },
+  "bilanSendNow": {
+    "message": "Bericht der letzten Woche senden"
+  },
+  "bilanSent": {
+    "message": "Gesendet an {a}."
+  },
+  "bilanEmpty": {
+    "message": "Diese Woche wurde nichts gemessen."
+  },
+  "bilanSubject": {
+    "message": "Koala Zen · deine Woche vom {d} bis {f}"
+  },
+  "bilanFooter": {
+    "message": "Von Koala Zen aus deinem Postfach gesendet, auf deinen Wunsch. Abstellen: Statistik, Deine Woche."
+  },
+  "bilanErrAddress": {
+    "message": "Diese Adresse gehört nicht zu deinem Postfach."
+  },
+  "bilanSame": {
+    "message": "wie in der Woche davor"
+  },
+  "bilanDelta": {
+    "message": "{d} im Vergleich zur Woche davor"
+  },
+  "bilanPhraseRegular": {
+    "message": "Schön regelmässig: Ziel an {j} von 7 Tagen erreicht."
+  },
+  "bilanPhraseSaved": {
+    "message": "Durch früheres Beenden hast du deiner Woche {t} zurückgegeben."
+  },
+  "bilanPhraseBusier": {
+    "message": "Eine Woche mit mehr Meetings als die letzte. Gönn dir ein paar Pausen."
+  },
+  "bilanPhraseLighter": {
+    "message": "Weniger Meetings als in der Woche davor: Zeit für dich."
+  },
+  "bilanPhraseCalm": {
+    "message": "Eine ruhige Woche, nichts zu melden."
+  },
+  "bilanPhraseDefault": {
+    "message": "Hier ist deine Woche in ein paar Zahlen."
+  },
+  "bilanSecHabits": {
+    "message": "Gewohnheiten"
+  },
+  "bilanHabitsBig": {
+    "message": "{n} erledigt"
+  },
+  "bilanHabitsDetail": {
+    "message": "Ziel an {j} von 7 Tagen erreicht"
+  },
+  "bilanSecScreen": {
+    "message": "Bildschirmzeit"
+  },
+  "bilanScreenDetail": {
+    "message": "{m} pro Tag im Schnitt"
+  },
+  "bilanSecMeetings": {
+    "message": "Meetings"
+  },
+  "bilanMeetingsDetail": {
+    "message": "{n} Meetings"
+  },
+  "bilanMeetSkipped": {
+    "message": "{n} aus der Statistik genommen"
+  },
+  "bilanMeetEarly": {
+    "message": "{n} früher beendet"
+  },
+  "bilanMeetLate": {
+    "message": "{n} angekündigte Verspätungen"
+  },
+  "bilanSecMail": {
+    "message": "Mails"
+  },
+  "bilanMailBig": {
+    "message": "{n} bearbeitet"
+  },
+  "bilanMailDetail": {
+    "message": "{n} gesendet"
+  },
+  "bilanHighlights": {
+    "message": "Höhepunkte"
+  },
+  "bilanBestDay": {
+    "message": "Dein bester Tag: {j}, {n} Gewohnheiten erledigt"
+  },
+  "bilanBusiestDay": {
+    "message": "Vollster Tag: {j}, {t} Meetings"
+  },
+  "bilanSavedTime": {
+    "message": "Durch früheres Beenden gewonnen: {t}"
+  },
+  "bilanMailTitle": {
+    "message": "Deine Woche vom {d} bis {f}"
+  },
+  "bilanHabitsBigOne": {
+    "message": "1 erledigt"
+  },
+  "bilanHabitsDetailOne": {
+    "message": "Ziel an 1 von 7 Tagen erreicht"
+  },
+  "bilanMeetingsDetailOne": {
+    "message": "1 Meeting"
+  },
+  "bilanMeetSkippedOne": {
+    "message": "1 aus der Statistik genommen"
+  },
+  "bilanMeetEarlyOne": {
+    "message": "1 früher beendet"
+  },
+  "bilanMeetLateOne": {
+    "message": "1 angekündigte Verspätung"
+  },
+  "bilanMailBigOne": {
+    "message": "1 bearbeitet"
+  },
+  "bilanMailDetailOne": {
+    "message": "1 gesendet"
+  },
+  "bilanBestDayOne": {
+    "message": "Dein bester Tag: {j}, 1 Gewohnheit erledigt"
   },
   "meetingEnded": {
     "message": "Seit {t} vorbei"

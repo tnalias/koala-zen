@@ -358,6 +358,10 @@
     .card-t { flex: 1 1 auto; font-size: 14px; line-height: 19px; font-weight: 500; color: var(--g600); }
     .card-m { font-size: 12px; color: var(--g500); text-align: right; }
     .hint { font-size: 12px; line-height: 17px; color: var(--g500); }
+    .bilan-l { margin: 8px 0 12px; padding: 0 0 0 16px; font-size: 13px; line-height: 19px; }
+    .bilan-l li + li { margin-top: 2px; }
+    #bilanMailBox { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    #bilanMailBox[hidden] { display: none; }
     .sep { height: 1px; background: var(--g200); margin: 0 -12px; }
 
     .row { display: flex; align-items: center; gap: 10px; }
@@ -953,7 +957,7 @@
             <div class="row">
               <div class="row-txt">
                 <div class="row-lab" data-i18n="agendaWarnLabel">5 min avant le début</div>
-                <div class="row-sub" data-i18n="agendaWarnHint">Pour ne plus rater le début. Bulle bleue, puis alerte rouge à 20 s.</div>
+                <div class="row-sub" data-i18n="agendaWarnHint">Ne rate plus le début : 10 min avant pour une salle, alerte à 20 s.</div>
               </div>
               <label class="sw"><input type="checkbox" id="agendaWarnTgl" checked data-i18n-aria="agendaWarnLabel"><span class="sw-t"></span></label>
             </div>
@@ -964,6 +968,7 @@
               </div>
               <label class="sw"><input type="checkbox" id="agendaEndWarnTgl" checked data-i18n-aria="agendaEndWarnLabel"><span class="sw-t"></span></label>
             </div>
+            <div class="row-sub" id="agendaDemoLine"><button type="button" class="tiny" id="agendaDemo" data-i18n="agendaDemo">Tester un rendez-vous</button> <span id="agendaDemoHint" data-i18n="agendaDemoHint">Un faux rendez-vous en 3 min, sans toucher à tes stats.</span></div>
             <div class="surt" data-i18n="agendaGrpMail">Mail</div>
             <div class="row-sub" id="mailBoxLine" hidden></div>
             <div class="row">
@@ -1605,6 +1610,23 @@
         </div>
         <div class="prog"><div class="prog-f" id="streakFill"></div></div>
         <div class="hint" id="streakGoal"></div>
+      </section>
+
+      <section class="card" id="bilanCard">
+        <div class="card-t" data-i18n="bilanTitle">Ta semaine</div>
+        <ul class="bilan-l" id="bilanLines"></ul>
+        <div class="row">
+          <div class="row-txt">
+            <div class="row-lab" data-i18n="bilanMailLabel">Le bilan par mail</div>
+            <div class="row-sub" id="bilanMailSub" data-i18n="bilanMailHint">Chaque lundi à 8 h, la semaine écoulée, à une adresse de ta boîte.</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="bilanTgl" data-i18n-aria="bilanMailLabel"><span class="sw-t"></span></label>
+        </div>
+        <div id="bilanMailBox" hidden>
+          <select id="bilanEmail" class="field" data-i18n-aria="bilanMailLabel"></select>
+          <button type="button" class="tiny" id="bilanSendNow" data-i18n="bilanSendNow">Envoyer celui de la semaine passée</button>
+          <div class="hint" id="bilanMsg" role="status"></div>
+        </div>
       </section>
 
     </div>

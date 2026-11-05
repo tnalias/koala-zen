@@ -495,6 +495,8 @@ if (globalThis.__kzLoaded !== true) {
       if (!id) return;
       const msg = { type: "kz-bubble-closed", bubbleId: id };
       if (parUtilisateur === true) msg.byUser = true;
+      // Une bulle d'essai n'existe pas pour le fond.
+      if (String(id).indexOf("essai") === 0) return;
       try { api.runtime.sendMessage(msg); } catch (e) { /* noop */ }
     }
 
@@ -1376,7 +1378,8 @@ if (globalThis.__kzLoaded !== true) {
           const boutons = Array.prototype.slice.call(actions.querySelectorAll("button"));
           boutons.forEach((x) => { x.disabled = true; });
           let envoi = null;
-          try { envoi = api.runtime.sendMessage({ type: "kz-meeting-skip", bubbleId: info.bubbleId }); } catch (err) { envoi = null; }
+          if (info.demo) envoi = { ok: true };
+          else { try { envoi = api.runtime.sendMessage({ type: "kz-meeting-skip", bubbleId: info.bubbleId }); } catch (err) { envoi = null; } }
           Promise.resolve(envoi).then((r) => {
             if (!(r && r.ok)) { boutons.forEach((x) => { x.disabled = false; }); return; }
             // Retiree : la bulle le dit, puis se ferme d'elle-meme.
@@ -1751,6 +1754,29 @@ if (globalThis.__kzLoaded !== true) {
       return true;
     }
 
+    // 2026-11-05 : le mode essai. Un faux rendez-vous en trois minutes, avec
+    // les vrais elements a l'ecran : bulle du debut (debut dans 30 s), alerte
+    // rouge a 20 s, bulle de fin (fin dans 2 min, rouge sous 2 min), barre
+    // apres Fermer. Ses boutons ne touchent ni aux stats ni a l'agenda.
+    let demoEnCours = false;
+    const DEMO_START_MS = 30000;
+    const DEMO_END_AT_MS = 32000;
+    const DEMO_LEFT_MS = 128000;
+    const LAST_BEFORE_DEMO_MS = 20000;
+    function runDemoMeeting() {
+      if (demoEnCours) return false;
+      demoEnCours = true;
+      const t0 = Date.now();
+      const base = { id: "essai", demo: true, title: kzMsg("demoMeetingTitle", "Rendez-vous d'essai"), start: t0 + DEMO_START_MS, end: t0 + DEMO_END_AT_MS + DEMO_LEFT_MS, url: "", people: 2, room: kzMsg("demoMeetingRoom", "Salle d'essai") };
+      accueilleMeeting(Object.assign({}, base, { type: "kz-meeting-soon", bubbleId: "essai-debut", minutes: 1 }), "soon", () => {});
+      armLastCall({ id: "essai", title: base.title, start: base.start, showAt: base.start - LAST_BEFORE_DEMO_MS, room: base.room });
+      setTimeout(() => {
+        accueilleMeeting(Object.assign({}, base, { type: "kz-meeting-end", bubbleId: "essai-fin", minutes: Math.max(1, Math.round((base.end - Date.now()) / 60000)) }), "end", () => {});
+      }, DEMO_END_AT_MS);
+      setTimeout(() => { demoEnCours = false; }, DEMO_END_AT_MS + DEMO_LEFT_MS + 1000);
+      return true;
+    }
+
     // 2026-11-05 : le rendez-vous est retire, rejoint, annule ou deplace :
     // son alerte, armee ou deja a l'ecran, part. Rien n'est cree pour ca.
     function cancelLastCall(start) {
@@ -1804,7 +1830,14 @@ if (globalThis.__kzLoaded !== true) {
         // Retiree parce qu'elle suit l'utilisateur ailleurs, elle part sans bruit.
         while (!fini) await sleep(150);
         if (retiree) bulleOuverte = null;
-        else { fermeBulle(info.bubbleId, parToi); await playExit(k); }
+        else {
+          fermeBulle(info.bubbleId, parToi);
+          // L'essai demande sa barre au fond, comme une vraie : elle suit les onglets.
+          if (info.demo && parToi && Date.now() >= Number(info.start) && Date.now() < Number(info.end)) {
+            try { api.runtime.sendMessage({ type: "kz-demo-bar", title: info.title, start: info.start, end: info.end }); } catch (e) { /* noop */ }
+          }
+          await playExit(k);
+        }
       } catch (e) {
         try { console.warn("Koala Zen, rappel de rendez-vous interrompu,", e && e.message); } catch (_) { /* noop */ }
         if (!annonce) repondre({ shown: false });
@@ -1862,6 +1895,14 @@ if (globalThis.__kzLoaded !== true) {
         if (bulleOuverte && msg.bubbleId && bulleOuverte.id === msg.bubbleId) { retraitRecent = true; bulleOuverte.retirer(); }
         try { sendResponse({ ok: true }); } catch (e) { /* noop */ }
         return;
+      }
+      if (msg.type === "kz-demo-meeting") {
+        loadSettings().catch(() => {}).then(() => {
+          let ok = false;
+          try { ok = runDemoMeeting(); } catch (e) { ok = false; }
+          try { if (typeof sendResponse === "function") sendResponse({ shown: ok }); } catch (e) { /* noop */ }
+        });
+        return true;
       }
       if (msg.type === "kz-meeting-bar") {
         loadSettings().catch(() => {}).then(() => {
