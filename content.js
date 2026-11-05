@@ -231,6 +231,18 @@ if (globalThis.__kzLoaded !== true) {
 .kz-btn--notify:hover { color: #1B4A7A; }
 .kz-btn--notify[disabled] { color: #666666; cursor: default; }
 .kz-hide { display: none !important; }
+/* 2026-11-05 : la barre de reunion, discrete, en bas au centre. */
+.kz-mbar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: calc(100vw - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 9999px; background: #FFFFFF; border: 1px solid #E0E0E0; box-shadow: 0 4px 12px rgba(16,24,40,0.10); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 13px; line-height: 18px; color: #333333; pointer-events: auto; }
+.kz-mbar-t { min-width: 0; max-width: 280px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kz-mbar-c { flex: 0 0 auto; color: #666666; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kz-mbar button { flex: 0 0 auto; font: inherit; font-size: 13px; line-height: 18px; height: 28px; border: none; border-radius: 9999px; cursor: pointer; }
+.kz-mbar-fin { padding: 0 12px; background: #2E3338; color: #FFFFFF; font-weight: 500; }
+.kz-mbar-fin:hover { background: #3A3F43; }
+.kz-mbar-skip { padding: 0 8px; background: none; color: #666666; }
+.kz-mbar-skip:hover, .kz-mbar-x:hover { color: #333333; }
+.kz-mbar-x { width: 28px; padding: 0; background: none; color: #666666; }
+.kz-mbar button:focus-visible { outline: 3px solid #2FAE4A; outline-offset: 1px; }
+.kz-mbar button[disabled] { cursor: default; }
 /* 2026-11-03 : le dernier avertissement, vingt secondes avant le debut. Hors
    de la bulle, en haut au centre, rouge plein, en grand : le titre puis le
    compte. Il part seul trois secondes avant le debut : il se contracte, monte
@@ -478,10 +490,12 @@ if (globalThis.__kzLoaded !== true) {
     // retiree finit de se ranger, la bulle suivante l'attend un instant.
     let retraitRecent = false;
     function ouvreBulle(id, prompt, retirer) { bulleOuverte = id ? { id: id, prompt: prompt || "", retirer: retirer } : null; }
-    function fermeBulle(id) {
+    function fermeBulle(id, parUtilisateur) {
       bulleOuverte = null;
       if (!id) return;
-      try { api.runtime.sendMessage({ type: "kz-bubble-closed", bubbleId: id }); } catch (e) { /* noop */ }
+      const msg = { type: "kz-bubble-closed", bubbleId: id };
+      if (parUtilisateur === true) msg.byUser = true;
+      try { api.runtime.sendMessage(msg); } catch (e) { /* noop */ }
     }
 
     function fmtDuration(totalSec) {
@@ -1291,7 +1305,7 @@ if (globalThis.__kzLoaded !== true) {
       r.appendChild(t);
       return r;
     }
-    function buildMeetingBubble(info, kind, onJoin, onClose) {
+    function buildMeetingBubble(info, kind, onJoin, onClose, onDismiss) {
       const fin = kind === "end";
       const b = document.createElement("div");
       b.className = "kz-bubble kz-bubble--act kz-bubble--meet" + (fin ? " kz-bubble--meetend" : "");
@@ -1378,7 +1392,7 @@ if (globalThis.__kzLoaded !== true) {
       }
       const close = document.createElement("button");
       close.type = "button"; close.className = "kz-btn kz-btn--close"; close.textContent = kzMsg("meetingClose", "Fermer");
-      close.addEventListener("click", (e) => { e.stopPropagation(); onClose(); });
+      close.addEventListener("click", (e) => { e.stopPropagation(); (onDismiss || onClose)(); });
       actions.appendChild(close);
       b.appendChild(actions);
       return b;
@@ -1539,9 +1553,11 @@ if (globalThis.__kzLoaded !== true) {
         panel.appendChild(ok);
         // 2026-11-05 : prevenir de son absence retire la reunion des stats
         // (fait par le fond) ; la bulle le dit, puis se ferme d'elle-meme.
-        if (r.skipped) {
+        // Un retard annonce decale l'alerte rouge ; la bulle le dit et se ferme.
+        if (r.skipped || r.late) {
           const retiree = document.createElement("div"); retiree.className = "kz-notify-msg";
-          retiree.textContent = kzMsg("meetingSkipped", "Retirée de tes statistiques");
+          retiree.textContent = r.skipped ? kzMsg("meetingSkipped", "Retirée de tes statistiques")
+            : kzMsg("meetingLateShifted", "Alerte décalée à {h}").replace("{h}", agendaHeure((Number(data.start) || 0) + Number(r.late) * 60000));
           panel.appendChild(retiree);
           setTimeout(() => { if (panel.parentNode) fermerPanel(); onClose(); }, anime ? 2600 : 1800);
           return;
@@ -1580,7 +1596,7 @@ if (globalThis.__kzLoaded !== true) {
     let lastArmed = null;
     function armLastCall(info) {
       if (lastArmed) lastArmed.annule();
-      const debut = Number(info.start) || 0;
+      const debut = Number(info.at) || Number(info.start) || 0;
       if (debut - Date.now() <= LAST_GONE_MS) return false;
       let minuteur = null;
       let fini = false;
@@ -1597,7 +1613,7 @@ if (globalThis.__kzLoaded !== true) {
         annule();
         showLastCall(info);
       };
-      lastArmed = { annule: annule };
+      lastArmed = { annule: annule, start: Number(info.start) || 0 };
       document.addEventListener("visibilitychange", surVisibilite);
       // Abandon a trois secondes du debut si la page n'a jamais ete montree.
       setTimeout(() => { if (!fini) annule(); }, Math.max(0, debut - LAST_GONE_MS - Date.now()));
@@ -1614,7 +1630,7 @@ if (globalThis.__kzLoaded !== true) {
       if (m && m.kind === "soon" && m.start === (Number(info.start) || 0) && !m.occupe()) m.close();
       const shadow = ensureShadow();
       shadow.querySelectorAll(".kz-last").forEach((n) => n.remove());
-      const debut = Number(info.start) || 0;
+      const debut = Number(info.at) || Number(info.start) || 0;
       if (debut - Date.now() <= LAST_GONE_MS) return false;
       const calme = reduceMotion();
       const w = document.createElement("div");
@@ -1655,14 +1671,93 @@ if (globalThis.__kzLoaded !== true) {
       const tick = () => {
         const reste = debut - Date.now();
         // Il part sur "3 s", le chiffre qu'il annonce en partant.
-        compte.textContent = kzMsg("meetingLastCount", "commence dans {s} s").replace("{s}", Math.max(3, Math.ceil(reste / 1000)));
+        compte.textContent = (info.late ? kzMsg("meetingLastLateCount", "à rejoindre dans {s} s") : kzMsg("meetingLastCount", "commence dans {s} s")).replace("{s}", Math.max(3, Math.ceil(reste / 1000)));
         if (reste <= LAST_GONE_MS) part();
       };
       tick();
       minuteur = setInterval(tick, 200);
       w.addEventListener("click", (e) => { e.stopPropagation(); part(); });
+      w.kzStart = Number(info.start) || 0;
+      w.kzPart = part;
       shadow.appendChild(w);
       return true;
+    }
+
+    // 2026-11-05 : la barre de reunion. Une seule a la fois ; la meme barre
+    // renvoyee (page rechargee, onglet active) n'est pas redessinee.
+    const MBAR_DONE_MS = 1500;
+    function hideMeetingBar(barId) {
+      const sh = kzShadowDe(document.getElementById(HOST_ID));
+      const el = sh && sh.querySelector(".kz-mbar");
+      if (el && (!barId || el.kzBarId === barId) && typeof el.kzOff === "function") el.kzOff();
+    }
+    function showMeetingBar(info) {
+      const fin = Number(info.end) || 0;
+      if (!info.barId || fin <= Date.now()) return false;
+      const shadow = ensureShadow();
+      const ancienne = shadow.querySelector(".kz-mbar");
+      if (ancienne && ancienne.kzBarId === info.barId) return true;
+      if (ancienne && typeof ancienne.kzOff === "function") ancienne.kzOff();
+      const w = document.createElement("div");
+      w.className = "kz-mbar";
+      w.setAttribute("role", "status");
+      w.kzBarId = info.barId;
+      const titre = document.createElement("span");
+      titre.className = "kz-mbar-t";
+      titre.textContent = String(info.title || "").trim() || kzMsg("meetingUntitled", "Sans titre");
+      const compte = document.createElement("span");
+      compte.className = "kz-mbar-c";
+      const bouton = (classe, texte) => { const x = document.createElement("button"); x.type = "button"; x.className = classe; x.textContent = texte; return x; };
+      const terminer = bouton("kz-mbar-fin", kzMsg("meetingBarFinish", "Terminer"));
+      const saut = bouton("kz-mbar-skip", kzMsg("meetingSkip", "N'a pas eu lieu"));
+      const masquer = bouton("kz-mbar-x", "×");
+      masquer.setAttribute("aria-label", kzMsg("meetingBarHide", "Masquer"));
+      [titre, compte, terminer, saut, masquer].forEach((n) => w.appendChild(n));
+      let minuteur = null;
+      let fige = false;
+      const off = () => { clearInterval(minuteur); if (w.parentNode) w.remove(); };
+      w.kzOff = off;
+      const tick = () => {
+        if (fige) return;
+        const reste = fin - Date.now();
+        if (reste <= 0) { off(); return; }
+        compte.textContent = kzMsg("meetingEndCountdown", "Se termine dans {t}").replace("{t}", fmtCount(reste));
+      };
+      const decide = (type, confirme) => (e) => {
+        e.stopPropagation();
+        if (!kzGesteReel(e) || terminer.disabled) return;
+        const boutons = [terminer, saut, masquer];
+        boutons.forEach((x) => { x.disabled = true; });
+        let envoi = null;
+        try { envoi = api.runtime.sendMessage({ type: type, barId: info.barId }); } catch (err) { envoi = null; }
+        Promise.resolve(envoi).then((r) => {
+          if (!(r && r.ok)) { boutons.forEach((x) => { x.disabled = false; }); return; }
+          fige = true;
+          compte.textContent = confirme(r);
+          setTimeout(off, MBAR_DONE_MS);
+        }).catch(() => { boutons.forEach((x) => { x.disabled = false; }); });
+      };
+      terminer.addEventListener("click", decide("kz-meeting-finish", (r) => kzMsg("meetingFinishedAt", "Terminée à {h}").replace("{h}", agendaHeure(Number(r.endedAt) || Date.now()))));
+      saut.addEventListener("click", decide("kz-meeting-bar-skip", () => kzMsg("meetingSkipped", "Retirée de tes statistiques")));
+      masquer.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!kzGesteReel(e)) return;
+        try { api.runtime.sendMessage({ type: "kz-meeting-bar-close", barId: info.barId }); } catch (err) { /* noop */ }
+        off();
+      });
+      tick();
+      minuteur = setInterval(tick, 1000);
+      shadow.appendChild(w);
+      return true;
+    }
+
+    // 2026-11-05 : le rendez-vous est retire, rejoint, annule ou deplace :
+    // son alerte, armee ou deja a l'ecran, part. Rien n'est cree pour ca.
+    function cancelLastCall(start) {
+      const s = Number(start) || 0;
+      if (lastArmed && lastArmed.start === s) lastArmed.annule();
+      const sh = kzShadowDe(document.getElementById(HOST_ID));
+      if (sh) sh.querySelectorAll(".kz-last").forEach((w) => { if (w.kzStart === s && typeof w.kzPart === "function") w.kzPart(); });
     }
 
     async function runMeeting(info, kind, repondre) {
@@ -1681,18 +1776,26 @@ if (globalThis.__kzLoaded !== true) {
         // est ouvert, la bulle ensuite.
         // armEscape n'ecoute qu'une fois : apres avoir ferme le volet, on se
         // rearme pour que l'Echap suivant ferme bien la bulle.
-        const fermer = () => { if (b && b.kzPanelClose) { b.kzPanelClose(); desarme = armEscape(fermer); return; } fini = true; };
+        // parToi : la bulle est fermee par l'utilisateur (Fermer, Echap, clic
+        // sur le koala), pas par une decision ou par le fond. Pendant la
+        // reunion, la barre de reunion prend alors le relais.
+        let parToi = false;
+        const fermer = (parUtilisateur) => { if (b && b.kzPanelClose) { b.kzPanelClose(); desarme = armEscape(fermerMain); return; } parToi = parUtilisateur === true; fini = true; };
+        const fermerMain = () => fermer(true);
         let retiree = false;
         meetingActive = { bubbleId: info.bubbleId, kind: kind, start: Number(info.start) || 0, occupe: () => !!(b && b.kzPanelClose), close: () => { fini = true; } };
-        k.addEventListener("click", fermer);
+        k.addEventListener("click", fermerMain);
         if (!info.instant) { playEnter(k); await sleep(arrivalMs(k)); }
         b = buildMeetingBubble(info, kind, () => {
           try { api.runtime.sendMessage({ type: "kz-open-url", url: info.url }); } catch (e) { /* noop */ }
+          // Rejoint : l'alerte rouge de ce rendez-vous n'a plus lieu d'etre.
+          cancelLastCall(info.start);
+          if (info.bubbleId) { try { api.runtime.sendMessage({ type: "kz-meeting-joined", bubbleId: info.bubbleId }); } catch (e) { /* noop */ } }
           fermer();
-        }, fermer);
+        }, fermer, fermerMain);
         openBubble(k, b);
         stagger(b);
-        desarme = armEscape(fermer);
+        desarme = armEscape(fermerMain);
         annonce = true;
         ouvreBulle(info.bubbleId, "", () => { retiree = true; fini = true; });
         repondre({ shown: true });
@@ -1701,7 +1804,7 @@ if (globalThis.__kzLoaded !== true) {
         // Retiree parce qu'elle suit l'utilisateur ailleurs, elle part sans bruit.
         while (!fini) await sleep(150);
         if (retiree) bulleOuverte = null;
-        else { fermeBulle(info.bubbleId); await playExit(k); }
+        else { fermeBulle(info.bubbleId, parToi); await playExit(k); }
       } catch (e) {
         try { console.warn("Koala Zen, rappel de rendez-vous interrompu,", e && e.message); } catch (_) { /* noop */ }
         if (!annonce) repondre({ shown: false });
@@ -1758,6 +1861,24 @@ if (globalThis.__kzLoaded !== true) {
       if (msg.type === "kz-bubble-withdraw") {
         if (bulleOuverte && msg.bubbleId && bulleOuverte.id === msg.bubbleId) { retraitRecent = true; bulleOuverte.retirer(); }
         try { sendResponse({ ok: true }); } catch (e) { /* noop */ }
+        return;
+      }
+      if (msg.type === "kz-meeting-bar") {
+        loadSettings().catch(() => {}).then(() => {
+          let ok = false;
+          try { ok = showMeetingBar(msg); } catch (e) { ok = false; }
+          try { if (typeof sendResponse === "function") sendResponse({ shown: ok }); } catch (e) { /* noop */ }
+        });
+        return true;
+      }
+      if (msg.type === "kz-meeting-bar-hide") {
+        hideMeetingBar(msg.barId);
+        try { if (typeof sendResponse === "function") sendResponse({ ok: true }); } catch (e) { /* noop */ }
+        return;
+      }
+      if (msg.type === "kz-meeting-last-cancel") {
+        cancelLastCall(msg.start);
+        try { if (typeof sendResponse === "function") sendResponse({ ok: true }); } catch (e) { /* noop */ }
         return;
       }
       // L'absence prevenue depuis le popup : la bulle de ce rendez-vous se ferme.

@@ -19,6 +19,9 @@
 - **Choose which cats drop by:** during the day, in the evening from 5 pm, or when a video call starts. Each one has its own switch.
 - **A last call 20 seconds before a meeting:** a large red banner at the top of the page counts down, even if you closed the 5-minute bubble, and slips away on its own 3 seconds before the start. A 5-minute bubble you forgot to close leaves when it appears. It follows you if you switch tabs, and it no longer shows up late or leaves too early when the browser is slow to wake.
 - **Meeting reminders reach you outside the browser:** when another app is in front, the start reminder, the red last call and the end reminder also arrive as system notifications, which stay until you close them.
+- **A discreet meeting bar:** close a meeting bubble while the meeting is on, and a small bar stays at the bottom of the page with the time left, **Finish** (the meeting then counts only until your click) and **Didn't happen**.
+- **Running late?** After you tell attendees, the bubble closes and the red last call moves to your announced arrival time.
+- **Reminders keep up with you:** joining from the bubble, a meeting cancelled or moved in your calendar, or one you took out of your stats no longer leaves a red last call, a bubble or a system notification behind. System notifications also leave once the meeting has started or ended.
 - **The room is shown** in meeting reminders and in the red last call: the booked room, or the location you typed.
 - **The end bubble turns red** for the last 2 minutes of a meeting.
 - **"Won't happen" and "Didn't happen":** one click in the start or end bubble takes the meeting out of your stats, then the bubble closes on its own. Telling attendees you will be absent does the same, and closes the bubble too. Either way, the koala no longer stays quiet for that meeting and its remaining reminders are cancelled.

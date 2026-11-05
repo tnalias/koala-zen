@@ -307,7 +307,7 @@ api.alarms.onAlarm.addListener((alarm) => {
 // Les messages qu'une page (content.js) a le droit d'envoyer. Tout le reste
 // (jetons, connexions, reglages, sauvegardes) ne s'accepte que d'une page de
 // l'extension (popup).
-const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed", "kz-meeting-skip"];
+const PAGE_MESSAGES = ["kz-outcome", "kz-notify-prepare", "kz-notify-send", "kz-open-url", "kz-bubble-closed", "kz-meeting-skip", "kz-meeting-joined", "kz-meeting-finish", "kz-meeting-bar-skip", "kz-meeting-bar-close"];
 function depuisExtension(sender) {
   // Refus par defaut : seule une page de l'extension (adresse sous sa
   // racine) est de confiance.
@@ -357,6 +357,8 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // d'habitude mis de cote par ce rendez-vous revient alors a l'ecran.
     bubbleGet().then(async (st) => {
       if (!(st && st.id === msg.bubbleId && sender && sender.tab && sender.tab.id === st.tabId)) return;
+      await agendaNotifsClear(agendaNotifIdOf(st.payload));
+      if (msg.byUser === true) await meetingBarFromBubble(st.payload);
       if (st.parked) { await bubbleWrite(Object.assign({}, st.parked, { perdue: true, parked: null })); await bubbleQueue(); }
       else await bubbleClear(st.id);
     }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
@@ -459,6 +461,24 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === "kz-connexions-import") {
     connexionsImport(msg.blob, msg.passphrase).then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
+    return true;
+  }
+  if (msg.type === "kz-meeting-finish" || msg.type === "kz-meeting-bar-skip" || msg.type === "kz-meeting-bar-close") {
+    // La barre de reunion : Terminer, N'a pas eu lieu, ou la masquer. Elle
+    // ne vise que la reunion de la barre en cours, par son identifiant.
+    barCible(msg, sender).then((b) => {
+      if (!b) return { ok: false, error: "not_allowed" };
+      if (msg.type === "kz-meeting-finish") return meetingFinish(b.id, b.start);
+      if (msg.type === "kz-meeting-bar-skip") return meetingSkip(b.id, b.start);
+      return barHide(b.start).then(() => ({ ok: true }));
+    }).then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
+    return true;
+  }
+  if (msg.type === "kz-meeting-joined") {
+    // Rejoindre la visio depuis la bulle du debut : l'alerte rouge n'a plus
+    // lieu d'etre, ni la notification du debut.
+    meetingSkipCible(msg, sender).then((c) => (c.ok ? agendaJoined(c.id, c.start) : c))
+      .then((r) => sendResponse(r)).catch(() => sendResponse({ ok: false, error: "unknown" }));
     return true;
   }
   if (msg.type === "kz-meeting-skip") {
@@ -993,7 +1013,7 @@ function bubbleQueue(opts) {
   bubbleChain = bubbleChain.then(() => bubbleFollow(opts)).catch(() => {});
   return bubbleChain;
 }
-if (api.tabs && api.tabs.onActivated) api.tabs.onActivated.addListener(() => { bubbleQueue(); });
+if (api.tabs && api.tabs.onActivated) api.tabs.onActivated.addListener((info) => { bubbleQueue(); if (info && info.tabId != null) barRelay(info.tabId).catch(() => {}); });
 if (api.windows && api.windows.onFocusChanged) {
   api.windows.onFocusChanged.addListener((windowId) => {
     // WINDOW_ID_NONE : le navigateur perd le premier plan, rien a suivre.
@@ -1004,7 +1024,7 @@ if (api.windows && api.windows.onFocusChanged) {
 if (api.tabs && api.tabs.onRemoved) api.tabs.onRemoved.addListener((tabId) => { bubbleQueue({ lost: tabId }); });
 if (api.tabs && api.tabs.onUpdated) {
   api.tabs.onUpdated.addListener((tabId, info) => {
-    if (info && info.status === "complete") bubbleQueue({ lost: tabId });
+    if (info && info.status === "complete") { bubbleQueue({ lost: tabId }); barRelay(tabId).catch(() => {}); }
   });
 }
 
@@ -1130,7 +1150,7 @@ async function securityMigrateV3() {
 // Les stats (nombres seulement) restent dans storage.local, le popup les lit
 // directement.
 // ===========================================================================
-const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "agendaLastOutWarned", "agendaRooms", "meetingSkipped", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
+const VAULT_KEYS = ["agendaCache", "agendaState", "agendaMyEmail", "agendaMyUserId", "agendaCalendars", "agendaCalendarName", "agendaCalendarId", "agendaWarned", "agendaEndWarned", "agendaLastWarned", "agendaLastOutWarned", "agendaRooms", "meetingSkipped", "meetingLate", "meetingEnded", "agendaTokenEnc", "notifyTokenEnc", "notifyMailboxUuid", "notifyMailboxEmail", "notifyMailboxName", "notifyMailboxHosting", "notifyMailboxLogin", "notifySent", "notifyNonces", "notifyRate"];
 function estCoffre(k) { return VAULT_KEYS.indexOf(k) >= 0; }
 async function vaultRead(cles) {
   const out = {};
@@ -1602,6 +1622,41 @@ function agendaTimed(cache) {
 // se ferme d'elle-meme apres le clic, plus d'Annuler. Les cles id@debut sont gardees dans le coffre, les
 // plus recentes seulement, et chaque cache relu est marque a nouveau.
 const MEETING_SKIPPED_MAX = 400;
+// 2026-11-05 : un retard annonce (Prevenir, 5 ou 10 min) decale l'alerte
+// rouge a l'heure d'arrivee annoncee. La bulle du debut se ferme.
+const MEETING_LATE_MAX = 60;
+function agendaMarkLate(cache, retards) {
+  const r = (retards && typeof retards === "object") ? retards : {};
+  ((cache && cache.events) || []).forEach((m) => {
+    const min = Number(r[agendaKey(m)]) || 0;
+    if (min > 0) m.lateMs = min * 60000;
+    else delete m.lateMs;
+  });
+  return cache;
+}
+// L'heure que vise l'alerte : le debut, ou l'arrivee annoncee.
+function agendaLastAt(m) { return m.start + (Number(m.lateMs) || 0); }
+function agendaParCible(evs) { return evs.slice().sort((a, b) => agendaLastAt(a) - agendaLastAt(b)); }
+async function meetingLate(id, start, minutes) {
+  const now = Date.now();
+  const r = await kvGet(["meetingLate", "agendaCache", "agendaLastWarned", "agendaLastOutWarned"]);
+  const cache = r.agendaCache || null;
+  const cles = agendaSameMeeting((cache && Array.isArray(cache.events)) ? cache.events : [], agendaKey({ id: id, start: Number(start) || 0 }));
+  const retards = (r.meetingLate && typeof r.meetingLate === "object") ? r.meetingLate : {};
+  cles.forEach((k) => { retards[k] = Math.max(Number(retards[k]) || 0, Number(minutes) || 0); });
+  const ordre = Object.keys(retards);
+  while (ordre.length > MEETING_LATE_MAX) delete retards[ordre.shift()];
+  // L'alerte deja passee ou armee pour l'heure prevue sera reposee a l'arrivee.
+  const sauf = (liste) => (Array.isArray(liste) ? liste : []).filter((k) => cles.indexOf(k) < 0);
+  const patch = { meetingLate: retards, agendaLastWarned: sauf(r.agendaLastWarned), agendaLastOutWarned: sauf(r.agendaLastOutWarned) };
+  if (cache) patch.agendaCache = agendaMarkLate(cache, retards);
+  await kvSet(patch);
+  await agendaLastCancel(start);
+  await agendaNotifsClear([].concat.apply([], cles.map((k) => ["kz-agenda-" + k, "kz-agenda-last-" + k])));
+  if (cache) await agendaScheduleLast(cache, now);
+  return { ok: true, late: Number(minutes) || 0 };
+}
+
 function agendaMarkSkipped(cache, sautes) {
   const liste = Array.isArray(sautes) ? sautes : [];
   ((cache && cache.events) || []).forEach((m) => {
@@ -1635,6 +1690,9 @@ async function meetingSkip(id, start) {
     await agendaScheduleLast(cache, now);
     await agendaScheduleEnd(cache, now);
   }
+  await agendaLastCancel(start);
+  await agendaNotifsClear([].concat.apply([], cles.map((k) => ["kz-agenda-" + k, "kz-agenda-end-" + k, "kz-agenda-last-" + k])));
+  await barHide(start);
   return { ok: true, skipped: true };
 }
 // La bulle d'agenda ouverte de ce rendez-vous (meme heure de debut), fermee
@@ -1710,12 +1768,12 @@ function agendaAccrueInto(daily, cache, nowMs, tz) {
   return daily;
 }
 async function agendaAccrueMeetings(cache, nowMs) {
-  const r = await kvGet(["meetingDaily", "screenTimezone", "meetingSkipped"]);
+  const r = await kvGet(["meetingDaily", "screenTimezone", "meetingSkipped", "meetingEnded"]);
   const daily = (r.meetingDaily && typeof r.meetingDaily === "object") ? r.meetingDaily : {};
   const avant = JSON.stringify(daily);
-  // La liste relue ici fait foi : un cache lu juste avant un "n'a pas eu
-  // lieu" ne rend pas ses minutes a la reunion.
-  agendaAccrueInto(daily, agendaMarkSkipped(cache, r.meetingSkipped), nowMs, r.screenTimezone);
+  // Les listes relues ici font foi : un cache lu juste avant un "n'a pas eu
+  // lieu" ou un "Terminer" ne rend pas ses minutes a la reunion.
+  agendaAccrueInto(daily, agendaMarkEnded(agendaMarkSkipped(cache, r.meetingSkipped), r.meetingEnded), nowMs, r.screenTimezone);
   if (JSON.stringify(daily) !== avant) await kvSet({ meetingDaily: daily });
   return daily;
 }
@@ -1777,8 +1835,10 @@ async function agendaRefresh(opts) {
   if (!ev.ok) { await agendaRememberError(ev.error); return ev; }
   const me = { userId: Number(r.agendaMyUserId) || 0, email: String(r.agendaMyEmail || "").toLowerCase() };
   const salles = await agendaRoomNames(token, ev.events, now);
-  const cache = agendaMarkSkipped({ at: now, events: agendaEventsFrom(ev.events, me, salles) }, (await kvGet(["meetingSkipped"])).meetingSkipped);
+  const marques = await kvGet(["meetingSkipped", "meetingLate", "meetingEnded"]);
+  const cache = agendaMarkEnded(agendaMarkLate(agendaMarkSkipped({ at: now, events: agendaEventsFrom(ev.events, me, salles) }, marques.meetingSkipped), marques.meetingLate), marques.meetingEnded);
   await kvSet({ agendaCache: cache, agendaLastError: "" });
+  await agendaApresRelecture(r.agendaCache, cache, now);
   await agendaUpdateState(cache, now);
   await agendaAccrueMeetings(cache, now);
   await agendaScheduleWarn(cache, now);
@@ -1817,7 +1877,7 @@ async function agendaTick() {
   const r = await kvGet(["agendaEnabled", "agendaWarn", "agendaEndWarn", "agendaCalendarId", "agendaCache"]);
   if (!agendaActif(r)) return;
   const now = Date.now();
-  if (r.agendaCache) { await agendaUpdateState(r.agendaCache, now); await agendaAccrueMeetings(r.agendaCache, now); }
+  if (r.agendaCache) { await agendaUpdateState(r.agendaCache, now); await agendaAccrueMeetings(r.agendaCache, now); await agendaNotifsMenage(r.agendaCache, now); }
   await agendaRefresh({ now: now });
 }
 
@@ -1880,9 +1940,9 @@ async function agendaScheduleLast(cache, nowMs) {
   const r = await kvGet(["agendaWarn", "agendaLastWarned"]);
   if (r.agendaWarn === false) return null;
   const deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
-  const prochain = agendaTimed(cache).find((m) => m.start > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
+  const prochain = agendaParCible(agendaTimed(cache)).find((m) => agendaLastAt(m) > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
   if (!prochain) return null;
-  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_ARM_MS);
+  const when = Math.max(nowMs + 1000, agendaLastAt(prochain) - AGENDA_LAST_ARM_MS);
   try { api.alarms.create(ALARM_AGENDA_LAST, { when: when }); } catch (e) { /* noop */ }
   return when;
 }
@@ -1892,9 +1952,9 @@ async function agendaScheduleLastOut(cache, nowMs) {
   const r = await kvGet(["agendaWarn", "agendaLastOutWarned"]);
   if (r.agendaWarn === false) return null;
   const deja = Array.isArray(r.agendaLastOutWarned) ? r.agendaLastOutWarned : [];
-  const prochain = agendaTimed(cache).find((m) => m.start > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
+  const prochain = agendaParCible(agendaTimed(cache)).find((m) => agendaLastAt(m) > nowMs + AGENDA_LAST_MIN_MS && deja.indexOf(agendaKey(m)) < 0);
   if (!prochain) return null;
-  const when = Math.max(nowMs + 1000, prochain.start - AGENDA_LAST_BEFORE_MS);
+  const when = Math.max(nowMs + 1000, agendaLastAt(prochain) - AGENDA_LAST_BEFORE_MS);
   try { api.alarms.create(ALARM_AGENDA_LAST_OUT, { when: when }); } catch (e) { /* noop */ }
   return when;
 }
@@ -1907,9 +1967,9 @@ async function agendaLastOutFire() {
   if (!r.agendaCalendarId || r.agendaWarn === false) return;
   const cache = r.agendaCache || { events: [] };
   let deja = Array.isArray(r.agendaLastOutWarned) ? r.agendaLastOutWarned : [];
-  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_BEFORE_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
+  const dus = agendaParCible(agendaTimed(cache)).filter((m) => agendaLastAt(m) > now && agendaLastAt(m) - AGENDA_LAST_BEFORE_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
   const m = dus[0];
-  if (m && m.start - now >= AGENDA_LAST_MIN_MS && !(await navigateurDevant()) && (await machineEveillee())) await agendaLastNotification(m, now);
+  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && !(await navigateurDevant()) && (await machineEveillee())) await agendaLastNotification(m, now);
   dus.forEach((x) => deja.push(agendaKey(x)));
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
   await kvSet({ agendaLastOutWarned: deja });
@@ -1922,11 +1982,11 @@ async function agendaLastFire() {
   if (!r.agendaCalendarId || r.agendaWarn === false) return;
   const cache = r.agendaCache || { events: [] };
   let deja = Array.isArray(r.agendaLastWarned) ? r.agendaLastWarned : [];
-  const dus = agendaTimed(cache).filter((m) => m.start > now && m.start - AGENDA_LAST_ARM_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
+  const dus = agendaParCible(agendaTimed(cache)).filter((m) => agendaLastAt(m) > now && agendaLastAt(m) - AGENDA_LAST_ARM_MS <= now + 2000 && deja.indexOf(agendaKey(m)) < 0);
   // Un seul avertissement a la fois : le premier debut. Une machine en veille
   // ou une alarme trop en retard n'avertit plus, l'instant est passe.
   const m = dus[0];
-  if (m && m.start - now >= AGENDA_LAST_MIN_MS && (await machineEveillee())) await agendaLastCall(m, now);
+  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && (await machineEveillee())) await agendaLastCall(m, now);
   dus.forEach((x) => deja.push(agendaKey(x)));
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
   await kvSet({ agendaLastWarned: deja });
@@ -1945,7 +2005,8 @@ async function agendaLastCall(m, nowMs) {
   const cfg = { ...DEFAULTS, ...(await kvGet(["muteInCalls", "mutedPatterns"])) };
   const visio = (t) => !!(t && cfg.muteInCalls && matchesMuted(t.url, cfg.mutedPatterns));
   if (visio(tab)) return "visio";
-  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, showAt: m.start - AGENDA_LAST_BEFORE_MS, room: m.room || "" };
+  const at = agendaLastAt(m);
+  const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, at: at, late: at > m.start, showAt: at - AGENDA_LAST_BEFORE_MS, room: m.room || "" };
   let armee = false;
   if (tab) armee = await bubbleSendToTab(tab, payload);
   let tous = [];
@@ -1964,10 +2025,10 @@ async function agendaLastNotification(m, nowMs) {
   const ok = await notificationSysteme(id, {
     type: "basic",
     iconUrl: api.runtime.getURL("icons/icon-128.png"),
-    title: bgMsg("meetingLastNotif", "Commence dans {s} s").replace("{s}", Math.round((m.start - nowMs) / 1000)),
+    title: (agendaLastAt(m) > m.start ? bgMsg("meetingLastLateNotif", "À rejoindre dans {s} s") : bgMsg("meetingLastNotif", "Commence dans {s} s")).replace("{s}", Math.round((agendaLastAt(m) - nowMs) / 1000)),
     message: (m.title || bgMsg("meetingUntitled", "Sans titre")) + (m.room ? " · " + m.room : "")
   });
-  if (ok) setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, m.start - 3000 - Date.now()));
+  if (ok) setTimeout(() => { try { api.notifications.clear(id); } catch (e) { /* noop */ } }, Math.max(0, agendaLastAt(m) - 3000 - Date.now()));
   return ok;
 }
 
@@ -2061,6 +2122,7 @@ async function agendaNotify(m, nowMs, kind) {
     try { await api.tabs.sendMessage(ouverte.tabId, { type: "kz-bubble-withdraw", bubbleId: ouverte.id }); } catch (e) { /* noop */ }
   }
   payload.bubbleId = bubbleNewId();
+  await barHide(m.start);
   if (payload.canNotify && peutAfficher) payload.notifyNonce = await notifyNonceCreate(tab.id, m);
   if (peutAfficher && (await agendaSendToTab(tab, payload))) {
     await bubbleRemember(tab.id, payload, garee);
@@ -2076,6 +2138,177 @@ async function agendaNotify(m, nowMs, kind) {
 }
 
 function agendaSendToTab(tab, payload) { return bubbleSendToTab(tab, payload); }
+
+// 2026-11-05 : une notification de rendez-vous qui reste a l'ecran doit
+// partir quand elle n'a plus lieu d'etre : bulle fermee, rendez-vous
+// commence (ou termine pour la fin), retire, rejoint, annule ou deplace.
+function agendaNotifIdOf(payload) {
+  if (!payload || (payload.type !== "kz-meeting-soon" && payload.type !== "kz-meeting-end")) return [];
+  const cle = agendaKey({ id: payload.id, start: Number(payload.start) || 0 });
+  return [(payload.type === "kz-meeting-end" ? "kz-agenda-end-" : "kz-agenda-") + cle];
+}
+async function agendaNotifsClear(ids) {
+  if (!api.notifications || !api.notifications.clear) return;
+  for (const id of ids) { try { await api.notifications.clear(id); } catch (e) { /* noop */ } }
+}
+function agendaNotifKey(id) {
+  return String(id || "").slice("kz-agenda-".length).replace(/^(end|last)-/, "");
+}
+async function agendaNotifsMenage(cache, nowMs) {
+  if (!api.notifications || !api.notifications.getAll) return [];
+  let toutes = {};
+  try { toutes = (await api.notifications.getAll()) || {}; } catch (e) { return []; }
+  const evs = agendaTimed(cache);
+  const parties = [];
+  for (const id of Object.keys(toutes)) {
+    if (id.indexOf("kz-agenda-") !== 0) continue;
+    const m = evs.find((x) => agendaKey(x) === agendaNotifKey(id));
+    const fin = id.indexOf("kz-agenda-end-") === 0;
+    const alerte = id.indexOf("kz-agenda-last-") === 0;
+    if (!m || (fin ? m.end : (alerte ? agendaLastAt(m) : m.start)) <= nowMs) { await agendaNotifsClear([id]); parties.push(id); }
+  }
+  return parties;
+}
+
+// L'alerte armee dans les onglets, annulee pour ce debut.
+async function agendaLastCancel(startMs) {
+  let tous = [];
+  try { tous = await api.tabs.query({}); } catch (e) { tous = []; }
+  for (const t of (Array.isArray(tous) ? tous : [])) {
+    if (!t || !/^https?:/.test(t.url || "")) continue;
+    try { await api.tabs.sendMessage(t.id, { type: "kz-meeting-last-cancel", start: Number(startMs) || 0 }); } catch (e) { /* page sans script */ }
+  }
+}
+
+// Rejoint : plus d'alerte rouge ni de notification du debut pour lui, et
+// ses alarmes passent au rendez-vous suivant.
+async function agendaJoined(id, start) {
+  const now = Date.now();
+  const r = await kvGet(["agendaCache", "agendaLastWarned", "agendaLastOutWarned"]);
+  const cache = r.agendaCache || null;
+  const cles = agendaSameMeeting((cache && Array.isArray(cache.events)) ? cache.events : [], agendaKey({ id: id, start: Number(start) || 0 }));
+  const marque = (liste) => {
+    let l = Array.isArray(liste) ? liste.slice() : [];
+    cles.forEach((k) => { if (l.indexOf(k) < 0) l.push(k); });
+    return l.length > AGENDA_WARNED_MAX ? l.slice(-AGENDA_WARNED_MAX) : l;
+  };
+  await kvSet({ agendaLastWarned: marque(r.agendaLastWarned), agendaLastOutWarned: marque(r.agendaLastOutWarned) });
+  if (cache) await agendaScheduleLast(cache, now);
+  await agendaLastCancel(start);
+  await agendaNotifsClear([].concat.apply([], cles.map((k) => ["kz-agenda-" + k, "kz-agenda-last-" + k])));
+  return { ok: true };
+}
+
+// Apres une relecture de l'agenda : un rendez-vous annule, refuse ou deplace
+// n'a plus ni bulle ouverte ni alerte armee. Le meme rendez-vous vu dans un
+// autre agenda (meme debut, meme titre) le garde.
+async function agendaApresRelecture(ancien, neuf, nowMs) {
+  const neufs = agendaTimed(neuf);
+  const encore = (m) => neufs.some((x) => x.start === m.start && (String(x.id) === String(m.id) || x.title === m.title));
+  const partis = agendaTimed(ancien).filter((m) => m.start > nowMs && m.start - nowMs <= AGENDA_LAST_ARM_MS + 60000 && !encore(m));
+  for (const m of partis) await agendaLastCancel(m.start);
+  const st = await bubbleGet();
+  const type = st && st.payload ? st.payload.type : "";
+  if ((type === "kz-meeting-soon" || type === "kz-meeting-end") && !encore({ id: st.payload.id, start: Number(st.payload.start) || 0, title: st.payload.title })) {
+    try { await api.tabs.sendMessage(st.tabId, { type: "kz-meeting-close", bubbleId: st.id }); } catch (e) { /* noop */ }
+  }
+  await agendaNotifsMenage(neuf, nowMs);
+  const barre = await barRead();
+  if (barre && !encore(barre)) await barHide(barre.start);
+}
+
+// 2026-11-05 : la barre de reunion. Quand l'utilisateur ferme une bulle
+// d'agenda pendant la reunion, une barre discrete reste en bas de la page,
+// avec le temps restant, Terminer (compte jusqu'au clic) et N'a pas eu lieu.
+// Elle est dans tous les onglets web (sauf visio), suit les pages rechargees
+// et part a la fin prevue, a la decision, ou quand une bulle de la meme
+// reunion s'affiche. Son etat vit dans la session, avec celui de la bulle.
+let barMemo = null;
+async function barRead() {
+  if (!bubbleSession) return barMemo;
+  try { return (await bubbleSession.get("meetingBar")).meetingBar || null; } catch (e) { return barMemo; }
+}
+async function barWrite(b) {
+  barMemo = b || null;
+  if (!bubbleSession) return;
+  try { await bubbleSession.set({ meetingBar: b || null }); } catch (e) { /* noop */ }
+}
+function barPayload(b) { return { type: "kz-meeting-bar", barId: b.barId, title: b.title, start: b.start, end: b.end, room: b.room || "" }; }
+async function barOnglets() {
+  const cfg = { ...DEFAULTS, ...(await kvGet(["muteInCalls", "mutedPatterns"])) };
+  let tous = [];
+  try { tous = await api.tabs.query({}); } catch (e) { tous = []; }
+  return (Array.isArray(tous) ? tous : []).filter((t) => t && /^https?:/.test(t.url || "") && !(cfg.muteInCalls && matchesMuted(t.url, cfg.mutedPatterns)));
+}
+async function barEnvoie(msg) {
+  for (const t of await barOnglets()) { try { await api.tabs.sendMessage(t.id, msg); } catch (e) { /* page sans script */ } }
+}
+async function meetingBarFromBubble(payload) {
+  const now = Date.now();
+  if (!payload || (payload.type !== "kz-meeting-soon" && payload.type !== "kz-meeting-end")) return null;
+  const r = await kvGet(["agendaCache"]);
+  const cle = agendaKey({ id: payload.id, start: Number(payload.start) || 0 });
+  const m = agendaTimed(r.agendaCache).find((x) => agendaKey(x) === cle);
+  if (!m || !(m.start <= now && now < m.end)) return null;
+  const b = { barId: bubbleNewId(), id: m.id, start: m.start, end: m.end, title: m.title, room: m.room || "" };
+  await barWrite(b);
+  await barEnvoie(barPayload(b));
+  return b;
+}
+// siStart : ne masque que la barre de cette reunion.
+async function barHide(siStart) {
+  const b = await barRead();
+  if (!b || (siStart != null && Number(b.start) !== Number(siStart))) return;
+  await barWrite(null);
+  await barEnvoie({ type: "kz-meeting-bar-hide", barId: b.barId });
+}
+async function barRelay(tabId) {
+  const b = await barRead();
+  if (!b) return;
+  if (b.end <= Date.now()) { await barWrite(null); return; }
+  if (!(await barOnglets()).some((t) => t.id === tabId)) return;
+  try { await api.tabs.sendMessage(tabId, barPayload(b)); } catch (e) { /* noop */ }
+}
+async function barCible(msg, sender) {
+  const b = await barRead();
+  if (!b || !msg || msg.barId !== b.barId || b.end <= Date.now()) return null;
+  if (!depuisExtension(sender) && !(sender && sender.tab)) return null;
+  return b;
+}
+
+// Terminer : la reunion ne compte que jusqu'au clic. Plus de silence, plus
+// de rappel de fin, la bulle de fin et la barre partent.
+const MEETING_ENDED_MAX = 60;
+function agendaMarkEnded(cache, fins) {
+  const f = (fins && typeof fins === "object") ? fins : {};
+  ((cache && cache.events) || []).forEach((m) => {
+    const t = Number(f[agendaKey(m)]) || 0;
+    if (t && t < m.end) m.end = Math.max(m.start, t);
+  });
+  return cache;
+}
+async function meetingFinish(id, start) {
+  const now = Date.now();
+  const r = await kvGet(["meetingEnded", "agendaCache"]);
+  const cache = r.agendaCache || null;
+  const cles = agendaSameMeeting((cache && Array.isArray(cache.events)) ? cache.events : [], agendaKey({ id: id, start: Number(start) || 0 }));
+  const fins = (r.meetingEnded && typeof r.meetingEnded === "object") ? r.meetingEnded : {};
+  cles.forEach((k) => { fins[k] = now; });
+  const ordre = Object.keys(fins);
+  while (ordre.length > MEETING_ENDED_MAX) delete fins[ordre.shift()];
+  const patch = { meetingEnded: fins };
+  if (cache) patch.agendaCache = agendaMarkEnded(cache, fins);
+  await kvSet(patch);
+  if (cache) {
+    await agendaAccrueMeetings(cache, now);
+    await agendaUpdateState(cache, now);
+    await agendaScheduleEnd(cache, now);
+  }
+  await agendaNotifsClear(cles.map((k) => "kz-agenda-end-" + k));
+  await agendaCloseBubbleOf(start);
+  await barHide(start);
+  return { ok: true, endedAt: now };
+}
 
 // Le navigateur est-il l'app au premier plan ? Sans reponse claire, oui :
 // on garde alors le comportement d'avant, la bulle dans la page.
@@ -2125,11 +2358,15 @@ async function agendaOpenUrl(url) {
 if (api.notifications && api.notifications.onClicked) {
   api.notifications.onClicked.addListener((id) => {
     if (typeof id !== "string" || id.indexOf("kz-agenda-") !== 0) return;
-    const cle = id.slice("kz-agenda-".length).replace(/^end-/, "");
+    const cle = agendaNotifKey(id);
+    const fin = id.indexOf("kz-agenda-end-") === 0;
     kvGet(["agendaCache"]).then((r) => {
       const evs = (r.agendaCache && Array.isArray(r.agendaCache.events)) ? r.agendaCache.events : [];
       const m = evs.find((x) => agendaKey(x) === cle);
-      if (m && m.url) agendaOpenUrl(m.url).catch(() => {});
+      if (m && m.url) {
+        agendaOpenUrl(m.url).catch(() => {});
+        if (!fin) agendaJoined(m.id, m.start).catch(() => {});
+      }
       try { api.notifications.clear(id); } catch (e) { /* noop */ }
     }).catch(() => {});
   });
@@ -2574,13 +2811,14 @@ async function notifySendVerrouille(p, kind, uniques, corpsLibre, r, cle, deja) 
   await kvSet({ notifySent: sent, notifyRate: quota.liste.concat([Date.now()]) });
   // Prevenir de son absence : la reunion n'aura pas lieu pour soi, elle sort
   // des statistiques comme avec "N'a pas eu lieu".
-  if (kind === "absent") {
-    await meetingSkip(p.id, p.start);
-    // Envoyee depuis le popup : la bulle de ce rendez-vous, ouverte dans une
-    // page, se ferme. Depuis la bulle, c'est elle qui se ferme apres l'avoir dit.
-    if (!p.depuisPage) await agendaCloseBubbleOf(p.start);
-  }
-  return { ok: true, count: uniques.length, skipped: kind === "absent" };
+  // Absence ou retard : la decision est prise, la bulle n'a plus a rester.
+  // Envoye depuis le popup, la bulle ouverte dans une page se ferme ; depuis
+  // la bulle, c'est elle qui se ferme apres l'avoir dit.
+  let late = 0;
+  if (kind === "absent") await meetingSkip(p.id, p.start);
+  else { late = NOTIFY_KINDS[kind]; await meetingLate(p.id, p.start, late); }
+  if (!p.depuisPage) await agendaCloseBubbleOf(p.start);
+  return { ok: true, count: uniques.length, skipped: kind === "absent", late: late };
 }
 
 // ===========================================================================

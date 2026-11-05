@@ -1080,6 +1080,24 @@
   "meetingLastNotif": {
     "message": "Starts in {s} s"
   },
+  "meetingLastLateCount": {
+    "message": "join in {s} s"
+  },
+  "meetingLastLateNotif": {
+    "message": "Join in {s} s"
+  },
+  "meetingLateShifted": {
+    "message": "Alert moved to {h}"
+  },
+  "meetingBarFinish": {
+    "message": "Finish"
+  },
+  "meetingBarHide": {
+    "message": "Hide"
+  },
+  "meetingFinishedAt": {
+    "message": "Finished at {h}"
+  },
   "meetingEnded": {
     "message": "Ended {t} ago"
   },
