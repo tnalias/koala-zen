@@ -8,11 +8,12 @@
 
 **Un koala bienveillant pour ta journée de travail.** Il te rappelle de faire de petites pauses, te garde à l'heure pour tes réunions, et te montre où passe ton temps. Pour **Chrome et Firefox**, gratuit et open source.
 
-- **Un coup de pouce, jamais de culpabilité.** Toutes les 5 à 240 minutes, un koala te propose une petite chose : te lever, boire un verre d'eau, regarder au loin. Jamais pendant une visio.
-- **Ne rate plus une réunion.** Une bulle 5 minutes avant (10 pour une réunion en salle), avec le lien de la visio à un clic, une alerte rouge 20 secondes avant, et un rappel 6 minutes avant la fin qui passe au rouge les 2 dernières minutes. Une réunion qui n'aura pas lieu, ou qui n'a pas eu lieu, sort de tes stats en un clic, et celle qui finit plus tôt ne compte que jusqu'à ton clic sur Terminer. En retard ? Préviens les participants en un clic et l'alerte rouge passe à ton heure d'arrivée. Un bouton d'essai joue toute la séquence en 3 minutes.
-- **En retard ? Préviens en un clic.** Un mail déjà écrit pour les participants. Tu relis, tu envoies.
-- **Vois où passe ton temps.** Habitudes, écran, réunions et mails, jour par jour, et si tu veux un bilan de la semaine dans ta propre boîte chaque lundi.
-- **Ton koala à toi.** Tes propres images ou GIF animés, tes habitudes et tes citations. Ou aucun personnage, pour un style sobre et pro.
+- **De petites pauses, sans culpabiliser.** Toutes les 5 à 240 minutes, un koala te propose une petite chose : te lever, boire un verre d'eau, reposer tes yeux. Fait ou plus tard, tu choisis. Jamais pendant une visio.
+- **À l'heure à chaque réunion.** Une bulle 5 minutes avant (10 pour une salle), avec le lien de la visio à un clic, puis une alerte rouge 20 secondes avant. Vers la fin, un rappel 6 minutes avant, rouge les 2 dernières.
+- **En retard ? Dis-le en un clic.** Un mail déjà écrit pour les participants : tu relis, tu envoies. L'alerte rouge passe à ta nouvelle heure d'arrivée.
+- **Des stats honnêtes.** Une réunion qui n'a pas eu lieu sort en un clic. Celle qui finit plus tôt ne compte que jusqu'à ton clic sur Terminer.
+- **Vois où passe ton temps.** Habitudes, écran, réunions et mails, jour par jour. Et si tu veux, ta semaine par mail chaque lundi.
+- **À ton image.** Tes propres images ou GIF, tes habitudes et tes citations. Ou un style sobre, sans personnage.
 - **Et parfois, les chats papotent.** Dès 17 h, ils te rappellent qu'il est temps d'arrêter.
 
 > **Un compte Infomaniak *my kSuite*, gratuit, suffit** pour les fonctions réunion et mail. Elles fonctionnent **uniquement avec Infomaniak**, pas avec Google Agenda, Gmail ni Microsoft Outlook. Tout le reste fonctionne pour tout le monde.
@@ -45,10 +46,9 @@
 
 ## Bien démarrer
 
-1. Suis la courte présentation qui s'ouvre à l'installation.
-2. Choisis ton rythme dans **Réglages**, et tes habitudes dans **Perso**.
-3. Facultatif, avec Infomaniak : dans le Manager, crée un jeton d'API ([la marche à suivre](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) avec le périmètre `workspace:calendar` et une date d'expiration, puis colle-le dans la carte **Agenda Infomaniak**. Pour les fonctions mail, ajoute `workspace:mail` au même jeton, ou crée un second jeton avec ce seul périmètre. Tout autre périmètre est refusé.
-4. Quand une autre app est au premier plan, les rappels de réunion arrivent aussi en notification du système. Sur macOS, règle ton navigateur sur **Alertes** dans Réglages Système > Notifications pour qu'elles restent à l'écran jusqu'à ce que tu les fermes.
+1. Suis la courte présentation qui s'ouvre à l'installation. Elle règle ton rythme et tes habitudes, et connecte Infomaniak si tu veux. À la fin, avec ton agenda connecté, **Tester un rendez-vous** joue une réunion complète en 3 minutes.
+2. Pour l'agenda et le mail (facultatif) : dans le Manager Infomaniak, crée un jeton d'API ([la marche à suivre](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) avec une date d'expiration et le périmètre `workspace:calendar`, plus `workspace:mail` pour le mail. Un jeton ou deux, comme tu préfères. Tout autre périmètre est refusé.
+3. Sur macOS, règle ton navigateur sur **Alertes** dans Réglages Système > Notifications. Les rappels de réunion qui arrivent quand une autre app est devant restent alors jusqu'à ce que tu les fermes.
 
 ## Dans le panneau
 

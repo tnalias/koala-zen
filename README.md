@@ -8,11 +8,12 @@
 
 **A friendly koala for your workday.** It reminds you to take small breaks, keeps you on time for your meetings, and shows you where your time goes. For **Chrome and Firefox**, free and open source.
 
-- **A gentle nudge, never a guilt trip.** Every 5 to 240 minutes, a koala suggests one small thing: stand up, drink some water, look away from the screen. Never during a video call.
-- **Never miss a meeting.** A bubble 5 minutes before (10 for an in-person room), with the video link one click away, a red last call 20 seconds before, and a heads-up 6 minutes before the end that turns red for the last 2 minutes. A meeting that won't happen, or didn't, comes out of your stats in one click, and one that ends early counts only until you click Finish. Running late? Tell the attendees in one click and the red last call moves to your arrival time. A test button plays the whole sequence in 3 minutes.
-- **Running late? Let them know in one click.** A ready-made email to the attendees. You reread it, you send it.
-- **See where your time goes.** Habits, screen time, meetings and emails, day by day, and a weekly report in your own mailbox every Monday if you want it.
-- **Make the koala yours.** Your own images or animated GIFs, your own habits and quotes. Or hide it for a sober, professional style.
+- **Small breaks, no guilt.** Every 5 to 240 minutes, a koala suggests one small thing: stand up, drink some water, rest your eyes. Done or later, you choose. Never during a video call.
+- **On time for every meeting.** A bubble 5 minutes before (10 for a room), with the video link one click away, then a red last call 20 seconds before. Near the end, a heads-up 6 minutes before, red for the last 2.
+- **Running late? Say so in one click.** A ready-made email to the attendees: reread it, send it. The last call moves to your new arrival time.
+- **Stats that tell the truth.** A meeting that didn't happen comes out in one click. One that ends early counts only until you click Finish.
+- **See where your time goes.** Habits, screen time, meetings and emails, day by day. And if you want, your week by email every Monday.
+- **Make it yours.** Your own images or GIFs, habits and quotes. Or a sober style, with no characters.
 - **And sometimes, the cats chat.** From 5 pm, they remind you it's time to stop.
 
 > **A free Infomaniak *my kSuite* account is all you need** for the meeting and email features. They work **with Infomaniak only**, not with Google Calendar, Gmail or Microsoft Outlook. Everything else works for everyone.
@@ -45,10 +46,9 @@
 
 ## Get started
 
-1. Follow the short tour that opens on install.
-2. Pick your rhythm in **Settings**, and your habits in **Custom**.
-3. Optional, with Infomaniak: in the Manager, create an API token ([how to](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) with the `workspace:calendar` scope and an expiry date, then paste it in the **Infomaniak Calendar** card. For the email features, add `workspace:mail` to the same token, or create a second token with only that scope. Any other scope is refused.
-4. When another app is in front, meeting reminders also arrive as system notifications. On macOS, set your browser to **Alerts** in System Settings > Notifications so they stay on screen until you close them.
+1. Follow the short tour that opens on install. It sets your rhythm and your habits, and connects Infomaniak if you want. At the end, with your calendar connected, **Try a meeting** plays a full meeting in 3 minutes.
+2. For the calendar and email features (optional): in the Infomaniak Manager, create an API token ([how to](https://www.infomaniak.com/en/support/faq/2582/generate-and-manage-infomaniak-api-tokens)) with an expiry date and the `workspace:calendar` scope, plus `workspace:mail` for email. One token or two, as you like. Any other scope is refused.
+3. On macOS, set your browser to **Alerts** in System Settings > Notifications. Meeting reminders that arrive while another app is in front then stay until you close them.
 
 ## In the panel
 

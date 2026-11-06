@@ -28,10 +28,12 @@
 - **Reminders keep up with you:** joining from the bubble, a meeting cancelled or moved in your calendar, or one you took out of your stats no longer leaves a red last call, a bubble or a system notification behind. System notifications also leave once the meeting has started or ended.
 - **The room is shown** in meeting reminders and in the red last call: the booked room, or the location you typed.
 - **The end bubble turns red** for the last 2 minutes of a meeting.
+- **The welcome tour knows the latest features:** the weekly report by email is a third choice on the Mail screen, and the last screen offers to try a meeting right away when your calendar is connected.
 - **"Won't happen" and "Didn't happen":** one click in the start or end bubble takes the meeting out of your stats, then the bubble closes on its own. Telling attendees you will be absent does the same, and closes the bubble too. Either way, the koala no longer stays quiet for that meeting and its remaining reminders are cancelled.
 - These new switches apply as soon as you click them.
 
 ### Fixed
+- **The red last call no longer goes missing:** it now shows even after 10 minutes without touching the keyboard or mouse (only a locked screen stops it), reaches tabs opened before an update of the extension, follows the tab you switch to in the last minute, and arrives as a system notification when the tab in front is not a web page.
 - **Meeting reminders now come 5 minutes before the start**, instead of 3.
 - **Back-to-back meetings no longer lose their start reminder.** When one meeting ended as the next began, both reminders rang at the same second and the end one could replace the start one. The end reminder now comes 6 minutes before the end, and never replaces the reminder of a meeting that has not started yet: it then shows as a system notification.
 - The calendar reminder before the start now covers every timed event, not only meetings with attendees, including events with no duration and long calendars.

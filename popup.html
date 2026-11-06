@@ -194,6 +194,8 @@
        par etape, et le bouton principal toujours au meme endroit, en bas. */
     .fr { min-height: 554px; box-sizing: border-box; padding: 10px 16px 16px; gap: 0; position: relative; }
     .fr-step .fr-demo-open { align-self: center; }
+    /* Les deux essais de la fin sur une ligne : l'ecran tient sous 600 px. */
+    .fr-demos { display: flex; flex-wrap: wrap; justify-content: center; row-gap: 4px; column-gap: 16px; }
     .fr-demo { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 16px; background: var(--g50); text-align: center; }
     .demo-zone { display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding: 16px 8px; border-radius: 12px; background: var(--g200); }
     .demo-k { flex: 0 0 auto; width: 58px; height: auto; }
@@ -232,6 +234,8 @@
     .fr-dots i.fait { background: var(--gr-soft); }
     .fr-main { flex: 1 1 auto; display: flex; flex-direction: column; padding-top: 12px; }
     .fr-step { display: flex; flex-direction: column; gap: 16px; text-align: center; }
+    /* Ton mail et la fin, les ecrans les plus remplis : un peu plus serres. */
+    .fr-step--dense { gap: 12px; }
     .anim-on .fr-step { animation: kzUp .3s ease both; }
     .fr-hero { align-self: center; display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 9999px; }
     .fr-hero svg { width: 34px; height: 34px; }
@@ -288,7 +292,7 @@
     .fr-card .btn-main { height: 40px; }
     /* Le bouton d'action se detache de ce qu'il valide : 16 px, l'ecart des blocs de l'onboarding. */
     .fr-card > .fr-card > .btn-main { margin-top: 8px; }
-    .fr-done { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    .fr-done { display: flex; flex-direction: column; gap: 8px; text-align: left; }
     .fr-done-t { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--g600); }
     .fr-res { display: flex; gap: 10px; align-items: center; font-size: 13px; line-height: 18px; color: var(--g600); }
     .fr-res-i { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background: var(--gr-150); color: var(--gr-dark); }
@@ -1386,14 +1390,15 @@
         <!-- 2026-10-30 : le mail, une fois connecte. Les deux usages et
              l'adresse, avec de bons reglages par defaut ; tout s'enregistre
              avec Commencer. -->
-        <section class="fr-step" data-step="4" data-fr="mail" hidden>
+        <section class="fr-step fr-step--dense" data-step="4" data-fr="mail" hidden>
           <div class="fr-hero fr-hero--bl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frMailTitle">Ton mail</h1>
           </div>
           <div class="card fr-feats fr-opts" role="group" data-i18n-aria="frMailTitle">
-            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="notifyLabel">Prévenir les participants</div><div class="fr-fs" data-i18n="notifyHint">Mail déjà écrit pour un retard ou une absence. Tu relis, tu envoies.</div></div><label class="sw"><input type="checkbox" id="frMailNotify" checked data-i18n-aria="notifyLabel"><span class="sw-t"></span></label></div>
-            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="mailStatsLabel">Compter mes mails</div><div class="fr-fs" data-i18n="mailStatsHint">Traités, supprimés et envoyés par jour. Les nombres seulement.</div></div><label class="sw"><input type="checkbox" id="frMailStats" checked data-i18n-aria="mailStatsLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="notifyLabel">Prévenir les participants</div><div class="fr-fs" data-i18n="frMailNotifyHint">Un mail prêt si tu es en retard.</div></div><label class="sw"><input type="checkbox" id="frMailNotify" checked data-i18n-aria="notifyLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="mailStatsLabel">Compter mes mails</div><div class="fr-fs" data-i18n="frMailStatsHint">Juste les nombres, jour par jour.</div></div><label class="sw"><input type="checkbox" id="frMailStats" checked data-i18n-aria="mailStatsLabel"><span class="sw-t"></span></label></div>
+            <div class="fr-feat fr-opt"><div class="fr-opt-b"><div class="fr-ft" data-i18n="bilanMailLabel">Le bilan par mail</div><div class="fr-fs" data-i18n="frMailBilanHint">Ta semaine en chiffres, le lundi.</div></div><label class="sw"><input type="checkbox" id="frMailBilan" data-i18n-aria="bilanMailLabel"><span class="sw-t"></span></label></div>
           </div>
           <div class="card fr-card" id="frMailBox" hidden>
             <div class="fr-lab" id="frMailFromLab" data-i18n="frMailFrom">Ton adresse</div>
@@ -1402,14 +1407,17 @@
           <div class="nf-msg nf-msg--err" id="frMailErr" role="alert" hidden></div>
         </section>
 
-        <section class="fr-step fr-step--fin" data-step="5" data-fr="fin" hidden>
+        <section class="fr-step fr-step--fin fr-step--dense" data-step="5" data-fr="fin" hidden>
           <div class="fr-hero fr-hero--gr fr-hero--done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="fr-coche" d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
           <div class="fr-head">
             <h1 class="fr-t" data-i18n="frDoneTitle">C'est prêt</h1>
             <p class="fr-s" data-i18n="frDoneSub">Tout reste sur cet appareil, sans compte ni serveur Koala Zen.</p>
           </div>
           <div class="card fr-done" id="frSummary" aria-live="polite"></div>
-          <button type="button" class="tiny fr-demo-open" id="frDemoOpen" data-i18n="frDemoOpen">Voir à quoi ça ressemble</button>
+          <div class="fr-demos">
+            <button type="button" class="tiny fr-demo-open" id="frDemoOpen" data-i18n="frDemoOpen">Voir un aperçu</button>
+            <button type="button" class="tiny fr-demo-open" id="frDemoMeeting" data-i18n="frDemoMeetingTry" hidden>Tester un rendez-vous</button>
+          </div>
         </section>
       </div>
 

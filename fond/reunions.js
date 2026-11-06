@@ -103,8 +103,32 @@ async function envoieAuxOnglets(onglets, msg) {
   for (const t of onglets) { try { await api.tabs.sendMessage(t.id, msg); } catch (e) { /* page sans script */ } }
 }
 
+// L'alerte armee, gardee pour la renvoyer a l'onglet que l'on active ou qui
+// se recharge pendant la derniere minute (2026-11-06). Elle vit dans la
+// session, comme la bulle et la barre.
+let alerteMemo = null;
+async function alerteRead() {
+  if (!bubbleSession) return alerteMemo;
+  try { return (await bubbleSession.get("agendaLastArmed")).agendaLastArmed || null; } catch (e) { return alerteMemo; }
+}
+async function alerteWrite(p) {
+  alerteMemo = p || null;
+  if (!bubbleSession) return;
+  try { await bubbleSession.set({ agendaLastArmed: p || null }); } catch (e) { /* noop */ }
+}
+async function alerteRelay(tabId) {
+  const p = await alerteRead();
+  if (!p) return false;
+  if ((Number(p.at) || 0) - Date.now() <= AGENDA_LAST_MIN_MS) { await alerteWrite(null); return false; }
+  const t = (await ongletsWeb(true)).find((x) => x.id === tabId);
+  if (!t) return false;
+  return bubbleSendToTab(t, p);
+}
+
 // L'alerte armee dans les onglets, annulee pour ce debut.
 async function agendaLastCancel(startMs) {
+  const p = await alerteRead();
+  if (p && Number(p.start) === Number(startMs)) await alerteWrite(null);
   await envoieAuxOnglets(await ongletsWeb(false), { type: "kz-meeting-last-cancel", start: Number(startMs) || 0 });
 }
 
@@ -368,9 +392,11 @@ async function agendaAfterSave(payload, avant) {
   if (payload && payload.mailStatsEnabled === true) mailStatsRefresh({ force: true }).catch(() => {});
   // Stats mail eteintes et Prevenir eteint : plus rien ne sert la boite,
   // l'adresse et le jeton mail sont oublies.
+  // 2026-11-06 : la boite sert a Prevenir, aux stats et au bilan par mail ;
+  // elle n'est oubliee que quand les trois sont eteints.
   if (payload && payload.mailStatsEnabled === false) {
-    const n = await kvGet(["notifyEnabled"]);
-    if (!n.notifyEnabled) await kvSet({ notifyMailboxUuid: "", notifyMailboxEmail: "", notifyMailboxName: "", notifyMailboxHosting: 0, notifyMailboxLogin: "", notifyTokenEnc: null, bilanEnabled: false, bilanEmail: "" });
+    const n = await kvGet(["notifyEnabled", "bilanEnabled"]);
+    if (!n.notifyEnabled && !n.bilanEnabled) await kvSet({ notifyMailboxUuid: "", notifyMailboxEmail: "", notifyMailboxName: "", notifyMailboxHosting: 0, notifyMailboxLogin: "", notifyTokenEnc: null, bilanEnabled: false, bilanEmail: "" });
   }
   if (!payload || (payload.agendaEnabled === undefined && payload.agendaWarn === undefined && payload.agendaEndWarn === undefined)) return;
   avant = avant || {};

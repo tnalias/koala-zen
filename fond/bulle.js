@@ -126,7 +126,7 @@ function bubbleQueue(opts) {
   bubbleChain = bubbleChain.then(() => bubbleFollow(opts)).catch(() => {});
   return bubbleChain;
 }
-if (api.tabs && api.tabs.onActivated) api.tabs.onActivated.addListener((info) => { bubbleQueue(); if (info && info.tabId != null) barRelay(info.tabId).catch(() => {}); });
+if (api.tabs && api.tabs.onActivated) api.tabs.onActivated.addListener((info) => { bubbleQueue(); if (info && info.tabId != null) { barRelay(info.tabId).catch(() => {}); alerteRelay(info.tabId).catch(() => {}); } });
 if (api.windows && api.windows.onFocusChanged) {
   api.windows.onFocusChanged.addListener((windowId) => {
     // WINDOW_ID_NONE : le navigateur perd le premier plan, rien a suivre.
@@ -137,6 +137,6 @@ if (api.windows && api.windows.onFocusChanged) {
 if (api.tabs && api.tabs.onRemoved) api.tabs.onRemoved.addListener((tabId) => { bubbleQueue({ lost: tabId }); });
 if (api.tabs && api.tabs.onUpdated) {
   api.tabs.onUpdated.addListener((tabId, info) => {
-    if (info && info.status === "complete") { bubbleQueue({ lost: tabId }); barRelay(tabId).catch(() => {}); }
+    if (info && info.status === "complete") { bubbleQueue({ lost: tabId }); barRelay(tabId).catch(() => {}); alerteRelay(tabId).catch(() => {}); }
   });
 }

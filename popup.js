@@ -1626,6 +1626,8 @@ let frMailOk = false;
 // Les adresses du mail, lues une fois connecte, et celle choisie.
 let frMailAdresses = null;
 let frMailChoix = "";
+// L'adresse du bilan deja allume : gardee tant que la boite ne change pas.
+let frBilanDepart = { email: "", boite: "" };
 // Les agendas surveilles, {id, name}, pour les nommer et les changer.
 let frAgendaListe = [];
 // Ton agenda : tous les agendas du compte, lus une fois, et ceux coches.
@@ -1683,7 +1685,7 @@ async function frPrepare() {
   // Le mail : propose des que l'agenda s'allume ; en revoyant la
   // presentation, allume s'il sert (Prevenir ou les stats).
   frErreur(""); frMailErreur(""); frCalErreur("");
-  frAgendaOk = false; frMailOk = false; frMailAdresses = null; frMailChoix = ""; frAgendaListe = [];
+  frAgendaOk = false; frMailOk = false; frMailAdresses = null; frMailChoix = ""; frAgendaListe = []; frBilanDepart = { email: "", boite: "" };
   frCalListe = null; frCalCoches = {};
   $("frCalWarn").checked = true; $("frCalEnd").checked = true; $("frCalDnd").checked = true;
   frDepart = { agenda: false, mail: false };
@@ -1691,6 +1693,8 @@ async function frPrepare() {
   $("frOptMail").checked = true;
   $("frMailNotify").checked = true;
   $("frMailStats").checked = true;
+  // Le bilan par mail : eteint par defaut, comme toute fonction qui envoie.
+  $("frMailBilan").checked = false;
   // L'etat reel des connexions, meme a la premiere installation : un popup
   // ferme en cours de route a pu deja connecter l'agenda ou le mail.
   const st = await sendR("kz-agenda-status");
@@ -1708,14 +1712,18 @@ async function frPrepare() {
       $("frCalDnd").checked = !!st.enabled;
     }
     frMailOk = !!(st && st.notifyHasToken);
-    frDepart.mail = frMailOk && !!st.notifyMailboxEmail && !!(st.notifyEnabled || st.mailStatsEnabled);
+    const bilan = await sendR("kz-bilan-state");
+    const bilanAllume = !!(bilan && bilan.ok && bilan.enabled);
+    frDepart.mail = frMailOk && !!st.notifyMailboxEmail && !!(st.notifyEnabled || st.mailStatsEnabled || bilanAllume);
     // Le mail reprend son etat ; tant que l'agenda n'est pas connecte, il
     // est propose comme a la premiere installation.
     $("frOptMail").checked = frDepart.mail || !connecte;
     if (frDepart.mail) {
       $("frMailNotify").checked = !!st.notifyEnabled;
       $("frMailStats").checked = !!st.mailStatsEnabled;
+      $("frMailBilan").checked = bilanAllume;
       frMailChoix = st.notifyMailboxEmail;
+      if (bilanAllume) frBilanDepart = { email: String(bilan.email || ""), boite: st.notifyMailboxEmail };
     }
   }
   frIkPeint();
@@ -1747,6 +1755,7 @@ function frStep(n) {
   // Le silence ne vise que les rappels d'habitude.
   $("frCalDndRow").hidden = !$("frOptHabits").checked;
   $("frDemoOpen").hidden = !$("frOptHabits").checked && !$("frOptAgenda").checked;
+  $("frDemoMeeting").hidden = !($("frOptAgenda").checked && frAgendaOk);
   if (!derniere && !$("frDemo").hidden) frDemoFerme();
   const cible = document.querySelector('#firstRun .fr-step[data-fr="' + nom + '"] input:not([type=checkbox]), #firstRun .fr-step[data-fr="' + nom + '"] .btn-main');
   try { if (cible && frEtape > 0) cible.focus(); } catch (e) { /* noop */ }
@@ -1768,7 +1777,8 @@ function frResume() {
   else if (mail === "stats") lignes.push({ ok: true, t: msg("frSumMailStats", "Mail : compter tes mails") });
   // Le mail eteint se dit sous un agenda allume, et aussi quand il servait :
   // eteindre l'agenda l'eteint avec lui.
-  else if ($("frOptAgenda").checked || frDepart.mail) lignes.push({ ok: false, t: msg("frSumMailOff", "Mail Infomaniak éteint") });
+  else if (mail === "off" && ($("frOptAgenda").checked || frDepart.mail)) lignes.push({ ok: false, t: msg("frSumMailOff", "Mail Infomaniak éteint") });
+  if (mail !== "off" && mail !== "later" && $("frMailBilan").checked) lignes.push({ ok: true, t: msg("frSumBilan", "Le bilan de la semaine par mail, chaque lundi") });
   lignes.push($("frOptPassages").checked ? { ok: true, t: msg("frOptPassages", "Animaux de passage") } : { ok: false, t: msg("frSumPassagesOff", "Animaux de passage éteints") });
   lignes.push($("frOptCharacter").checked ? { ok: true, t: msg("frSumCharacter", "Le koala dans chaque bulle") } : { ok: true, t: msg("frSumCharacterOff", "Style sobre, sans personnage") });
   const host = $("frSummary"); clear(host);
@@ -1790,8 +1800,8 @@ function frResume() {
 function frMailEtat() {
   if (!frMailVoulu()) return "off";
   if (!frMailOk || !frMailChoix) return "later";
-  const n = $("frMailNotify").checked; const s = $("frMailStats").checked;
-  return n && s ? "both" : n ? "notify" : s ? "stats" : "off";
+  const n = $("frMailNotify").checked; const s = $("frMailStats").checked; const b = $("frMailBilan").checked;
+  return n && s ? "both" : n ? "notify" : s ? "stats" : b ? "bilan" : "off";
 }
 document.querySelectorAll("#frRhythm .seg-b").forEach((b) => {
   b.addEventListener("click", () => { frRythmeChoisi = true; frPeintRythme(Number(b.getAttribute("data-min"))); });
@@ -2050,7 +2060,8 @@ async function frMailCharge() {
 // ses rappels et son silence sans oublier la connexion ; le laisser eteint a
 // la premiere installation ne change rien, et le connecter plus tard dans
 // Reglages donne bien les rappels.
-$("frStart").addEventListener("click", async () => {
+async function frTermine() {
+  let bilanEchec = "";
   const habitudes = $("frOptHabits").checked;
   const agenda = $("frOptAgenda").checked;
   const payload = { firstRun: false, remindersEnabled: habitudes, passages: $("frOptPassages").checked, showCharacter: $("frOptCharacter").checked };
@@ -2090,7 +2101,15 @@ $("frStart").addEventListener("click", async () => {
     await sendR("kz-notify-choose", { mailbox: adresse });
     payload.notifyEnabled = mail === "both" || mail === "notify";
     payload.mailStatsEnabled = mail === "both" || mail === "stats";
+    // Le bilan par mail, a l'adresse choisie (celle qu'il avait, si la boite
+    // n'a pas change). Regle AVANT la sauvegarde : la boite n'est gardee sans
+    // Prevenir ni stats que si le bilan est allume. Refuse, la carte Ta
+    // semaine le dit.
+    const garde = frBilanDepart.email && frBilanDepart.boite === adresse.email;
+    const bilan = await sendR("kz-bilan-set", { enabled: $("frMailBilan").checked, email: garde ? frBilanDepart.email : adresse.email });
+    if ($("frMailBilan").checked && !(bilan && bilan.ok)) bilanEchec = bilanErreur(bilan && bilan.error);
   } else if (mail === "off" && (frDepart.mail || frMailOk)) {
+    await sendR("kz-bilan-set", { enabled: false });
     // Eteint : Prevenir et les stats coupes ensemble, le fond oublie alors la
     // boite et le jeton du mail (la copie de l'agenda d'un jeton commun reste).
     payload.notifyEnabled = false;
@@ -2113,6 +2132,16 @@ $("frStart").addEventListener("click", async () => {
   showFirstRun(false);
   try { await agendaRefreshUI(); } catch (e) { /* noop */ }
   await refreshNextVisit();
+  if (bilanEchec) $("bilanMsg").textContent = bilanEchec;
+}
+$("frStart").addEventListener("click", () => { frTermine().catch(() => {}); });
+// 2026-11-06 : l'essai d'un rendez-vous depuis la fin de la presentation.
+// Les choix sont enregistres d'abord, puis l'essai part dans la page au
+// premier plan et le popup se ferme pour la laisser voir.
+$("frDemoMeeting").addEventListener("click", async () => {
+  await frTermine();
+  const r = await sendR("kz-demo-meeting");
+  if (r && r.ok) window.close();
 });
 $("replayTour").addEventListener("click", () => { showFirstRun(true); });
 

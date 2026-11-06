@@ -153,7 +153,15 @@ function bilanTexte(b) {
 // Le reglage : l'adresse doit etre une adresse de la boite choisie.
 async function bilanReglage(allume, email) {
   const r = await kvGet(["notifyMailboxUuid", "bilanEmail", "bilanEnabled"]);
-  if (!allume) { await kvSet({ bilanEnabled: false }); await bilanPlanifie(); return { ok: true, enabled: false }; }
+  if (!allume) {
+    // Seul usage restant de la boite : eteindre le bilan l'oublie, comme
+    // Prevenir et les stats le font.
+    const u = await kvGet(["notifyEnabled", "mailStatsEnabled"]);
+    if (!u.notifyEnabled && !u.mailStatsEnabled) await kvSet({ bilanEnabled: false, bilanEmail: "", notifyMailboxUuid: "", notifyMailboxEmail: "", notifyMailboxName: "", notifyMailboxHosting: 0, notifyMailboxLogin: "", notifyTokenEnc: null });
+    else await kvSet({ bilanEnabled: false });
+    await bilanPlanifie();
+    return { ok: true, enabled: false };
+  }
   if (!r.notifyMailboxUuid) return { ok: false, error: "notify_off" };
   const adr = String(email || r.bilanEmail || "").trim().toLowerCase();
   const liste = await notifyListMailboxes();

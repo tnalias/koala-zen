@@ -651,6 +651,17 @@ function agendaScheduleWarn(cache, nowMs) { return agendaPlanifie("warn", cache,
 // plusieurs), puis la suivante est posee.
 // La machine est-elle eveillee ? Actif = oui. Verrouille, ou inactif depuis
 // dix minutes = non. Une erreur de l'API ne bloque jamais un rappel.
+// 2026-11-06 : l'alerte rouge ne se tait que si l'ecran est verrouille. Dix
+// minutes sans clavier ni souris (lecture, appel) l'empechaient, et elle
+// etait notee comme faite : des rendez-vous passaient sans alerte.
+async function ecranVerrouille() {
+  try {
+    let st;
+    if (globalThis.browser && globalThis.browser.idle) { st = await globalThis.browser.idle.queryState(AGENDA_ASLEEP_SECONDS); }
+    else { st = await new Promise((res) => chrome.idle.queryState(AGENDA_ASLEEP_SECONDS, res)); }
+    return st === "locked";
+  } catch (e) { return false; }
+}
 async function machineEveillee() {
   try {
     let st;
@@ -699,7 +710,9 @@ async function agendaLastOutFire() {
   let deja = Array.isArray(r.agendaLastOutWarned) ? r.agendaLastOutWarned : [];
   const dus = agendaDus("out", cache, now, deja);
   const m = dus[0];
-  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && !(await navigateurDevant()) && (await machineEveillee())) await agendaLastNotification(m, now);
+  // 2026-11-06 : aussi quand l'onglet au premier plan n'est pas une page web
+  // (nouvel onglet, reglages, PDF) : aucune page ne peut alors l'afficher.
+  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && (!(await navigateurDevant()) || !(await targetTab())) && !(await ecranVerrouille())) await agendaLastNotification(m, now);
   dus.forEach((x) => deja.push(agendaKey(x)));
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
   await kvSet({ agendaLastOutWarned: deja });
@@ -716,7 +729,7 @@ async function agendaLastFire() {
   // Un seul avertissement a la fois : le premier debut. Une machine en veille
   // ou une alarme trop en retard n'avertit plus, l'instant est passe.
   const m = dus[0];
-  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && (await machineEveillee())) await agendaLastCall(m, now);
+  if (m && agendaLastAt(m) - now >= AGENDA_LAST_MIN_MS && !(await ecranVerrouille())) await agendaLastCall(m, now);
   dus.forEach((x) => deja.push(agendaKey(x)));
   if (deja.length > AGENDA_WARNED_MAX) deja = deja.slice(-AGENDA_WARNED_MAX);
   await kvSet({ agendaLastWarned: deja });
@@ -739,7 +752,11 @@ async function agendaLastCall(m, nowMs) {
   const payload = { type: "kz-meeting-last", id: m.id, title: m.title, start: m.start, at: at, late: at > m.start, showAt: at - AGENDA_LAST_BEFORE_MS, room: m.room || "" };
   let armee = false;
   if (tab) armee = await bubbleSendToTab(tab, payload);
-  await envoieAuxOnglets((await ongletsWeb(true)).filter((t) => !tab || t.id !== tab.id), payload);
+  // 2026-11-06 : un onglet ouvert avant une mise a jour de l'extension n'a
+  // pas son script ; il le recoit avant l'alerte. Les onglets en sommeil
+  // (decharges par le navigateur) sont laisses : le relais les servira.
+  for (const t of (await ongletsWeb(true)).filter((x) => (!tab || x.id !== tab.id) && !x.discarded)) await bubbleSendToTab(t, payload);
+  await alerteWrite(payload);
   if (armee) return "tab";
   return (await agendaLastNotification(m, nowMs)) ? "notification" : "none";
 }

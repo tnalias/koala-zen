@@ -1248,6 +1248,21 @@
   "bilanBestDayOne": {
     "message": "Your best day: {j}, 1 habit done"
   },
+  "frMailNotifyHint": {
+    "message": "A ready email when you're late."
+  },
+  "frMailStatsHint": {
+    "message": "Just the numbers, day by day."
+  },
+  "frMailBilanHint": {
+    "message": "Your week in numbers, on Mondays."
+  },
+  "frSumBilan": {
+    "message": "Weekly report by email, Mondays"
+  },
+  "frDemoMeetingTry": {
+    "message": "Try a meeting"
+  },
   "meetingEnded": {
     "message": "Ended {t} ago"
   },
@@ -1360,7 +1375,7 @@
     "message": "Everything stays on this device, with no account and no Koala Zen server."
   },
   "frDemoOpen": {
-    "message": "See what it looks like"
+    "message": "See a preview"
   },
   "frDemoTitle": {
     "message": "Here is your reminder"

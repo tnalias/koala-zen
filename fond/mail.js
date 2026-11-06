@@ -47,8 +47,8 @@ async function notifyConnect(tokenArg) {
 async function notifyDisconnect() {
   // Les stats des mails se servent de la meme boite : tant qu'elles sont
   // allumees, eteindre Prevenir ne coupe que Prevenir.
-  const r = await kvGet(["mailStatsEnabled"]);
-  if (r.mailStatsEnabled) { await kvSet({ notifyEnabled: false }); return { ok: true, kept: true }; }
+  const r = await kvGet(["mailStatsEnabled", "bilanEnabled"]);
+  if (r.mailStatsEnabled || r.bilanEnabled) { await kvSet({ notifyEnabled: false }); return { ok: true, kept: true }; }
   await kvSet({ notifyEnabled: false, notifyMailboxUuid: "", notifyMailboxEmail: "", notifyMailboxName: "", notifyMailboxHosting: 0, notifyMailboxLogin: "", notifyTokenEnc: null, bilanEnabled: false, bilanEmail: "" });
   return { ok: true };
 }
