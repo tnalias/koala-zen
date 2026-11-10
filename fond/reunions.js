@@ -194,6 +194,9 @@ async function meetingBarFromBubble(payload) {
   const cle = agendaKey({ id: payload.id, start: Number(payload.start) || 0 });
   const m = agendaTimed(r.agendaCache).find((x) => agendaKey(x) === cle);
   if (!m || !(m.start <= now && now < m.end)) return null;
+  // 2026-11-10 : seulement une reunion avec quelqu'un
+  // d'autre, comme le silence ; un bloc seul n'a pas de barre.
+  if (m.meeting === false) return null;
   const b = { barId: bubbleNewId(), id: m.id, start: m.start, end: m.end, title: m.title, room: m.room || "" };
   await barWrite(b);
   await barEnvoie(barPayload(b));

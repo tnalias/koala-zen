@@ -232,15 +232,17 @@ if (globalThis.__kzLoaded !== true) {
 .kz-btn--notify[disabled] { color: #666666; cursor: default; }
 .kz-hide { display: none !important; }
 /* 2026-11-05 : la barre de reunion, discrete, en bas au centre. */
-.kz-mbar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: calc(100vw - 32px); box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 9999px; background: #FFFFFF; border: 1px solid #E0E0E0; box-shadow: 0 4px 12px rgba(16,24,40,0.10); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 13px; line-height: 18px; color: #333333; pointer-events: auto; }
-.kz-mbar-t { min-width: 0; max-width: 280px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 2026-11-10 : une barre plus basse et
+   plus etroite ; titre court, compte bref, petits boutons. */
+.kz-mbar { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); max-width: calc(100vw - 24px); box-sizing: border-box; display: flex; align-items: center; gap: 6px; padding: 3px 3px 3px 12px; border-radius: 9999px; background: #FFFFFF; border: 1px solid #E0E0E0; box-shadow: 0 4px 12px rgba(16,24,40,0.10); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; line-height: 16px; color: #333333; pointer-events: auto; }
+.kz-mbar-t { min-width: 0; max-width: 160px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kz-mbar-c { flex: 0 0 auto; color: #666666; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.kz-mbar button { flex: 0 0 auto; font: inherit; font-size: 13px; line-height: 18px; height: 28px; border: none; border-radius: 9999px; cursor: pointer; }
-.kz-mbar-fin { padding: 0 12px; background: #2E3338; color: #FFFFFF; font-weight: 500; }
+.kz-mbar button { flex: 0 0 auto; font: inherit; font-size: 12px; line-height: 16px; height: 24px; border: none; border-radius: 9999px; cursor: pointer; }
+.kz-mbar-fin { padding: 0 10px; background: #2E3338; color: #FFFFFF; font-weight: 500; }
 .kz-mbar-fin:hover { background: #3A3F43; }
-.kz-mbar-skip { padding: 0 8px; background: none; color: #666666; }
+.kz-mbar-skip { padding: 0 6px; background: none; color: #666666; }
 .kz-mbar-skip:hover, .kz-mbar-x:hover { color: #333333; }
-.kz-mbar-x { width: 28px; padding: 0; background: none; color: #666666; }
+.kz-mbar-x { width: 24px; padding: 0; background: none; color: #666666; }
 .kz-mbar button:focus-visible { outline: 3px solid #2FAE4A; outline-offset: 1px; }
 .kz-mbar button[disabled] { cursor: default; }
 /* 2026-11-03 : le dernier avertissement, vingt secondes avant le debut. Hors
@@ -1708,6 +1710,8 @@ if (globalThis.__kzLoaded !== true) {
       const titre = document.createElement("span");
       titre.className = "kz-mbar-t";
       titre.textContent = String(info.title || "").trim() || kzMsg("meetingUntitled", "Sans titre");
+      // Le titre coupe reste lisible en entier au survol.
+      titre.title = titre.textContent;
       const compte = document.createElement("span");
       compte.className = "kz-mbar-c";
       const bouton = (classe, texte) => { const x = document.createElement("button"); x.type = "button"; x.className = classe; x.textContent = texte; return x; };
@@ -1724,7 +1728,7 @@ if (globalThis.__kzLoaded !== true) {
         if (fige) return;
         const reste = fin - Date.now();
         if (reste <= 0) { off(); return; }
-        compte.textContent = kzMsg("meetingEndCountdown", "Se termine dans {t}").replace("{t}", fmtCount(reste));
+        compte.textContent = kzMsg("meetingBarLeft", "encore {t}").replace("{t}", fmtCount(reste));
       };
       const decide = (type, confirme) => (e) => {
         e.stopPropagation();

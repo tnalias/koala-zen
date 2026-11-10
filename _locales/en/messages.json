@@ -1089,6 +1089,9 @@
   "meetingLateShifted": {
     "message": "Alert moved to {h}"
   },
+  "meetingBarLeft": {
+    "message": "{t} left"
+  },
   "meetingBarFinish": {
     "message": "Finish"
   },

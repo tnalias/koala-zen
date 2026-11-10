@@ -1089,6 +1089,9 @@
   "meetingLateShifted": {
     "message": "Alerte décalée à {h}"
   },
+  "meetingBarLeft": {
+    "message": "encore {t}"
+  },
   "meetingBarFinish": {
     "message": "Terminer"
   },

@@ -1089,6 +1089,9 @@
   "meetingLateShifted": {
     "message": "Warnung auf {h} verschoben"
   },
+  "meetingBarLeft": {
+    "message": "noch {t}"
+  },
   "meetingBarFinish": {
     "message": "Beenden"
   },
